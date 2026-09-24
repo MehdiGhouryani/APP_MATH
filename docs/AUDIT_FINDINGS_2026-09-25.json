@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-25",
+  "decision": "PRODUCTION_PILOT_BLOCKED",
+  "p0": [
+    "executable_grade1_seed_missing",
+    "station01_incomplete_e05_e06_e11_e12",
+    "live_supabase_auth_rls_transaction_not_verified"
+  ],
+  "p1": [
+    "teacher_raw_learning_truth_rls_boundary",
+    "learning_engine_interpretation_mastery_gap",
+    "schema_drift_12_documented_tables_missing_from_migrations",
+    "adult_assignment_content_production_backends_not_implemented",
+    "dependency_reproducibility_no_lockfile",
+    "full_web_typecheck_not_verified"
+  ],
+  "p2": [
+    "generic_expected_answers_evaluator",
+    "mobile_station_fixture_fallback",
+    "rive_production_asset_gate"
+  ],
+  "corrections_applied": [
+    "backend_gate_error_handling",
+    "assignment_backend_gate_coverage",
+    "undefined_error_validation_branches",
+    "sync_retry_classification",
+    "exact_optional_property_types_session_route",
+    "policy_version_parity",
+    "fail_closed_production_readiness_guard"
+  ],
+  "verified_local": {
+    "runtime_tests": "5/5",
+    "remediation_static": true,
+    "phase11_auth_static": true,
+    "phase12_postgres_runtime_static": true,
+    "contracts_tsc": true,
+    "learning_runtime_tsc": true,
+    "assignment_runtime_tsc": true,
+    "offline_sync_tsc": true
+  },
+  "not_verified": [
+    "real_supabase_migrations",
+    "real_supabase_auth_rls",
+    "real_transactional_rpc_execution",
+    "full_web_build",
+    "device_eas_build"
+  ]
+}

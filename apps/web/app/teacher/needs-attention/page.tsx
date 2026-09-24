@@ -1,0 +1,4 @@
+'use client';
+import {useEffect,useState} from 'react'; const T='teacher-dev-01';
+export default function NeedsAttention(){const [data,setData]=useState<any>({students:[]});useEffect(()=>{fetch(`/api/v1/teacher/${T}/needs-attention`).then(r=>r.json()).then(setData)},[]);return <main dir="rtl" className="adult-shell"><a href="/teacher">← برگشت</a><h1>Needs Review / Attention</h1>{data.students.map((s:any)=><div className="card" key={s.learningIdentityId}><a href={`/teacher/students/${s.learningIdentityId}`}><h2>{s.displayName}</h2></a><p>{s.status} · {s.recentDecision}</p></div>)}<style>{css}</style></main>}
+const css=`body{margin:0;background:#fffaf5;font-family:system-ui}.adult-shell{max-width:900px;margin:auto;padding:32px}.card{background:#fff;border:1px solid #eadfd4;border-radius:20px;padding:18px;margin:12px 0}`;

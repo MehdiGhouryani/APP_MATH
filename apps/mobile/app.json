@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Math Learning",
+    "slug": "math-learning",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "jsEngine": "hermes",
+    "newArchEnabled": true,
+    "scheme": "mathlearning",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

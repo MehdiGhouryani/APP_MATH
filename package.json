@@ -1,0 +1,38 @@
+{
+  "name": "math-learning-product",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev:web": "npm --workspace @math/web run dev",
+    "dev:mobile": "npm --workspace @math/mobile run start",
+    "build:web": "npm --workspace @math/web run build",
+    "typecheck": "npm run typecheck:contracts && npm run typecheck:web",
+    "typecheck:contracts": "npm --workspace @math/contracts run typecheck",
+    "verify:phase3": "node scripts/verify-phase3.mjs",
+    "verify:phase4": "node scripts/verify-phase4.mjs",
+    "typecheck:web": "npm --workspace @math/web run typecheck",
+    "lint": "npm --workspace @math/web run lint",
+    "verify:phase5": "node scripts/verify-phase5.mjs",
+    "verify:phase6": "node scripts/verify-phase6.mjs",
+    "build:runtime": "npm --workspace @math/learning-runtime run build",
+    "build:assignment-runtime": "npm --workspace @math/assignment-runtime run build",
+    "typecheck:assignment": "npm --workspace @math/assignment-runtime run typecheck",
+    "verify:phase7": "node scripts/verify-phase7.mjs",
+    "verify:phase8": "node scripts/verify-phase8.mjs",
+    "build:offline-sync": "npm --workspace @math/offline-sync run build",
+    "typecheck:offline-sync": "npm --workspace @math/offline-sync run typecheck",
+    "verify:phase9": "node scripts/verify-phase9.mjs",
+    "verify:phase10": "node scripts/verify-phase10.mjs",
+    "performance:phase10": "node scripts/performance/phase10-performance.mjs",
+    "e2e:web": "playwright test",
+    "verify:migrations": "node scripts/verify-migrations-static.mjs",
+    "verify:phase16": "node scripts/verify-phase16-deep-audit.mjs"
+  }
+}

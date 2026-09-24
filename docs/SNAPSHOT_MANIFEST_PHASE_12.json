@@ -1,0 +1,1259 @@
+{
+  "snapshot": "math-learning-product-v1-phase12-postgres-runtime",
+  "createdAt": "2026-09-25",
+  "migrationRange": "0001..0032",
+  "verification": [
+    "scripts/verify-phase12-postgres-runtime.mjs: PASS",
+    "scripts/verify-remediation.mjs: PASS",
+    "scripts/verify-phase11-auth.mjs: PASS",
+    "scripts/runtime-tests.mjs: 5/5 PASS"
+  ],
+  "externalVerificationPending": [
+    "Apply supabase/migrations/0031_learning_runtime_contract_alignment.sql to a real Supabase project",
+    "Apply supabase/migrations/0032_runtime_transactional_rpc.sql to a real Supabase project",
+    "Run Auth → RPC → RLS transaction tests with live credentials",
+    "Run full Next.js typecheck/build after restoring complete node_modules"
+  ],
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "77d3521a5032283f2e5c7aad54db58de9d2d7914ce9191b46a45e28ac049fcfb",
+      "bytes": 434
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "cc6ae4293be618de88134b6a74209bf6fd573636e6ae9b571a5041e2b52ace11",
+      "bytes": 117
+    },
+    {
+      "path": "README.md",
+      "sha256": "2a122a22c818df92e66c6c257dfdb5bd8190547c1dbd5bf89586aac2533446cf",
+      "bytes": 2614
+    },
+    {
+      "path": "apps/mobile/app/_layout.tsx",
+      "sha256": "c03ab70036ba6f8173187ed9a8084a25d74c27858bfe179cd267da28d2bb4327",
+      "bytes": 138
+    },
+    {
+      "path": "apps/mobile/app/animation.tsx",
+      "sha256": "300aefeddf4652dd4b674393b68a0eb7476f3f8fdcc8fb5336ffac2512835912",
+      "bytes": 164
+    },
+    {
+      "path": "apps/mobile/app/assignments.tsx",
+      "sha256": "986a1418ca1ac8d453f86769ab2572e08993eafd4bffe84b0b7ba3434bc15e1d",
+      "bytes": 2484
+    },
+    {
+      "path": "apps/mobile/app/index.tsx",
+      "sha256": "a2223c40f084c329b812c774573ac643cc16d5d8a04331b9b2491249e2e1bcc2",
+      "bytes": 876
+    },
+    {
+      "path": "apps/mobile/app/station/[stationId].tsx",
+      "sha256": "16693cce1cda652aeae5474911e82863de0f404f64f907a132afaa3f1a05ab39",
+      "bytes": 288
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "sha256": "29ce977c6afbe2037a6f6a025e12bdd29fcad08a7bf47c03a261df6c1df8ad1e",
+      "bytes": 341
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "sha256": "9d0ad91368a82e86155dfbd179e38cd7c8e838f58656d3c67ddc06d21afcf585",
+      "bytes": 709
+    },
+    {
+      "path": "apps/mobile/src/animation/AnimationController.ts",
+      "sha256": "c7458a06548795adc8b89a4391d227e293b2f654a7ae1104d91c25bd33e21e7d",
+      "bytes": 855
+    },
+    {
+      "path": "apps/mobile/src/animation/index.ts",
+      "sha256": "1dbf4e862c6691e9ba7a5dadbe59ad6f9519fea16a7e3dcb111826cb86ef5f71",
+      "bytes": 115
+    },
+    {
+      "path": "apps/mobile/src/animation/semanticEvents.ts",
+      "sha256": "faa8ff1d00b02b30de73f78765210d091a3c2708045d611398e35b9b32f4f99c",
+      "bytes": 348
+    },
+    {
+      "path": "apps/mobile/src/animation/useAnimationController.ts",
+      "sha256": "0d60ca920be439479e3c754368fcf6579385d903bf57d6da34970b874b7bb500",
+      "bytes": 693
+    },
+    {
+      "path": "apps/mobile/src/auth/AuthSession.ts",
+      "sha256": "b5e4d56cc7b51949acf45a097daaf72bd2f2f9c29285c315797148574aee7fa1",
+      "bytes": 351
+    },
+    {
+      "path": "apps/mobile/src/components/AnimatedCharacter.tsx",
+      "sha256": "7616656ec45daf129ba072f1a30934e43a99d2d46c430a5a8c9d02d8d0d8a509",
+      "bytes": 3137
+    },
+    {
+      "path": "apps/mobile/src/components/SemanticAnimationDemo.tsx",
+      "sha256": "0d816afb296ca9905dbd39fc22c9072c9cba58091a501e9daf73ad56462fdcca",
+      "bytes": 1667
+    },
+    {
+      "path": "apps/mobile/src/content/ContentManager.ts",
+      "sha256": "96e4ecc684875ef8ec617f5088f92b8e617113dd7fb31c2e37d34f3dc468f69f",
+      "bytes": 7073
+    },
+    {
+      "path": "apps/mobile/src/content/index.ts",
+      "sha256": "a7e8f07c3490f799b91d8a604055c78a137b0f08e1fcdc252b4037f23018a10a",
+      "bytes": 34
+    },
+    {
+      "path": "apps/mobile/src/performance/runtimeBudget.ts",
+      "sha256": "31490318ce35565a71bd80e591054802540ba83edcef7b9452d115427cfdc64f",
+      "bytes": 647
+    },
+    {
+      "path": "apps/mobile/src/station/StationFlow.tsx",
+      "sha256": "f854d695e573938f436a74d12149d7e0df099e26b284326573b4fe73682a074f",
+      "bytes": 21187
+    },
+    {
+      "path": "apps/mobile/src/station/runtimeApi.ts",
+      "sha256": "95b3ca059020140d0cb776bfec24606bfc8b9354d6b2268abb9d8ef72b33b183",
+      "bytes": 9151
+    },
+    {
+      "path": "apps/mobile/src/station/types.ts",
+      "sha256": "48c9d48076cba9e6cfd484cd0cd3abf3277cf75566a3f12ee0ddf7a79ec410f2",
+      "bytes": 932
+    },
+    {
+      "path": "apps/mobile/src/sync/FileSyncQueueStore.ts",
+      "sha256": "98f1a37ea738d7baba54799b100127936a5483dfee3d517616c07efd96ccd178",
+      "bytes": 1947
+    },
+    {
+      "path": "apps/mobile/src/sync/MobileSyncManager.ts",
+      "sha256": "02274d803aa5fbe551249247bdeb6a263771e9a684cdba5223f8f2d629e2c706",
+      "bytes": 2077
+    },
+    {
+      "path": "apps/mobile/src/sync/index.ts",
+      "sha256": "73453a9b8eaf8089c6a2e48cef575e39328d15f056b683a4952598df5cb2b17c",
+      "bytes": 75
+    },
+    {
+      "path": "apps/mobile/tsconfig.json",
+      "sha256": "56da82c38f71c003ae914deaaa9fe65852f4128aa315ad9bf68174baa150d172",
+      "bytes": 163
+    },
+    {
+      "path": "apps/web/app/api/v1/assignment-instances/[instanceId]/outcome/route.ts",
+      "sha256": "fcd730b9027ff2d0ad3294e9973d51090fe17b2a274d17fe81a9010955e57fdc",
+      "bytes": 1510
+    },
+    {
+      "path": "apps/web/app/api/v1/assignment-instances/[instanceId]/recheck/route.ts",
+      "sha256": "9fd6f88aacffc6cb82edd12888d581aa5d3e7bee008f5e410eae1a7cba3c4cce",
+      "bytes": 2071
+    },
+    {
+      "path": "apps/web/app/api/v1/assignments/[assignmentId]/content/route.ts",
+      "sha256": "3a1f204dc2a324d29cd3fc7920b2170d2650c006b3ba29e84f7732b76e0453de",
+      "bytes": 1266
+    },
+    {
+      "path": "apps/web/app/api/v1/assignments/[assignmentId]/route.ts",
+      "sha256": "37541003b2856fcb6455863e247f11ef39f935831f3f440ea2ee1af92539e901",
+      "bytes": 3058
+    },
+    {
+      "path": "apps/web/app/api/v1/assignments/route.ts",
+      "sha256": "a6b296a85f827ffe3959082f11dd41612920486bf640a130ece6397c25bcc9e0",
+      "bytes": 2737
+    },
+    {
+      "path": "apps/web/app/api/v1/content/entitlements/[packageId]/route.ts",
+      "sha256": "94b965932c956a50a7a94e4cfc2ffa6ddc583629e46da11edc4ea07aa77c64f0",
+      "bytes": 479
+    },
+    {
+      "path": "apps/web/app/api/v1/content/manifest/route.ts",
+      "sha256": "e5bce993c2c96befe8f6c412e911c1fe86cae00c7369fac7bd2850ab1060f8af",
+      "bytes": 533
+    },
+    {
+      "path": "apps/web/app/api/v1/content/packages/[packageId]/route.ts",
+      "sha256": "223b3baaf41c0a0f72e32733965b231173e70b633f192288b769fb4f0d233be3",
+      "bytes": 1213
+    },
+    {
+      "path": "apps/web/app/api/v1/learning/attempts/submit/route.ts",
+      "sha256": "167b6df17f4a24b55eba00d714bcfa16fb101178536e08455048ed31a0c81e69",
+      "bytes": 2191
+    },
+    {
+      "path": "apps/web/app/api/v1/learning/sessions/[sessionId]/encounters/route.ts",
+      "sha256": "ec60d2404e87ec33b68c645c1f1d758703acd502c44cf47282df02e17cd4c106",
+      "bytes": 2740
+    },
+    {
+      "path": "apps/web/app/api/v1/learning/sessions/route.ts",
+      "sha256": "4131d5892c1b34f3304f33b9b023e5574ac7e79259e372c6b2666b84e82eb19e",
+      "bytes": 2087
+    },
+    {
+      "path": "apps/web/app/api/v1/learning-identities/[learningIdentityId]/assignments/route.ts",
+      "sha256": "1276ec99a86c32563d14e351d8fbab0f95735b33efe6fe5bafa6de35e20ac3b0",
+      "bytes": 651
+    },
+    {
+      "path": "apps/web/app/api/v1/parent/[parentAccountId]/children/route.ts",
+      "sha256": "f9be38c7867204866946fdddee09a4bfa0e8368571121a43fd6d64c4618f067b",
+      "bytes": 1296
+    },
+    {
+      "path": "apps/web/app/api/v1/parent/[parentAccountId]/today/route.ts",
+      "sha256": "eb9bea9a9c6f02a9c6084f0f51400ce111a009c9ccdd99996a89daeedd5be95c",
+      "bytes": 1516
+    },
+    {
+      "path": "apps/web/app/api/v1/sync/batch/route.ts",
+      "sha256": "cff9043c37433f9c4cb67100673c21ab280aeb5805aea2ab8c844971ea295274",
+      "bytes": 2846
+    },
+    {
+      "path": "apps/web/app/api/v1/teacher/[teacherAccountId]/classes/[classId]/route.ts",
+      "sha256": "26c265d7943737937cefa001868065ad727d6e6b4a8c53b2eb3d70a034d06338",
+      "bytes": 1227
+    },
+    {
+      "path": "apps/web/app/api/v1/teacher/[teacherAccountId]/classes/route.ts",
+      "sha256": "babc0130a170bdbc481d2c3c6509e926062d8f2b0bba8fd08eeae0a5b91838a1",
+      "bytes": 1077
+    },
+    {
+      "path": "apps/web/app/api/v1/teacher/[teacherAccountId]/needs-attention/route.ts",
+      "sha256": "be451045b3e752b899edbe313161c499c1b6139bd45cb088f6bd2ab082b67fbc",
+      "bytes": 933
+    },
+    {
+      "path": "apps/web/app/api/v1/teacher/[teacherAccountId]/recheck-queue/route.ts",
+      "sha256": "4c3384b5e0d2cddce3357b5a97169703315710b7817655e7dd4804d5f2818dae",
+      "bytes": 926
+    },
+    {
+      "path": "apps/web/app/api/v1/teacher/[teacherAccountId]/students/[learningIdentityId]/route.ts",
+      "sha256": "ac1273e0d511e0eaa354f3e811ac525fd3f231fd2a11c506a2781f334a967412",
+      "bytes": 1169
+    },
+    {
+      "path": "apps/web/app/api/v1/teacher/students/[learningIdentityId]/observations/route.ts",
+      "sha256": "ba569e766cfb54a71bc884c3e6197876aee54190ac9456f7ccf601a40f941c80",
+      "bytes": 1621
+    },
+    {
+      "path": "apps/web/app/layout.tsx",
+      "sha256": "fb8b957ed9d461a1dc691e264e8777be6a97c30a9f8c2fcaf78324925fd955ba",
+      "bytes": 361
+    },
+    {
+      "path": "apps/web/app/page.tsx",
+      "sha256": "6046843ef9053ba7fae621207f6a298f3a896b42e8b1d7bfdb88b400192b996b",
+      "bytes": 279
+    },
+    {
+      "path": "apps/web/app/parent/page.tsx",
+      "sha256": "8e7f627621d4d9ecb03681bc8d74d9a3191dd59f4309be3a3030f03ad1744bd7",
+      "bytes": 4326
+    },
+    {
+      "path": "apps/web/app/teacher/assignments/page.tsx",
+      "sha256": "669443558846e4156d52953bc36ad0190c0be556b35ffffecf9ee3a65260f171",
+      "bytes": 2826
+    },
+    {
+      "path": "apps/web/app/teacher/classes/page.tsx",
+      "sha256": "86701b1de83759796d34ed2d6dfc765a6b151a0c1c46db0c5567c79ff772e040",
+      "bytes": 1327
+    },
+    {
+      "path": "apps/web/app/teacher/needs-attention/page.tsx",
+      "sha256": "50b5d90c46350539ce6119e7a020b5ed8d87706a313104b4b198ef341d679dc1",
+      "bytes": 839
+    },
+    {
+      "path": "apps/web/app/teacher/page.tsx",
+      "sha256": "341c88c420ac9d608537e1ff046b3c35b5583795cd4ffe50b7c647c17b599c4f",
+      "bytes": 2225
+    },
+    {
+      "path": "apps/web/app/teacher/recheck-queue/page.tsx",
+      "sha256": "6d5a97227d518bcac0ff5ddff3648c0f40ba879377a079fccc5e1283c625e21f",
+      "bytes": 824
+    },
+    {
+      "path": "apps/web/app/teacher/students/[learningIdentityId]/page.tsx",
+      "sha256": "52c648e3c877ed7cb580b1c2d4cea11b5f7c206bcc671ea1072aff1a2b89ae9d",
+      "bytes": 2225
+    },
+    {
+      "path": "apps/web/lib/adult-projections.ts",
+      "sha256": "f6c6e14d6885c5efc7dd30a0f628ce6a0e603278f74d7956b473b7317271d378",
+      "bytes": 230
+    },
+    {
+      "path": "apps/web/lib/api-errors.ts",
+      "sha256": "dc0388b9043a486cf451b57590373fdb28106f65bb999591a0ca28a29e7e6f6d",
+      "bytes": 763
+    },
+    {
+      "path": "apps/web/lib/assignment-runtime.ts",
+      "sha256": "e0a4ced346a3e0cc641c212c063da3c6ef33b2de2aca9b06f9ad0df8100f9567",
+      "bytes": 585
+    },
+    {
+      "path": "apps/web/lib/content-delivery.ts",
+      "sha256": "e07f54388870d63e8e483eb90705bfc672fe5fa003711fee307d56f0894aa85f",
+      "bytes": 2807
+    },
+    {
+      "path": "apps/web/lib/learning-runtime-production.ts",
+      "sha256": "53c96a9727e9015635ad5466ba7bb8b838896209fb445146815f5fc4b393e2eb",
+      "bytes": 8340
+    },
+    {
+      "path": "apps/web/lib/learning-runtime.ts",
+      "sha256": "029312babbe9a7e6915af330b731849ee03e82612bf14e033602afe5addb78f9",
+      "bytes": 4102
+    },
+    {
+      "path": "apps/web/lib/request-principal.ts",
+      "sha256": "12f900da8cbad0d1f2a6353852de18a5cd774cad9e0a6741638b750fbbd7f4f7",
+      "bytes": 4184
+    },
+    {
+      "path": "apps/web/lib/runtime-gates.ts",
+      "sha256": "cf1456b79e7b4e95413b78c05e4f23b1d1a932edbb9982f869e2c4de2f417eb1",
+      "bytes": 437
+    },
+    {
+      "path": "apps/web/lib/supabase-http.ts",
+      "sha256": "0395163666b192e0023b124994fc923bbc2544bfff41bdcbf1b4f25611ceefd0",
+      "bytes": 2475
+    },
+    {
+      "path": "apps/web/next-env.d.ts",
+      "sha256": "a3fb963a1d2d1d49ac2efc962f043c2f4aea4ea9ba4e1eabae904e7a292a9ea5",
+      "bytes": 212
+    },
+    {
+      "path": "apps/web/next.config.ts",
+      "sha256": "313bbd12b7c02687533a9834c38c1052cd8037ad0b47b26713cbaa19e6fbad74",
+      "bytes": 130
+    },
+    {
+      "path": "apps/web/package.json",
+      "sha256": "7689e76cc62cc446bc31d6d787ba2d0af50c18d7eb1d6d48eb7683a0a9c32fb7",
+      "bytes": 603
+    },
+    {
+      "path": "apps/web/tsconfig.json",
+      "sha256": "13a816e721ead1818759a4379e61ed8e6057c1a082e86edb862c46c1c64f9c1a",
+      "bytes": 393
+    },
+    {
+      "path": "content/dev-packs/g1-st01-v1/content.json",
+      "sha256": "f0a811fdcad6d41b51e5d7b3973d0ee942ab87466d3a7f58ee52b750134d4f7e",
+      "bytes": 1816
+    },
+    {
+      "path": "content/dev-packs/g1-st01-v1/next-stub.json",
+      "sha256": "541fd320b6f9c2f49f8bc5d781e52ef3c92bee69cc2a3b26f6436f4414ae4cc2",
+      "bytes": 247
+    },
+    {
+      "path": "content/dev-packs/g1-st01-v1/package.json",
+      "sha256": "f7c88fe762d1796b1a7a4a53d5727efcbc6f4b0d7e8bc61b067e34e2d459eaaa",
+      "bytes": 1436
+    },
+    {
+      "path": "docs/ADR_0001_NO_UNITY_GAME_ARCHITECTURE.md",
+      "sha256": "2dc3aecfafc54e778fa47954271a91018226253536448a7c74ab22ee0ae7872b",
+      "bytes": 1767
+    },
+    {
+      "path": "docs/ADR_0002_SEMANTIC_ANIMATION_EVENTS.md",
+      "sha256": "b26be31353a46de58fea25ab3c0fecdd2fc804380725452ebb946e3f0e1a9895",
+      "bytes": 430
+    },
+    {
+      "path": "docs/ADR_0003_SERVER_AUTHORITATIVE_LEARNING_RUNTIME.md",
+      "sha256": "8a4b2b0cfc9bf854b8335d679ec82f50bfcdff99b7175dd3252f94c3423fbaf7",
+      "bytes": 824
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_10.md",
+      "sha256": "ac751b51c3cd6aee3ba10f12950b852e46e9ec7d1e4c88f1a306e023e1ee170f",
+      "bytes": 1027
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_3.md",
+      "sha256": "f81c65ad20bc345084e5c8df274b3a3ae6fd2180fbd66615687b41ab4ec5cf55",
+      "bytes": 1058
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_5.md",
+      "sha256": "f0bbb3ec2e09a32a0e74e71cd726fe2b59c39a0d2ad8523f674d4480c0340ddd",
+      "bytes": 1501
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_6.md",
+      "sha256": "63905a6ca353008183ad6d1e3112ae8246c0d0e2acd9d3f0c5607fc759f86629",
+      "bytes": 830
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_7.md",
+      "sha256": "bc3d75a5dfec495f6f906be73f76ce5afcd35c0a7f2a7d8695defa028b4a5903",
+      "bytes": 933
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_8.md",
+      "sha256": "17b5dee4974d639828128f68a85166a14460d273a720b2b77f6549d4c2853e91",
+      "bytes": 1283
+    },
+    {
+      "path": "docs/API_CONTRACT_PHASE_9.md",
+      "sha256": "eaa517b0fc4f1d2e8bceab18da1dce5f51eec4447cc635e4995fd3949e040324",
+      "bytes": 1144
+    },
+    {
+      "path": "docs/AUDIT_DEEP_REMEDIATION_2026-09-24.md",
+      "sha256": "b9f0d040930a810cd4a6ed49e68c0d4fbedbc4bac4717430f95364ffb9fc42df",
+      "bytes": 10228
+    },
+    {
+      "path": "docs/AUDIT_MANIFEST_2026-09-24.json",
+      "sha256": "00a35a275ca5453786352f669dc2617443102dfa5d47d0a6a094763a8f1e524d",
+      "bytes": 693
+    },
+    {
+      "path": "docs/AUDIT_PHASE_0_TO_10_STRICT_2026-09-24.md",
+      "sha256": "c6834d2d3f88669f879c8c7cab62a021e8e92ab2f178684ebbe470bc61b47da6",
+      "bytes": 22384
+    },
+    {
+      "path": "docs/AUDIT_REMEDIATION_2026-09-24.md",
+      "sha256": "ddcc615b0a5d216784e63e14d69fd4843941e1a2b9603ec72b12fe7ea49dac02",
+      "bytes": 2555
+    },
+    {
+      "path": "docs/DEPENDENCY_MATRIX.md",
+      "sha256": "809095bfa69b7b94037da5e12c200d564049f16a983e47f22b6f6e6f318f2ec8",
+      "bytes": 1005
+    },
+    {
+      "path": "docs/IMPLEMENTATION_BASELINE.md",
+      "sha256": "25ac3ad39726971794d134b789e6f2fb6e04ed5cf1ff3c1fd39e62e4f67ef183",
+      "bytes": 335
+    },
+    {
+      "path": "docs/IMPLEMENTATION_BASELINE_V0_34.md",
+      "sha256": "4846b166d52f842f61813e278655888d86568a0e916d7920d3f59e03d06979ec",
+      "bytes": 20189
+    },
+    {
+      "path": "docs/PACKAGE_DELIVERY_STANDARD.md",
+      "sha256": "61910e521076a23ce1cb1489f6b7150e2a4d755bca8e43334637b53ab94b8ee1",
+      "bytes": 678
+    },
+    {
+      "path": "docs/PACKAGE_MANIFEST.md",
+      "sha256": "a5e65e01d2246da1aa0320f9ccb358e495f4767792a36c7771992250116bed16",
+      "bytes": 1991
+    },
+    {
+      "path": "docs/PACKAGE_MANIFEST_PHASE_3.md",
+      "sha256": "72f1c6e27a771a69c3564c6cb4a12803d1fd7d4fa58d8c9667771adc346f901d",
+      "bytes": 213
+    },
+    {
+      "path": "docs/PACKAGE_MANIFEST_PHASE_4.md",
+      "sha256": "671d2ef6bdd574f7d10e52c1dd81f4789545a6ff8d28ca68f62a107ef2a58903",
+      "bytes": 818
+    },
+    {
+      "path": "docs/PACKAGE_MANIFEST_PHASE_5.json",
+      "sha256": "bd090c04c19a208ab17a1fb5406b3f96578c3ddc098dc95c641472e2f1f8f125",
+      "bytes": 617
+    },
+    {
+      "path": "docs/PACKAGE_MANIFEST_PHASE_8.md",
+      "sha256": "5b0a881ea48aefbb336fd4c65f0b482629d5a99b08f5fed472138dc0a9a73f97",
+      "bytes": 301
+    },
+    {
+      "path": "docs/PACKAGE_MANIFEST_PHASE_9.md",
+      "sha256": "dd8d45f55d6051c6e7c7040a2ae137c53731dfaa7a6b72345c9989b9a324c10f",
+      "bytes": 580
+    },
+    {
+      "path": "docs/PERFORMANCE_TARGET_PHASE_4.md",
+      "sha256": "c726db8fb644292f216bcf804dec00ba5e9f602e0b4ff5d321b0deb5b732314b",
+      "bytes": 541
+    },
+    {
+      "path": "docs/PHASE_10_E2E_PERFORMANCE_PILOT.md",
+      "sha256": "716d12448ea3a3d5a68814d15b6cea538d259b0e2c49bd50e477ad9c1f7b8058",
+      "bytes": 2944
+    },
+    {
+      "path": "docs/PHASE_11_PRODUCTION_AUTH_BOUNDARY.md",
+      "sha256": "e266ce0762edca8ded14eaaf85fa2d263d650526bc974411d940aa2c77e2b7c9",
+      "bytes": 1802
+    },
+    {
+      "path": "docs/PHASE_12_POSTGRES_RUNTIME.md",
+      "sha256": "397f3cd2540507a9057d2961a17699d501204bba7ba0861d811fcc72dabe649d",
+      "bytes": 2984
+    },
+    {
+      "path": "docs/PHASE_2_DATABASE_AUTH_RLS.md",
+      "sha256": "90b16cc62636c754068611d292a4d56ce6607e1db0de36053cea3b3f916cd4b4",
+      "bytes": 2783
+    },
+    {
+      "path": "docs/PHASE_3_CONTENT_DELIVERY.md",
+      "sha256": "4702a51150d53ee61fdc8b40359478231824a9b9772f98b4497f077cadeb4d13",
+      "bytes": 1912
+    },
+    {
+      "path": "docs/PHASE_4_ANIMATION_RUNTIME.md",
+      "sha256": "18930c647e48256e96b2edd565b2d675a2abb3ffcfc3da6788303c2477225853",
+      "bytes": 2080
+    },
+    {
+      "path": "docs/PHASE_5_LEARNING_RUNTIME.md",
+      "sha256": "8023ad3db5b8ceea0201d0b4a5a0ff58fb145df2694895d4aba3bc64ff85ccbc",
+      "bytes": 2096
+    },
+    {
+      "path": "docs/PHASE_6_STATION_01_CHILD_EXPERIENCE.md",
+      "sha256": "6387a8f97b61ed63999dd404100b668bf5d5f2021b6a0a7841bcac036776750b",
+      "bytes": 1895
+    },
+    {
+      "path": "docs/PHASE_7_TEACHER_ASSIGNMENT_SLICE.md",
+      "sha256": "f513bdae9e5acd14514f567393def15e295baa1b1e0219e40d7e9e861e573f9f",
+      "bytes": 2546
+    },
+    {
+      "path": "docs/PHASE_8_PARENT_TEACHER_LITE.md",
+      "sha256": "5595cbe7384fc52ce218e4960eab4b71673b09071e272e671a35fd90018bddb2",
+      "bytes": 2840
+    },
+    {
+      "path": "docs/PHASE_9_OFFLINE_SYNC_PERFORMANCE.md",
+      "sha256": "f5abb673dd2b361796e3a479ec55beb6582c986ea044b2ee16e6492ad5ef6165",
+      "bytes": 1700
+    },
+    {
+      "path": "docs/PILOT_RUNBOOK_PHASE_10.md",
+      "sha256": "8bf8bd013143ac84d92fd35c1ff68629bef847cfe7bb669a0f1e4faefab9cf7e",
+      "bytes": 1636
+    },
+    {
+      "path": "docs/REVISION_NOTES.md",
+      "sha256": "9fedbfc27a7d73aee47efdd158b9b71c847775d56975124d6d09e330c30cf134",
+      "bytes": 907
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_10.md",
+      "sha256": "4817dfb4b149cc50a6794fb8addf53ee131725076ad1f3f9b3f9cf325cffa104",
+      "bytes": 827
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_11.md",
+      "sha256": "9a9e5237cd6d4bc3222f760926f66c768bdbdd32621301e2e3659f6e85cfe02a",
+      "bytes": 1755
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_12.md",
+      "sha256": "55105f6d917acdc35b4fa2356183907fea0810efdebb331c7bce772ded4750cd",
+      "bytes": 1557
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_3.md",
+      "sha256": "4ea80b55d4ce53576d26bacb6cb9d005925f4d897e05502271fe561d0550e52a",
+      "bytes": 565
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_4.md",
+      "sha256": "6177e75d4210770e1e19e525d58d5fcd5fd0d2730df666679e32871ac0b10bc7",
+      "bytes": 682
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_5.md",
+      "sha256": "1c719db793c9b5b385da92e5904df28be85aa1dc11c0e2e9cdec54fe10ac3bc6",
+      "bytes": 718
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_6.md",
+      "sha256": "bd0b4564006fafbf1b28e20cc0d378b3be41ae89498efdc8266b38fe072bd423",
+      "bytes": 528
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_7.md",
+      "sha256": "ab217ca2c5b7b0b433e95f75ae513ecd1c41e3cfb1d2990b94eb60b104d88aea",
+      "bytes": 768
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_8.md",
+      "sha256": "3f8c1e637d2151be8b2c2df780d75714c1b41a95b5887446215cd9f7ccfcfc99",
+      "bytes": 786
+    },
+    {
+      "path": "docs/REVISION_NOTES_PHASE_9.md",
+      "sha256": "005fc6e9b1bb92861a622978d7e4ba8d04434fa71c4b3a93293153fcb0fb5152",
+      "bytes": 685
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_AUDIT_REMEDIATED_2026-09-24.json",
+      "sha256": "b26fbbdce8b59ff62c355894db813d9982e21b9a8656ebed617db49846fa0d08",
+      "bytes": 49573
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_10.json",
+      "sha256": "79717bd921e18d7456802ffcdac661ae73977a5ca505a015fb888db90f1da453",
+      "bytes": 811
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_11.json",
+      "sha256": "d27a4925b8729e12ca07f1953d1cd429bccbe5dc4652244d0bdfd6420607b951",
+      "bytes": 43160
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_3.json",
+      "sha256": "91853f6c629b199d4cba5865eeac74ba31ba60f4b394c219be8976ccdd83dc76",
+      "bytes": 505
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_4.json",
+      "sha256": "f3d9865185f4b30d75c1943a6cd1d04da30a7cbc82047be71589ef5f1b97f2ff",
+      "bytes": 590
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_5.json",
+      "sha256": "ebbdffde7fab100881bf25fb6961f053ea7c64199be1d480cc5f07315e3745a4",
+      "bytes": 24408
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_6.json",
+      "sha256": "6f5ff47e1637741600967ace64a772c33ebfe76d95b953679a000f5861cba372",
+      "bytes": 25814
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_7.json",
+      "sha256": "921c4847863eecba404379fee20efe3b870731350ee2a42056e74e34cf3a78c4",
+      "bytes": 698
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_8.json",
+      "sha256": "43c8ae8da786d23570dacd960b65fb87a6ad34f3f994ce961400f39dbe9f1ffe",
+      "bytes": 590
+    },
+    {
+      "path": "docs/SNAPSHOT_MANIFEST_PHASE_9.json",
+      "sha256": "e5dc657420673fb8b663cb682a2f8d9e4dd42c91046f9ce392a83247fb95ed65",
+      "bytes": 433
+    },
+    {
+      "path": "docs/source/math_learning_product_animation_visual_runtime_v0_32.md",
+      "sha256": "8727170a0f3500566057bb05b5a32a8edab05f574e26ec43a6923278c42dfc89",
+      "bytes": 11402
+    },
+    {
+      "path": "docs/source/math_learning_product_completion_index_v0_30.md",
+      "sha256": "47fe04e95b609ccb2cb81ddc3da943dd6cec0af6720deaa53619ab94c2323129",
+      "bytes": 2369
+    },
+    {
+      "path": "docs/source/math_learning_product_completion_index_v0_31.md",
+      "sha256": "ffab329f4b4af738cc8cb15850d6fd9d4690a00e1bf08672ab362ef02110642d",
+      "bytes": 1205
+    },
+    {
+      "path": "docs/source/math_learning_product_content_contract_v0_28.md",
+      "sha256": "2b950d9796646bcee71addc4ab3252a1d0173d20b21116993e756c904bb579d4",
+      "bytes": 5621
+    },
+    {
+      "path": "docs/source/math_learning_product_content_contract_v0_28_completed_v0_31.md",
+      "sha256": "5a369845b88f135c61429fb73ea716d041e4392d2cf804138c0fe4c7f6d8ff5c",
+      "bytes": 6001
+    },
+    {
+      "path": "docs/source/math_learning_product_core_v0_21(6).md",
+      "sha256": "21aacabfe044414761a89217c7ce064781a1c890a359b81d69bbe642995978d0",
+      "bytes": 195594
+    },
+    {
+      "path": "docs/source/math_learning_product_core_v0_21_completed_v0_30.md",
+      "sha256": "168c5f656ddb965aa8f8b6d46edaa48a73a2d1697d3430889ec589bfde8bc8d0",
+      "bytes": 197523
+    },
+    {
+      "path": "docs/source/math_learning_product_core_v0_21_completed_v0_31.md",
+      "sha256": "f9fdf1970cac64dd53a08709347074145783923551aad8dc1651efd59b664841",
+      "bytes": 198448
+    },
+    {
+      "path": "docs/source/math_learning_product_database_schema_v0_23.md",
+      "sha256": "ad67f520ebca9f6a1f8b86f9d607eeda0ef7f962a64bc382259a109c52b07f44",
+      "bytes": 55628
+    },
+    {
+      "path": "docs/source/math_learning_product_database_schema_v0_23_completed_v0_30.md",
+      "sha256": "4308f3937e23b38718887fd228712631248fa4f15c3b115bebef17da290240e5",
+      "bytes": 58955
+    },
+    {
+      "path": "docs/source/math_learning_product_database_schema_v0_23_completed_v0_31.md",
+      "sha256": "28e6b2779fafcd44b94e0449155a2eeb174b1927c9ccfe429d85a2ef54f2b1a9",
+      "bytes": 60070
+    },
+    {
+      "path": "docs/source/math_learning_product_game_engagement_quest_reward_v0_28.md",
+      "sha256": "c3d34359e150bffd841606a5c6c3f8ad6c961deb51b8492ddbd851795cd4f1bb",
+      "bytes": 18041
+    },
+    {
+      "path": "docs/source/math_learning_product_game_engagement_quest_reward_v0_28_completed_v0_31.md",
+      "sha256": "943f1e6ca684446d5c2f3b9f8c9065b4da6eed6e1cf08672daeafcf32a303be7",
+      "bytes": 18483
+    },
+    {
+      "path": "docs/source/math_learning_product_grade1_skill_graph_v0_27.md",
+      "sha256": "6d33072fbb66a0167cf4f9d003c9d6310e9299adaedc7c499ecab64f1d9a95cb",
+      "bytes": 50016
+    },
+    {
+      "path": "docs/source/math_learning_product_grade1_skill_graph_v0_27_completed_v0_30.md",
+      "sha256": "91b0d21a58298b48ba6bc91938bf98655c7cc94faf47e2edb2385b649d3a281c",
+      "bytes": 52099
+    },
+    {
+      "path": "docs/source/math_learning_product_grade1_skill_graph_v0_27_completed_v0_31.md",
+      "sha256": "5f470205bdeeeb8e7c01efdbaf67249be05dd6e462d92e9748f6015f362b66f8",
+      "bytes": 52341
+    },
+    {
+      "path": "docs/source/math_learning_product_parent_teacher_experience_v0_31.md",
+      "sha256": "cebc89545877fa02cb18336b062c38de941dc586d55c293f07e68348f95d1467",
+      "bytes": 5327
+    },
+    {
+      "path": "docs/source/math_learning_product_session_runtime_learning_rules_v0_29.md",
+      "sha256": "6408311f60be4cee555b2e131597e970ea7bd35afb200a46dcb0d300ab1e6717",
+      "bytes": 9184
+    },
+    {
+      "path": "docs/source/math_learning_product_session_runtime_learning_rules_v0_29_completed_v0_31.md",
+      "sha256": "4e05f27572df1a98ccd26f2dc62572103d6404ad282f3f2a0516f3b3269c61e7",
+      "bytes": 9744
+    },
+    {
+      "path": "docs/source/math_learning_product_station01_vertical_slice_v0_30.md",
+      "sha256": "182e8ba2bdc565dd08b0ee7f2cc9c54e972c8dd119ff3510444bf17f8871c2a7",
+      "bytes": 4892
+    },
+    {
+      "path": "docs/source/math_learning_product_station01_vertical_slice_v0_30_completed_v0_31.md",
+      "sha256": "04fb27f3e37b69ab764ee5da4da150460ed9ac3271e60d39f981f0c1d97e106b",
+      "bytes": 5281
+    },
+    {
+      "path": "docs/source/math_learning_product_v0_34_build_roadmap_and_spec_reconciliation.md",
+      "sha256": "b1f53b8a990a0c42293902ae7cff7202364094c380e30acf71b1f74379429d5b",
+      "bytes": 10867
+    },
+    {
+      "path": "docs/source/math_learning_product_v0_34_implementation_baseline.md",
+      "sha256": "4846b166d52f842f61813e278655888d86568a0e916d7920d3f59e03d06979ec",
+      "bytes": 20189
+    },
+    {
+      "path": "docs/source/math_learning_product_v1_build_readiness_v0_30.md",
+      "sha256": "34b1f6fa420dbb2b141894bd9ad6d55d52452d6d4da90542c22916a04136528a",
+      "bytes": 3466
+    },
+    {
+      "path": "docs/source/math_learning_product_v1_build_readiness_v0_31.md",
+      "sha256": "4c6b2045ff1d4d619b7121335be0c24654c55f81c9bb3b7d518981a200025351",
+      "bytes": 1616
+    },
+    {
+      "path": "docs/source/math_learning_product_v1_build_readiness_v0_32.md",
+      "sha256": "864156c18e1cbbbf64a10078c5e40933ba2729cb3081d4dde7e6da2b3a13ced7",
+      "bytes": 2131
+    },
+    {
+      "path": "docs/source/math_learning_product_v1_build_readiness_v0_33.md",
+      "sha256": "e76192bda330a0a3d6d9466042b3734547cbbd6952122c7a4ed5d0b45fbb6964",
+      "bytes": 2702
+    },
+    {
+      "path": "e2e/web/api-critical-path.spec.ts",
+      "sha256": "3f0ae26b5e970f26182894e2aa81a2a894e031622e284d6e5434c33f98b45ff2",
+      "bytes": 1482
+    },
+    {
+      "path": "e2e/web/critical-path.spec.ts",
+      "sha256": "cfd7e12ced4204b49d69cc9a10240cc2a3a040f0dcf3f02c8b830dbf1ae81c64",
+      "bytes": 1640
+    },
+    {
+      "path": "package.json",
+      "sha256": "99ec7b3dc48910785f3a314355c162e0a0cd14703116ad79391893c677d571a9",
+      "bytes": 1582
+    },
+    {
+      "path": "packages/adult-projections/package.json",
+      "sha256": "b45ac72a0db1ce28b4f3d54a3a39e213fcdfb9162e0037e0a13c5f7a06488a09",
+      "bytes": 279
+    },
+    {
+      "path": "packages/adult-projections/src/index.ts",
+      "sha256": "f580c219f9e01511ff979c1f9ae52e49526acf82aab214c3d069c3084fd0e086",
+      "bytes": 522
+    },
+    {
+      "path": "packages/adult-projections/src/repository.ts",
+      "sha256": "33707c10a4360a19952655286324a7318723a4fbcbeb94fb890f2abdfc034182",
+      "bytes": 6562
+    },
+    {
+      "path": "packages/adult-projections/src/service.ts",
+      "sha256": "51634aaafa6952caf2def2908a65dbf43bb349b1d0118b5020965de292de1302",
+      "bytes": 8535
+    },
+    {
+      "path": "packages/adult-projections/src/types.ts",
+      "sha256": "5d472d02cf2af122ed2eec3f1ac88ee6e59da1a54404c186af2bb7967f96508e",
+      "bytes": 2590
+    },
+    {
+      "path": "packages/adult-projections/tsconfig.json",
+      "sha256": "3870dbb76a86609cfb42b9e8b5858d0691bc3839b8cc25dfa0bc05ddcd6a1970",
+      "bytes": 130
+    },
+    {
+      "path": "packages/api-client/package.json",
+      "sha256": "eb9df5f4e1153e3306060fc4d6b8a84537ffb7c3442a5f3b022d79734297bfb8",
+      "bytes": 122
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "sha256": "7f7f33d83fbe3d6f2a9233c90a4169056868e0e28631d156d7975145653e4618",
+      "bytes": 1012
+    },
+    {
+      "path": "packages/assignment-runtime/package.json",
+      "sha256": "04886b9862958820915955d8d6ef713e5d51f149ae9708cedb1ad3f4fe11f178",
+      "bytes": 339
+    },
+    {
+      "path": "packages/assignment-runtime/src/index.ts",
+      "sha256": "4564586368d3ca981ce9f233942e3cce1148bae4a00b54cc8b84c5e8e4a98842",
+      "bytes": 91
+    },
+    {
+      "path": "packages/assignment-runtime/src/repository.ts",
+      "sha256": "0cfb940396effe6d24c1a4c25c8b1a232ff855366a7bf5b0a0d41e5e2368cf2c",
+      "bytes": 1979
+    },
+    {
+      "path": "packages/assignment-runtime/src/service.ts",
+      "sha256": "b5fed4bb3f480fb3d977beccc25282b33fcebbe44be0e9af43ab9f65c8f047d4",
+      "bytes": 7017
+    },
+    {
+      "path": "packages/assignment-runtime/src/types.ts",
+      "sha256": "b64c717aa236e33740d70081f36b2f5e4c4fbf3800e587185fdd454a76fde15f",
+      "bytes": 1848
+    },
+    {
+      "path": "packages/assignment-runtime/tsconfig.json",
+      "sha256": "beaaf5a78560c0cf7c698dca6dba84d44ee4b1263a656ba0700d015136c11bb3",
+      "bytes": 170
+    },
+    {
+      "path": "packages/content-delivery/package.json",
+      "sha256": "5115f26fc903954e68910bf2d78a544f078e2f6a472dc372e8d70a19d532699b",
+      "bytes": 180
+    },
+    {
+      "path": "packages/content-delivery/src/index.ts",
+      "sha256": "a57564f1419c77eef34f9e8c757ede6ae4209e00365729ffee909a48f6021d83",
+      "bytes": 1338
+    },
+    {
+      "path": "packages/contracts/package.json",
+      "sha256": "e1ed55fc259dd2389c397f2db80d77662c1dbf3869d321a9016f34add3a3da34",
+      "bytes": 245
+    },
+    {
+      "path": "packages/contracts/src/animation.ts",
+      "sha256": "8218e8bcb5d6e8571fa3f6b72570d211fc8f5d982bbcab1fd40fcf353aadc180",
+      "bytes": 880
+    },
+    {
+      "path": "packages/contracts/src/content.ts",
+      "sha256": "bdc54bb608880a75775005f9e105c57d1273fa3a82ade1930ba4fe49e611fd7c",
+      "bytes": 1283
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "sha256": "96be4949f863e023be97a490f0e98baa22cbd987ac21447ea646abaa9aaa2abf",
+      "bytes": 84
+    },
+    {
+      "path": "packages/contracts/src/learning.ts",
+      "sha256": "9f6b7f359e15dc1dd78e02e53b01fc6958d87657f39261bc9db1f3d90769fa0b",
+      "bytes": 1552
+    },
+    {
+      "path": "packages/contracts/tsconfig.json",
+      "sha256": "9e388ea60852028037c4fd8a6e0311c02d4ff1703d66e5f9b22276b07dcb82d2",
+      "bytes": 121
+    },
+    {
+      "path": "packages/learning-runtime/package.json",
+      "sha256": "47f04a554c6a0cd0faf905e5f9287b71eaf3f80a3d6bac69ccb00da5f479225b",
+      "bytes": 337
+    },
+    {
+      "path": "packages/learning-runtime/src/engine.ts",
+      "sha256": "fb95d1ed872301f79533f894cb705045b18449a5b5473b643694e3c0350092ca",
+      "bytes": 11353
+    },
+    {
+      "path": "packages/learning-runtime/src/evaluator.ts",
+      "sha256": "85f8404f80a72450ab85d49ec8223cdf884804a736f1f133b88e6f7720a47341",
+      "bytes": 1965
+    },
+    {
+      "path": "packages/learning-runtime/src/index.ts",
+      "sha256": "ce52ff2944ba61239c35bd9310dbbd851d8255bb276cdd13c56cc6a3c6701749",
+      "bytes": 153
+    },
+    {
+      "path": "packages/learning-runtime/src/policies.ts",
+      "sha256": "78c78b83f7492184cb39c800d6c84c9d1bdca55571fad1a78f2e07095e67d855",
+      "bytes": 2472
+    },
+    {
+      "path": "packages/learning-runtime/src/repository.ts",
+      "sha256": "eb03e7bdeb404c14d1eeef831298938bf56683134ac5a626463b68c318f4987a",
+      "bytes": 5318
+    },
+    {
+      "path": "packages/learning-runtime/src/types.ts",
+      "sha256": "8a01d2fa879ddd70632bc30cb900e9178e2e8df1c1999692e9c610ba36da4c31",
+      "bytes": 4734
+    },
+    {
+      "path": "packages/learning-runtime/tsconfig.build.json",
+      "sha256": "b37936cf48d3af7e8c478b6e4882f792e69fba41091f34c02c339afa9f0881f1",
+      "bytes": 199
+    },
+    {
+      "path": "packages/learning-runtime/tsconfig.json",
+      "sha256": "7d58cbcc2437e988d33ec03f4681b84144a32b8fab95499f9b3182fe3eaef9f3",
+      "bytes": 132
+    },
+    {
+      "path": "packages/offline-sync/package.json",
+      "sha256": "84053ab2035065433764e8807790556f9099633edbb80eaa7946cd8fba06e241",
+      "bytes": 337
+    },
+    {
+      "path": "packages/offline-sync/src/backoff.ts",
+      "sha256": "13dcd67bccc4d8dfbba097bcce64d5ceee70cfc834dc5ec5112a200bf6f79eaf",
+      "bytes": 185
+    },
+    {
+      "path": "packages/offline-sync/src/index.ts",
+      "sha256": "c34eebef880c74afe330651bae9299fd30e184b552414917e3d5a7e550f76546",
+      "bytes": 116
+    },
+    {
+      "path": "packages/offline-sync/src/manager.ts",
+      "sha256": "e67b95edd2290a75a02a73b4d749a733b7b9aa5973d9571e537f10fd73b8dee6",
+      "bytes": 3887
+    },
+    {
+      "path": "packages/offline-sync/src/store.ts",
+      "sha256": "04bf08eaf60b3916faf47708ccc7f1b15f0954a4552e24d1c55672479e75407c",
+      "bytes": 930
+    },
+    {
+      "path": "packages/offline-sync/src/types.ts",
+      "sha256": "70dd8df9d5dca99abb33e670e0f9170a48a6e142eccdf11085d40bd81b0d66c4",
+      "bytes": 1174
+    },
+    {
+      "path": "packages/offline-sync/tsconfig.json",
+      "sha256": "3870dbb76a86609cfb42b9e8b5858d0691bc3839b8cc25dfa0bc05ddcd6a1970",
+      "bytes": 130
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "311e61c1a506d985d8be9f32c782dff6897a1a555b236fc26107f821ef486707",
+      "bytes": 758
+    },
+    {
+      "path": "scripts/performance/phase10-performance.mjs",
+      "sha256": "08fd9fc08fa35e3b87920e8c2fe5a7bcdb14e74f287be2f4f98bc69b746b2d8e",
+      "bytes": 884
+    },
+    {
+      "path": "scripts/runtime-tests.mjs",
+      "sha256": "f5635f10b499bedb3d10c54242aafb419092fca046fe3e96167be8df4450191a",
+      "bytes": 7207
+    },
+    {
+      "path": "scripts/test-phase9.mjs",
+      "sha256": "97e7d9e59aa8e9d226e4348c76e9cc4c0d63a79084e9a02c8692607cffff3eb9",
+      "bytes": 1785
+    },
+    {
+      "path": "scripts/verify-phase10.mjs",
+      "sha256": "d0e34632d7515b2b37796dc3852a42977c6ba08bd26d0e8696060db8448462da",
+      "bytes": 1575
+    },
+    {
+      "path": "scripts/verify-phase11-auth.mjs",
+      "sha256": "1a5e565a43ba876fe6a201a1da52070da28a38aff089667cf99bf9f42ff9a4d1",
+      "bytes": 2229
+    },
+    {
+      "path": "scripts/verify-phase12-postgres-runtime.mjs",
+      "sha256": "b2a5d74d60531ff3ceb07f72211f74a38a2b66c729f879293045b5a1c6d92bc7",
+      "bytes": 3468
+    },
+    {
+      "path": "scripts/verify-phase2.mjs",
+      "sha256": "2f71b7485be0b2d232c6c4539f239f45c4c81ac45f07815068353948d97e25e6",
+      "bytes": 2934
+    },
+    {
+      "path": "scripts/verify-phase3.mjs",
+      "sha256": "4aac7c56252837c81843251f1cdaa510989b66eda77bd2fc1db7204fc93a1620",
+      "bytes": 2174
+    },
+    {
+      "path": "scripts/verify-phase4.mjs",
+      "sha256": "f918a2c05f343e0a0fd5be105ed82b8bc968a3f84996ffb2b21e7d58e1408b40",
+      "bytes": 1195
+    },
+    {
+      "path": "scripts/verify-phase5.mjs",
+      "sha256": "19d90b1ab891346586b536a7c9fd80e9df1e2f4e6e687c259334e0c2c37b759a",
+      "bytes": 1855
+    },
+    {
+      "path": "scripts/verify-phase6.mjs",
+      "sha256": "a7f203f2aa155ec676708117f0107da134a3e2a25914162b8b35f2c223e82411",
+      "bytes": 938
+    },
+    {
+      "path": "scripts/verify-phase7.mjs",
+      "sha256": "5fa5fc0b25f54894ccb058b0704c8bae5d7cab267310cda76aeb7c4b86a8087c",
+      "bytes": 1566
+    },
+    {
+      "path": "scripts/verify-phase8.mjs",
+      "sha256": "fed70d24badf484f0ee7637353c113073f30b3d0813f52fe037c5420f030a779",
+      "bytes": 2705
+    },
+    {
+      "path": "scripts/verify-phase9.mjs",
+      "sha256": "5372892b4f0d8c4ff47608ac02eaf022c6217e5722b9e60a6e7632f04bf87516",
+      "bytes": 2247
+    },
+    {
+      "path": "scripts/verify-remediation.mjs",
+      "sha256": "0e44766660202340db7ef73832e0ef31a94f635b1dadceae14f6007ced481654",
+      "bytes": 4408
+    },
+    {
+      "path": "supabase/migrations/0001_extensions_and_helpers.sql",
+      "sha256": "3be999131e2a0fab6d2a78c3ad3ab4bb89360ecffdf286e6af29a30e3d48d721",
+      "bytes": 900
+    },
+    {
+      "path": "supabase/migrations/0002_accounts_and_roles.sql",
+      "sha256": "39043de4c7a1cd23a6d9d9d341728454f0b941ff45859de7219003a033a89b6c",
+      "bytes": 1572
+    },
+    {
+      "path": "supabase/migrations/0003_client_installations_and_push.sql",
+      "sha256": "8f8c1e78d32a07f07043e414f9a660237d80c797d7756874b17f1596609223de",
+      "bytes": 2982
+    },
+    {
+      "path": "supabase/migrations/0004_relationships_and_classes.sql",
+      "sha256": "a6d555f9df7e73a88c2f83fff3f514de8e1b5f319dea2c511af2b39cc5751fa1",
+      "bytes": 6898
+    },
+    {
+      "path": "supabase/migrations/0005_grades_and_curriculum.sql",
+      "sha256": "329c42244ba4505b04bc4d66deceae62451accdeb58e52ba4b8aecef2d8b4ea7",
+      "bytes": 1411
+    },
+    {
+      "path": "supabase/migrations/0006_skill_graph_and_stations.sql",
+      "sha256": "aca27ff72ec5b8101de26259082a6c52d278032e88538918911ab92dc1aed1d0",
+      "bytes": 4787
+    },
+    {
+      "path": "supabase/migrations/0007_learning_objectives.sql",
+      "sha256": "1d925ea2e5b7763dbbea90b1fdffb706d240c06f797ad94ab8922cb042bc6dc7",
+      "bytes": 862
+    },
+    {
+      "path": "supabase/migrations/0008_content_contract.sql",
+      "sha256": "4c6245528eba5ec70660816e8e3f488456fab3bd40f27e8add18cdd57a908a8b",
+      "bytes": 3531
+    },
+    {
+      "path": "supabase/migrations/0009_diagnostics_and_policies.sql",
+      "sha256": "a9058426c26acc81a958898b2ed00693bd18724000543e7ccd522edd18cdf309",
+      "bytes": 3008
+    },
+    {
+      "path": "supabase/migrations/0010_runtime_core.sql",
+      "sha256": "467d7bcaf7f4647ff68b7650b308018c435682a678d33fbfb3139a0aa220ea0a",
+      "bytes": 6940
+    },
+    {
+      "path": "supabase/migrations/0011_evidence_and_state.sql",
+      "sha256": "eeee63f5a1400335537f462c190630ac7812a17b4c690df7928fafa83b6ae4d2",
+      "bytes": 4800
+    },
+    {
+      "path": "supabase/migrations/0012_decisions_and_plans.sql",
+      "sha256": "4209a3f64d0de099027c2922781b0b9eefc3dcb8398dbce72502b58a5cfd8fb7",
+      "bytes": 2562
+    },
+    {
+      "path": "supabase/migrations/0013_progression_unlocks_quests_rewards.sql",
+      "sha256": "7e8b4164d83212ad21ff432c6fd126db0507d5ba97bb0224c87d94c788ec8fce",
+      "bytes": 4948
+    },
+    {
+      "path": "supabase/migrations/0014_events_and_audit.sql",
+      "sha256": "cf1e432bf911ad6c3ed4cc94df7fe4551488b37385d25fda799daedc9e56347e",
+      "bytes": 1582
+    },
+    {
+      "path": "supabase/migrations/0015_entitlements_and_assignments.sql",
+      "sha256": "b7742f5a39ae350331878a9eab150a3ba7af1d259b4df3851d205f31628c4902",
+      "bytes": 3986
+    },
+    {
+      "path": "supabase/migrations/0016_rls_hardening_and_indexes.sql",
+      "sha256": "d298997ff1a6238d039a0e34aa5240b3be7513f5b5a4a8fcd57bc80db72ad709",
+      "bytes": 1937
+    },
+    {
+      "path": "supabase/migrations/0017_seed_registry.sql",
+      "sha256": "2760dac6a47cbc565f5e18e4bde795e1b378657afe5ba290ec886255a3a07d99",
+      "bytes": 1141
+    },
+    {
+      "path": "supabase/migrations/0018_auth_trigger.sql",
+      "sha256": "36ab1184917eb1d5a1c75a69a8793751d1563a0797a063d4e4c79e7c12bb1cf8",
+      "bytes": 522
+    },
+    {
+      "path": "supabase/migrations/0019_rls_tests_contract.sql",
+      "sha256": "5d5b37c723114d70a9b63569df8a1e67c91c0bebd421c7e512ab72a0c79fa068",
+      "bytes": 547
+    },
+    {
+      "path": "supabase/migrations/0020_rls_historical_safety.sql",
+      "sha256": "ec85ec56d79f7774f1b1b74960e6690285fa4471064f44814a9c1d605294e9b4",
+      "bytes": 584
+    },
+    {
+      "path": "supabase/migrations/0021_phase2_completion.sql",
+      "sha256": "91f5c3d614b851e31b8dac48ec3bfdf151370dcb0e370059c37be2af8f951cbe",
+      "bytes": 420
+    },
+    {
+      "path": "supabase/migrations/0022_content_delivery.sql",
+      "sha256": "fd906e85c827f17eddd00240bbf3ada89c8ff2420851165a3afd126b6604e667",
+      "bytes": 7276
+    },
+    {
+      "path": "supabase/migrations/0023_learning_runtime_execution.sql",
+      "sha256": "6376e48776324a3a0a31a4aa6259be2609e361a70cf149dd15b520db6ccdaa3e",
+      "bytes": 2221
+    },
+    {
+      "path": "supabase/migrations/0024_assignment_targets_recheck.sql",
+      "sha256": "a22ee6c5933192da268205d3cd9cd2a4159112fd9e1238e3bd232f127602c99f",
+      "bytes": 4318
+    },
+    {
+      "path": "supabase/migrations/0025_teacher_observations.sql",
+      "sha256": "41f9e6a57dfe65d2dca5a36d202deae54aa32d68fdec8cffc27f201894f6145a",
+      "bytes": 1681
+    },
+    {
+      "path": "supabase/migrations/0026_phase8_projection_views.sql",
+      "sha256": "e3230d9d499719f30bf20f4581caddb9a608145ddd8b20f6e188ca0061927667",
+      "bytes": 2377
+    },
+    {
+      "path": "supabase/migrations/0027_offline_sync_receipts.sql",
+      "sha256": "5d4bc5212a3a27e7fe9306b2b923d5ab37d84f684f5be477908863b028f81080",
+      "bytes": 1762
+    },
+    {
+      "path": "supabase/migrations/0028_security_hardening_and_runtime_invariants.sql",
+      "sha256": "33ae53d6bf794fce5bedbc6497e16e7586b3bdc30807938a02b4204310a0c1a4",
+      "bytes": 2085
+    },
+    {
+      "path": "supabase/migrations/0029_content_package_assignment_access.sql",
+      "sha256": "797974a3a7eb0df85922629fbbd10ba149a6d7604b345f5d8f0fa1e10c2b6b7a",
+      "bytes": 1288
+    },
+    {
+      "path": "supabase/migrations/0030_runtime_client_write_lockdown.sql",
+      "sha256": "30932a7a21f4a0ccba78d8db343e4ca75bbd97c6494ebf7244ac8b4a4c17276a",
+      "bytes": 1277
+    },
+    {
+      "path": "supabase/migrations/0031_learning_runtime_contract_alignment.sql",
+      "sha256": "e5d88ac7d465987ee02efa04c84458656ec5dacf5cf3bac88e1038ef4a9a8d9b",
+      "bytes": 2272
+    },
+    {
+      "path": "supabase/migrations/0032_runtime_transactional_rpc.sql",
+      "sha256": "8dffb6ae86c9900d1b4904006283b3c540e7bf085f837b038991ebd0afc2ea7e",
+      "bytes": 22405
+    },
+    {
+      "path": "tsconfig.base.json",
+      "sha256": "7afffb23cbd0168c6a69ee3b211a54163802e087429e8ff284508c0aeb40715b",
+      "bytes": 392
+    }
+  ]
+}

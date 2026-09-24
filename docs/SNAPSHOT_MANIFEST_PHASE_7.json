@@ -1,0 +1,26 @@
+{
+  "phase": 7,
+  "name": "Teacher Assignment Slice",
+  "snapshotType": "full-project",
+  "date": "2026-09-24",
+  "includes": [
+    "phase 1-6 source and docs",
+    "database migrations",
+    "auth/rls baseline",
+    "content delivery",
+    "animation runtime",
+    "learning runtime",
+    "station 01 child experience",
+    "teacher assignment runtime",
+    "assignment target/recheck migration",
+    "teacher assignment web surface",
+    "child assignment mobile surface",
+    "phase 7 API/docs/tests"
+  ],
+  "validation": {
+    "assignment_runtime_typecheck": "PASS",
+    "assignment_workflow_runtime": "PASS",
+    "web_mobile_full_build": "NOT_RUN_NODE_MODULES_MISSING"
+  },
+  "nextPhase": 8
+}

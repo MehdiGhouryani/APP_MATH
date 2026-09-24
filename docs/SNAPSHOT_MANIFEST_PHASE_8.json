@@ -1,0 +1,21 @@
+{
+  "project": "math-learning-product-v1",
+  "snapshot": "phase8-complete",
+  "date": "2026-09-24",
+  "phase": 8,
+  "verification": {
+    "phase8_static": "PASS",
+    "unity_runtime_dependency": "NONE_FOUND",
+    "native_build": "NOT_RUN"
+  },
+  "contains": [
+    "all prior phase source/docs/migrations/tests",
+    "Parent Lite projections and UI",
+    "Teacher Lite projections and UI",
+    "Teacher Observation append-only source record",
+    "Phase 8 API contracts",
+    "Phase 8 projection SQL views",
+    "shared Assignment runtime integration",
+    "complete project snapshot"
+  ]
+}
