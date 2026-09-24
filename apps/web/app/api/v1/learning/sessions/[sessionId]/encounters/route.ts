@@ -44,6 +44,7 @@ export async function POST(request: Request, context: { params: Promise<{ sessio
       contentVersionId: body.contentVersionId,
       learningRole: body.learningRole ?? content.learningRole,
       experienceForm: body.experienceForm ?? content.experienceForm,
+      content,
     });
     return NextResponse.json({ session, encounter }, { status: 201 });
   } catch (error) {

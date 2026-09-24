@@ -7,9 +7,13 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=20"
   },
   "scripts": {
+    "dev": "npm --workspace @math/web run dev",
+    "build:packages": "npm --workspace @math/learning-runtime run build && npm --workspace @math/assignment-runtime run build && npm --workspace @math/adult-projections run build && npm --workspace @math/offline-sync run build",
+    "build": "npm run build:packages && npm --workspace @math/web run build",
+    "start": "npm --workspace @math/web run start",
     "dev:web": "npm --workspace @math/web run dev",
     "dev:mobile": "npm --workspace @math/mobile run start",
     "build:web": "npm --workspace @math/web run build",
@@ -34,5 +38,8 @@
     "e2e:web": "playwright test",
     "verify:migrations": "node scripts/verify-migrations-static.mjs",
     "verify:phase16": "node scripts/verify-phase16-deep-audit.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
   }
 }

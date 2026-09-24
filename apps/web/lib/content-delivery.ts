@@ -1,19 +1,33 @@
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import type { ContentManifest, ContentPackageDescriptor, EntitlementCheck } from '@math/contracts';
 import { supabaseRestSelect, supabaseRpc } from './supabase-http';
 
-const root = process.cwd();
+function resolveFixtureFile(subpath: string): string {
+  const candidates = [
+    path.resolve(process.cwd(), '..', '..', 'content', subpath),
+    path.resolve(process.cwd(), 'content', subpath),
+    path.resolve(process.cwd(), 'apps', 'web', '..', '..', 'content', subpath),
+  ];
+  for (const candidate of candidates) {
+    if (fsSync.existsSync(/*turbopackIgnore: true*/ candidate)) {
+      return candidate;
+    }
+  }
+  return candidates[0]!;
+}
+
 const fixtures = [
   {
     id: 'dev-g1-st01-v2', gradeId: 'G1', stationId: 'G1-ST01', packageCode: 'G1-ST01', version: '1.1.0-staging',
-    file: path.join(root, '..', '..', 'content', 'dev-packs', 'g1-st01-v2', 'package.json'), cacheClass: 'CURRENT' as const,
+    file: resolveFixtureFile('dev-packs/g1-st01-v2/package.json'), cacheClass: 'CURRENT' as const,
     sequence: 1, prefetchRank: 1,
   },
   {
     id: 'dev-g1-st02-v1', gradeId: 'G1', stationId: 'G1-ST02', packageCode: 'G1-ST02', version: '0.1.0-dev',
-    file: path.join(root, '..', '..', 'content', 'dev-packs', 'g1-st01-v1', 'next-stub.json'), cacheClass: 'NEXT' as const,
+    file: resolveFixtureFile('dev-packs/g1-st01-v1/next-stub.json'), cacheClass: 'NEXT' as const,
     sequence: 2, prefetchRank: 1,
   },
 ];
@@ -113,13 +127,14 @@ async function dbPackage(packageId: string, accessToken: string): Promise<{ desc
     select: 'content_version_id,required,ordinal',
     order: 'ordinal.asc',
   });
+  const mappedItems = items.map((x) => ({ contentVersionId: x.content_version_id, required: x.required, ordinal: x.ordinal }));
   const payload = {
     schema: 'math-content-package/v1',
     environment: 'STAGING_ONLY',
     gradeId: pkg.grade_id,
     stationId: pkg.station_id,
     packageVersion: pkg.version,
-    items: items.map((x) => ({ contentVersionId: x.content_version_id, required: x.required, ordinal: x.ordinal })),
+    items: mappedItems,
   };
   const bytes = Buffer.from(`${JSON.stringify(payload, null, 2)}\n`, 'utf8');
   const checksum = crypto.createHash('sha256').update(bytes).digest('hex');
@@ -138,7 +153,7 @@ async function dbPackage(packageId: string, accessToken: string): Promise<{ desc
       sequence: 1,
       prefetchRank: 1,
       downloadUrl: `/api/v1/content/packages/${pkg.id}`,
-      items,
+      items: mappedItems,
       minAppVersion: pkg.min_app_version,
       releaseChannel: pkg.release_channel,
       status: pkg.status,

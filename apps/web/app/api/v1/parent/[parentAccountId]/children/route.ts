@@ -8,7 +8,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ parentAccou
   try { assertAdultProjectionBackendReady();
     const principal = await requireRequestAccountPrincipal(request, 'PARENT'); const { parentAccountId } = await ctx.params; if (principal.accountId !== parentAccountId) throw new Error('ACCOUNT_CONTEXT_MISMATCH');
     const related = await adultProjectionRuntime.repo.listRelatedChildren(parentAccountId);
-    const children = await Promise.all(related.map(async (id) => ({ learningIdentityId: id, displayName: await adultProjectionRuntime.repo.getDisplayName(id) })));
+    const children = await Promise.all(related.map(async (id: string) => ({ learningIdentityId: id, displayName: await adultProjectionRuntime.repo.getDisplayName(id) })));
     return NextResponse.json(children);
   } catch (error) {
     const status = error instanceof Error && (error.message === 'ACCOUNT_CONTEXT_MISMATCH' || error.message === 'DEV_ACCOUNT_PRINCIPAL_REQUIRED') ? 403 : 400;
