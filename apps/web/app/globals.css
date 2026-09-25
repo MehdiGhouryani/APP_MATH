@@ -1,0 +1,362 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --font-vazir: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Distinctive Iranian Primary Math Palette (Warm, Elegant, Tactile & Non-Neon) */
+  --theme-bg-canvas: #f6f3ee;
+  --theme-bg-surface: #ffffff;
+  --theme-bg-subtle: #fcfaf7;
+  
+  /* Persian Indigo / Sapphire (خرد، تفکر، آرامش) */
+  --brand-indigo: #3b52d4;
+  --brand-indigo-dark: #2738a8;
+  --brand-indigo-light: #eef2ff;
+  
+  /* Saffron Gold / Honey Amber (گرما، اشتیاق، پیروزی) */
+  --brand-saffron: #f59e0b;
+  --brand-saffron-dark: #b45309;
+  --brand-saffron-light: #fef3c7;
+  
+  /* Turquoise / Persian Teal (طراوت و هنر اصیل) */
+  --brand-teal: #0d9488;
+  --brand-teal-dark: #0f766e;
+  --brand-teal-light: #ccfbf1;
+  
+  /* Emerald Garden Green (تثبیت و رشد آموزشی) */
+  --brand-emerald: #10b981;
+  --brand-emerald-dark: #047857;
+  --brand-emerald-light: #d1fae5;
+  
+  /* Warm Terracotta / Coral (توجه، راهنمایی ملایم بدون سرزنش) */
+  --brand-coral: #ea580c;
+  --brand-coral-dark: #9a3412;
+  --brand-coral-light: #ffedd5;
+  
+  /* Typography & Structure */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #8c9ba5;
+  --border-subtle: #e2dcce;
+  --border-strong: #cbd5e1;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #1e293b;
+  color: var(--text-primary);
+  font-family: var(--font-vazir);
+  direction: rtl;
+  text-align: right;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+body, p, span, label, input, textarea {
+  font-weight: 500;
+}
+
+button, .btn {
+  font-weight: 700;
+  font-family: var(--font-vazir);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 800;
+}
+
+/* 3D Tactile Buttons - Specific to our Math App */
+.math-btn-primary {
+  background-color: var(--brand-indigo);
+  color: #ffffff;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 4px 0 var(--brand-indigo-dark), 0 8px 18px rgba(59, 82, 212, 0.25);
+  padding: 13px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.math-btn-primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--brand-indigo-dark);
+}
+
+.math-btn-success {
+  background-color: var(--brand-emerald);
+  color: #ffffff;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 4px 0 var(--brand-emerald-dark), 0 8px 18px rgba(16, 185, 129, 0.25);
+  padding: 13px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.math-btn-success:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--brand-emerald-dark);
+}
+
+.math-btn-saffron {
+  background-color: var(--brand-saffron);
+  color: #ffffff;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 4px 0 var(--brand-saffron-dark), 0 8px 18px rgba(245, 158, 11, 0.25);
+  padding: 13px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.math-btn-saffron:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--brand-saffron-dark);
+}
+
+.math-btn-disabled {
+  background-color: #e5e0d4;
+  color: #9c978b;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 4px 0 #cfc9bb;
+  padding: 13px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: not-allowed;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.math-btn-outline {
+  background-color: #ffffff;
+  color: var(--text-primary);
+  border: 2px solid var(--border-subtle);
+  border-radius: 18px;
+  box-shadow: 0 3px 0 var(--border-subtle);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.math-btn-outline:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--border-subtle);
+}
+
+/* Tactile Question Choice Card */
+.math-choice-card {
+  background-color: #ffffff;
+  border: 2px solid var(--border-subtle);
+  border-radius: 20px;
+  box-shadow: 0 4px 0 var(--border-subtle);
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+.math-choice-card:hover {
+  background-color: var(--theme-bg-subtle);
+  border-color: #cbd5e1;
+}
+.math-choice-card:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #cbd5e1;
+}
+.math-choice-card.selected {
+  background-color: #eef2ff;
+  border-color: #818cf8;
+  color: #3b52d4;
+  box-shadow: 0 4px 0 #818cf8;
+}
+
+/* Wavy Path Stepping-Stone Node */
+.path-stone-node {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  z-index: 10;
+}
+
+.path-stone-completed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 3px solid #ffffff;
+  box-shadow: 0 6px 0 #047857, 0 10px 22px rgba(16, 185, 129, 0.35);
+  color: #ffffff;
+}
+.path-stone-completed:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #047857;
+}
+
+.path-stone-active {
+  background: linear-gradient(135deg, #3b52d4 0%, #2563eb 100%);
+  border: 3px solid #ffffff;
+  box-shadow: 0 6px 0 #1d4ed8, 0 12px 26px rgba(59, 82, 212, 0.4);
+  color: #ffffff;
+}
+.path-stone-active:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #1d4ed8;
+}
+
+.path-stone-chest {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: 3px solid #ffffff;
+  box-shadow: 0 6px 0 #92400e, 0 10px 22px rgba(245, 158, 11, 0.35);
+  color: #ffffff;
+}
+
+.path-stone-locked {
+  background-color: #e5e0d4;
+  border: 3px solid #ffffff;
+  box-shadow: 0 5px 0 #cfc9bb;
+  color: #9c978b;
+  cursor: default;
+}
+
+/* Pulsing Active Ring */
+@keyframes mathPulseRing {
+  0% { transform: scale(0.95); opacity: 0.85; }
+  50% { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0.85; }
+}
+.active-pulse-ring {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  border: 4px solid #818cf8;
+  animation: mathPulseRing 2.2s infinite ease-in-out;
+  pointer-events: none;
+}
+
+/* Elegant Progress Track */
+.math-progress-track {
+  height: 14px;
+  background-color: #e5e0d4;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+}
+.math-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.math-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  right: 6px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+}
+
+/* Mascot Speech Bubble */
+.math-speech-bubble {
+  position: relative;
+  background: #ffffff;
+  border: 2px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 12px 18px;
+  box-shadow: 0 3px 0 var(--border-subtle);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.math-speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  right: -9px;
+  border-width: 8px 0 8px 9px;
+  border-style: solid;
+  border-color: transparent transparent transparent #ffffff;
+}
+.math-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  right: -11px;
+  border-width: 9px 0 9px 11px;
+  border-style: solid;
+  border-color: transparent transparent transparent var(--border-subtle);
+}
+
+/* Animations */
+@keyframes slideUpDrawer {
+  from { transform: translateY(100%); opacity: 0.5; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.drawer-slide-up {
+  animation: slideUpDrawer 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mascotGentleFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+.mascot-gentle-float {
+  animation: mascotGentleFloat 3.2s ease-in-out infinite;
+}
+
+@keyframes victorySparkle {
+  0% { transform: scale(0.6) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.15) rotate(15deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.victory-pop {
+  animation: victorySparkle 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
