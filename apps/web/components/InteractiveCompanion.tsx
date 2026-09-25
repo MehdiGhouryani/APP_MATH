@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CHARACTERS, CompanionCharacter } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 import type { AnimationSemanticEvent } from '@math/contracts';
 
 interface InteractiveCompanionProps {
@@ -10,6 +11,7 @@ interface InteractiveCompanionProps {
   customMessage?: string;
   size?: 'sm' | 'md' | 'lg';
   showBubble?: boolean;
+  onTap?: () => void;
 }
 
 export function InteractiveCompanion({
@@ -18,7 +20,9 @@ export function InteractiveCompanion({
   customMessage,
   size = 'md',
   showBubble = true,
+  onTap,
 }: InteractiveCompanionProps) {
+  const [isTapped, setIsTapped] = useState(false);
   const char: CompanionCharacter = CHARACTERS[characterId] ?? CHARACTERS['aria']!;
 
   // Determine speech text based on event
@@ -49,6 +53,13 @@ export function InteractiveCompanion({
 
   const dimension = size === 'sm' ? 80 : size === 'lg' ? 170 : 120;
 
+  function handleCharacterTap() {
+    soundFx.playCharacterChirp(char.id);
+    setIsTapped(true);
+    setTimeout(() => setIsTapped(false), 300);
+    onTap?.();
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
       {showBubble && speech && (
@@ -74,7 +85,10 @@ export function InteractiveCompanion({
       )}
 
       {/* Scalable SVG Render of Companion */}
-      <div
+      <button
+        type="button"
+        onClick={handleCharacterTap}
+        aria-label={`شخصیت همراه ${char.name}`}
         style={{
           width: dimension,
           height: dimension,
@@ -86,6 +100,9 @@ export function InteractiveCompanion({
           justifyContent: 'center',
           boxShadow: `0 10px 25px ${char.themeColor}25`,
           position: 'relative',
+          cursor: 'pointer',
+          padding: 0,
+          transform: isTapped ? 'scale(1.12) rotate(-4deg)' : 'scale(1)',
           transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
         }}
       >
@@ -119,7 +136,7 @@ export function InteractiveCompanion({
           {(semanticEvent === 'STATION_PASS' || semanticEvent === 'MILESTONE') && '🎉'}
           {semanticEvent === 'SESSION_START' && '✨'}
         </div>
-      </div>
+      </button>
     </div>
   );
 }

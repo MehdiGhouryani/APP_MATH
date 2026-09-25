@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GRADES, GradeMeta } from '../lib/persian';
 import { MobileFrame } from '../components/MobileFrame';
 import { DuolingoTopHeader } from '../components/DuolingoTopHeader';
@@ -18,23 +18,32 @@ export default function MobileAppPage() {
   const [activeTab, setActiveTab] = useState<MainTabType>('PATH');
   const [activeCharId, setActiveCharId] = useState<string>('aria');
 
+  // Progressive unlocking of learning nodes in Station 1
+  // Step 1 and Step 2 are completed, Step 3 is active, Steps 4-8 are locked
+  const [completedNodeIds, setCompletedNodeIds] = useState<string[]>(['step-1', 'step-2']);
+
   // Pedagogical metrics (Rhythm & Stars - No punitive streak or heart penalties)
   const [weeklyActiveDays, setWeeklyActiveDays] = useState<number>(3);
   const [learningStars, setLearningStars] = useState<number>(120);
 
   // Lesson Modal State
   const [isLessonOpen, setIsLessonOpen] = useState<boolean>(false);
+  const [selectedNode, setSelectedNode] = useState<PathNodeItem | null>(null);
 
-  // Semantic Animation Event Log (ADR 0002 & ADR 0004)
+  // Semantic Animation Event Log (ADR 0002 & ADR 0004) - Client safe initialization
   const [semanticEventLog, setSemanticEventLog] = useState<
     Array<{ event: string; time: string; source: string }>
-  >([
-    {
-      event: 'SESSION_START',
-      time: new Date().toLocaleTimeString('fa-IR'),
-      source: 'MobileShell.init()',
-    },
-  ]);
+  >([]);
+
+  useEffect(() => {
+    setSemanticEventLog([
+      {
+        event: 'SESSION_START',
+        time: new Date().toLocaleTimeString('fa-IR'),
+        source: 'MobileShell.init()',
+      },
+    ]);
+  }, []);
 
   function emitSemanticEvent(event: AnimationSemanticEvent, source: string) {
     setSemanticEventLog((prev) => [
@@ -45,22 +54,23 @@ export default function MobileAppPage() {
 
   function handleNodeSelect(node: PathNodeItem) {
     if (node.status === 'LOCKED') {
-      alert('این مرحله هنوز قفل است! ابتدا مراحل قبلی را کامل کنید.');
       return;
     }
     // Launch bite-sized learning encounter
+    setSelectedNode(node);
     emitSemanticEvent('SESSION_START', `User.startLesson(${node.id})`);
     setIsLessonOpen(true);
   }
 
-  function handleCompleteLesson() {
+  function handleCompleteNode(nodeId: string) {
+    setCompletedNodeIds((prev) => (prev.includes(nodeId) ? prev : [...prev, nodeId]));
     setLearningStars((prev) => prev + 3);
-    emitSemanticEvent('STATION_PASS', 'Runtime.awardMastery(Station=ST01)');
+    emitSemanticEvent('STATION_PASS', `Runtime.awardMastery(Node=${nodeId})`);
   }
 
   return (
     <MobileFrame>
-      {/* Pedagogical Header (Grades 1-6, Learning Rhythm, Knowledge Stars, Companion) */}
+      {/* 1. Pedagogical Header (Grades 1-6, Learning Rhythm, Knowledge Stars, Companion) */}
       <DuolingoTopHeader
         selectedGrade={selectedGrade}
         onSelectGrade={(grade) => {
@@ -73,12 +83,24 @@ export default function MobileAppPage() {
         learningStars={learningStars}
       />
 
-      {/* Tab Contents */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      {/* 2. Scrollable Tab Contents Container */}
+      <main
+        className="hide-scrollbar"
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          position: 'relative',
+          backgroundColor: '#ffffff',
+          WebkitOverflowScrolling: 'touch',
+          width: '100%',
+        }}
+      >
         {activeTab === 'PATH' && (
           <DuolingoPath
             selectedGrade={selectedGrade}
             activeCharId={activeCharId}
+            completedNodeIds={completedNodeIds}
             onSelectNode={handleNodeSelect}
           />
         )}
@@ -102,19 +124,9 @@ export default function MobileAppPage() {
             gemsCount={learningStars}
           />
         )}
-      </div>
+      </main>
 
-      {/* Bite-sized Interactive Learning Encounter Modal */}
-      {isLessonOpen && (
-        <DuolingoLessonModal
-          onClose={() => setIsLessonOpen(false)}
-          activeCharId={activeCharId}
-          onEmitSemanticEvent={emitSemanticEvent}
-          onCompleteLesson={handleCompleteLesson}
-        />
-      )}
-
-      {/* Sticky Bottom Navigation Bar (5 tabs) */}
+      {/* 3. Sticky Bottom Navigation Bar (5 tabs) */}
       <DuolingoBottomNav
         activeTab={activeTab}
         onChangeTab={(tab) => {
@@ -122,6 +134,20 @@ export default function MobileAppPage() {
           emitSemanticEvent('SESSION_START', `User.navigateTab(${tab})`);
         }}
       />
+
+      {/* 4. Bite-sized Interactive Learning Encounter Modal */}
+      {isLessonOpen && selectedNode && (
+        <DuolingoLessonModal
+          onClose={() => {
+            setIsLessonOpen(false);
+            setSelectedNode(null);
+          }}
+          activeCharId={activeCharId}
+          activeNode={selectedNode}
+          onEmitSemanticEvent={emitSemanticEvent}
+          onCompleteNode={handleCompleteNode}
+        />
+      )}
     </MobileFrame>
   );
 }

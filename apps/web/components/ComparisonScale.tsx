@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { toPersianDigits } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 
 interface ComparisonScaleProps {
   leftCount: number;
@@ -27,9 +28,11 @@ export function ComparisonScale({
   function handleSelect(sign: '<' | '>' | '=') {
     setSelectedSign(sign);
     if (sign === correctSign) {
+      soundFx.playSuccess();
       setFeedback('CORRECT');
       onCorrect();
     } else {
+      soundFx.playTryAgain();
       setFeedback('WRONG');
     }
   }

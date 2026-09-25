@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CHARACTERS, toPersianDigits, GradeMeta } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 
 export interface PathNodeItem {
   id: string;
   stepNumber: number;
   title: string;
   subtitle: string;
-  type: 'COUNT' | 'PATTERN' | 'WONDER_GRID' | 'TALLY' | 'CHECK' | 'CHEST' | 'NEXT_STATION';
+  type: 'COUNT' | 'PATTERN' | 'WONDER_GRID' | 'TALLY' | 'SYMMETRY' | 'SCALE' | 'CHECK' | 'CHEST';
   status: 'COMPLETED' | 'ACTIVE' | 'LOCKED';
   stars: number;
   offset: number; // -38 (left), 0 (center), +38 (right)
@@ -19,103 +20,141 @@ export interface PathNodeItem {
 interface DuolingoPathProps {
   selectedGrade: GradeMeta;
   activeCharId: string;
+  completedNodeIds: string[];
   onSelectNode: (node: PathNodeItem) => void;
 }
+
+const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
+  {
+    id: 'step-1',
+    stepNumber: 1,
+    title: 'بشمار و بگو',
+    subtitle: 'شمارش ترتیبی میوه‌ها و اشیاء تا ۵',
+    type: 'COUNT',
+    offset: 0,
+    icon: '🍊',
+    textbookMascot: '🐊', // تمساح بشمار و بگو
+  },
+  {
+    id: 'step-2',
+    stepNumber: 2,
+    title: 'الگویابی شکل‌ها',
+    subtitle: 'تناوب رنگ‌ها و قطار دایره‌ها',
+    type: 'PATTERN',
+    offset: 38,
+    icon: '🎨',
+    textbookMascot: '🐒', // میمون الگویابی
+  },
+  {
+    id: 'step-3',
+    stepNumber: 3,
+    title: 'جدول شگفت‌انگیز ۲×۲',
+    subtitle: 'سودوکوی هندسی و تفکر منطقی',
+    type: 'WONDER_GRID',
+    offset: -38,
+    icon: '🧩',
+    textbookMascot: '🐸', // قورباغه با ابزار کار کن
+  },
+  {
+    id: 'step-4',
+    stepNumber: 4,
+    title: 'چوب‌خط‌های جادویی',
+    subtitle: 'بسته‌های ۵تایی چوب‌خط (صفحه ۳۰)',
+    type: 'TALLY',
+    offset: 0,
+    icon: '✏️',
+    textbookMascot: '🦁', // شیر بشمار و بنویس
+  },
+  {
+    id: 'step-5',
+    stepNumber: 5,
+    title: 'آینه تقارن و خط‌کش',
+    subtitle: 'کشف نیمه قرینه شکل‌ها (صفحه ۴۲)',
+    type: 'SYMMETRY',
+    offset: 38,
+    icon: '🪞',
+    textbookMascot: '🐸',
+  },
+  {
+    id: 'step-6',
+    stepNumber: 6,
+    title: 'ترازوی مقایسه دسته‌ها',
+    subtitle: 'کمتر، بیشتر و مساوی (صفحه ۷۶)',
+    type: 'SCALE',
+    offset: -38,
+    icon: '⚖️',
+    textbookMascot: '🦁',
+  },
+  {
+    id: 'step-7',
+    stepNumber: 7,
+    title: 'سنجش مستقل اول (Check 1)',
+    subtitle: 'اثبات تسلط بدون سرنخ',
+    type: 'CHECK',
+    offset: 38,
+    icon: '🛡️',
+  },
+  {
+    id: 'step-8',
+    stepNumber: 8,
+    title: 'صندوق گنجینه دانایی',
+    subtitle: 'پاداش فتح نگاره اول',
+    type: 'CHEST',
+    offset: 0,
+    icon: '🎁',
+  },
+];
 
 export function DuolingoPath({
   selectedGrade,
   activeCharId,
+  completedNodeIds,
   onSelectNode,
 }: DuolingoPathProps) {
   const activeChar = CHARACTERS[activeCharId] ?? CHARACTERS['aria']!;
+  const [lockedNoticeId, setLockedNoticeId] = useState<string | null>(null);
 
-  // Authentic Grade 1 learning nodes directly mapped from the official textbook (صفحات ۷ تا ۳۰)
-  const nodes: PathNodeItem[] = [
-    {
-      id: 'step-1',
-      stepNumber: 1,
-      title: 'بشمار و بگو',
-      subtitle: 'شمارش ترتیبی میوه‌ها و اشیاء تا ۵',
-      type: 'COUNT',
-      status: 'COMPLETED',
-      stars: 3,
-      offset: 0,
-      icon: '🍊',
-      textbookMascot: '🐊', // تمساح بشمار و بگو
-    },
-    {
-      id: 'step-2',
-      stepNumber: 2,
-      title: 'الگویابی شکل‌ها',
-      subtitle: 'تناوب رنگ‌ها و قطار دایره‌ها',
-      type: 'PATTERN',
-      status: 'COMPLETED',
-      stars: 3,
-      offset: 38,
-      icon: '🎨',
-      textbookMascot: '🐒', // میمون الگویابی
-    },
-    {
-      id: 'step-3',
-      stepNumber: 3,
-      title: 'جدول شگفت‌انگیز ۲×۲',
-      subtitle: 'سودوکوی هندسی و تفکر منطقی',
-      type: 'WONDER_GRID',
-      status: 'ACTIVE',
-      stars: 0,
-      offset: -38,
-      icon: '🧩',
-      textbookMascot: '🐸', // قورباغه با ابزار کار کن
-    },
-    {
-      id: 'step-4',
-      stepNumber: 4,
-      title: 'چوب‌خط‌های جادویی',
-      subtitle: 'بسته‌های ۵تایی چوب‌خط (صفحه ۳۰)',
-      type: 'TALLY',
-      status: 'LOCKED',
-      stars: 0,
-      offset: 0,
-      icon: '✏️',
-      textbookMascot: '🦁', // شیر بشمار و بنویس
-    },
-    {
-      id: 'step-5',
-      stepNumber: 5,
-      title: 'سنجش مستقل اول (Check 1)',
-      subtitle: 'اثبات تسلط بدون سرنخ',
-      type: 'CHECK',
-      status: 'LOCKED',
-      stars: 0,
-      offset: 38,
-      icon: '🛡️',
-    },
-    {
-      id: 'step-6',
-      stepNumber: 6,
-      title: 'صندوق گنجینه دانایی',
-      subtitle: 'پاداش فتح نگاره اول',
-      type: 'CHEST',
-      status: 'LOCKED',
-      stars: 0,
-      offset: 0,
-      icon: '🎁',
-    },
-    {
-      id: 'step-7',
-      stepNumber: 7,
-      title: 'نگاره ۲: خیابان و مدرسه',
-      subtitle: 'ایستگاه ۰۲: تناظر یک‌به‌یک و اعداد تا ۱۰',
-      type: 'NEXT_STATION',
-      status: 'LOCKED',
-      stars: 0,
-      offset: -38,
-      icon: '🏫',
-    },
-  ];
+  // Compute status for each node dynamically based on completedNodeIds
+  let firstUncompletedFound = false;
+  const nodes: PathNodeItem[] = RAW_NODES.map((raw) => {
+    const isCompleted = completedNodeIds.includes(raw.id);
+    let status: 'COMPLETED' | 'ACTIVE' | 'LOCKED' = 'LOCKED';
+    let stars = 0;
+
+    if (isCompleted) {
+      status = 'COMPLETED';
+      stars = 3;
+    } else if (!firstUncompletedFound) {
+      status = 'ACTIVE';
+      stars = 0;
+      firstUncompletedFound = true;
+    } else {
+      status = 'LOCKED';
+      stars = 0;
+    }
+
+    return {
+      ...raw,
+      status,
+      stars,
+    };
+  });
+
+  const completedCount = nodes.filter((n) => n.status === 'COMPLETED').length;
+
+  function handleNodeClick(node: PathNodeItem) {
+    if (node.status === 'LOCKED') {
+      soundFx.playTryAgain();
+      setLockedNoticeId(node.id);
+      setTimeout(() => setLockedNoticeId(null), 2000);
+      return;
+    }
+    soundFx.playTap();
+    onSelectNode(node);
+  }
 
   return (
-    <div style={{ paddingBottom: 36, position: 'relative' }}>
+    <div style={{ paddingBottom: 40, position: 'relative', width: '100%' }}>
       {/* Unit Header (Persian Warm Indigo & Saffron) */}
       <div
         style={{
@@ -141,7 +180,7 @@ export function DuolingoPath({
             >
               نگاره ۱ از کتاب درسی · ایستگاه ۰۱ از {toPersianDigits(selectedGrade.stationCount)}
             </div>
-            <h2 style={{ margin: '0 0 4px', fontSize: 21, fontWeight: 900, lineHeight: 1.4 }}>
+            <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 900, lineHeight: 1.4 }}>
               {selectedGrade.id === 'G1'
                 ? 'خانه و صبحانه خانوادگی (شمارش و الگو)'
                 : `${selectedGrade.title} — سرفصل‌های اختصاصی`}
@@ -151,17 +190,15 @@ export function DuolingoPath({
             </p>
           </div>
 
-          <button
-            title="کتابچه راهنمای آموزشی"
+          <div
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '16px',
               padding: '8px 12px',
               color: '#ffffff',
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 800,
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: 4,
@@ -169,7 +206,7 @@ export function DuolingoPath({
           >
             <span>📘</span>
             <span>راهنما</span>
-          </button>
+          </div>
         </div>
 
         {/* Learning Journey Rhythm Badge */}
@@ -189,7 +226,9 @@ export function DuolingoPath({
           }}
         >
           <span>🌱 پیشرفت ایستگاه:</span>
-          <span style={{ color: '#fde047', fontWeight: 800 }}>۲ از ۵ مهارت تثبیت‌شده</span>
+          <span style={{ color: '#fde047', fontWeight: 800 }}>
+            {toPersianDigits(completedCount)} از {toPersianDigits(nodes.length)} مرحله تکمیل‌شده
+          </span>
         </div>
       </div>
 
@@ -200,7 +239,7 @@ export function DuolingoPath({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 44,
+          gap: 46,
           padding: '10px 20px',
         }}
       >
@@ -239,6 +278,7 @@ export function DuolingoPath({
           const isActive = node.status === 'ACTIVE';
           const isLocked = node.status === 'LOCKED';
           const isChest = node.type === 'CHEST';
+          const isLockedNotice = lockedNoticeId === node.id;
 
           return (
             <div
@@ -267,6 +307,7 @@ export function DuolingoPath({
                     boxShadow: '0 4px 0 #2738a8, 0 8px 18px rgba(59, 82, 212, 0.35)',
                     whiteSpace: 'nowrap',
                     zIndex: 20,
+                    animation: 'bounceIn 0.3s ease-out',
                   }}
                 >
                   <span>شروع یادگیری!</span>
@@ -283,6 +324,27 @@ export function DuolingoPath({
                       borderTop: '6px solid #3b52d4',
                     }}
                   />
+                </div>
+              )}
+
+              {/* Locked Notice Tooltip */}
+              {isLockedNotice && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: -50,
+                    backgroundColor: '#ea580c',
+                    color: '#ffffff',
+                    padding: '6px 12px',
+                    borderRadius: '12px',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    boxShadow: '0 4px 12px rgba(234, 88, 12, 0.4)',
+                    whiteSpace: 'nowrap',
+                    zIndex: 25,
+                  }}
+                >
+                  🔒 ابتدا مرحله قبل را کامل کن!
                 </div>
               )}
 
@@ -306,7 +368,8 @@ export function DuolingoPath({
 
               {/* Stepping Stone Node */}
               <button
-                onClick={() => onSelectNode(node)}
+                type="button"
+                onClick={() => handleNodeClick(node)}
                 className={`path-stone-node ${
                   isCompleted
                     ? 'path-stone-completed'
@@ -316,6 +379,10 @@ export function DuolingoPath({
                     ? 'path-stone-chest'
                     : 'path-stone-locked'
                 }`}
+                style={{
+                  outline: 'none',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
               >
                 {isActive && <div className="active-pulse-ring" />}
 
@@ -376,18 +443,19 @@ export function DuolingoPath({
                 {node.subtitle}
               </div>
 
-              {/* Aria Companion standing beside active node! */}
+              {/* Companion standing beside ONLY the single ACTIVE node! */}
               {isActive && (
                 <div
                   className="mascot-gentle-float"
                   style={{
                     position: 'absolute',
-                    right: -110,
+                    right: -105,
                     top: -12,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     pointerEvents: 'none',
+                    zIndex: 12,
                   }}
                 >
                   {/* Little speech bubble */}
@@ -397,26 +465,27 @@ export function DuolingoPath({
                       fontSize: 11,
                       fontWeight: 800,
                       color: activeChar.themeColor,
-                      padding: '6px 10px',
+                      padding: '5px 9px',
                       marginBottom: 6,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    بزن بریم آریا!
+                    بزن بریم {activeChar.name}!
                   </div>
 
                   {/* Character Avatar */}
                   <div
                     style={{
-                      width: 60,
-                      height: 60,
+                      width: 54,
+                      height: 54,
                       borderRadius: '50%',
                       backgroundColor: activeChar.avatarBg,
                       border: `3px solid ${activeChar.themeColor}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 32,
+                      fontSize: 28,
                       boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
                     }}
                   >

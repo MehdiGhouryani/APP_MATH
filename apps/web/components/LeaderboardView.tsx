@@ -1,9 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { toPersianDigits } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 
 export function LeaderboardView() {
+  const [cheeredIndex, setCheeredIndex] = useState<number | null>(null);
+
   const ranks = [
     { rank: 1, name: 'سارا رضایی', xp: 480, avatar: '👧', streak: 7, isMe: false },
     { rank: 2, name: 'شما (قهرمان ریاضی)', xp: 420, avatar: '🐲', streak: 3, isMe: true },
@@ -12,6 +15,12 @@ export function LeaderboardView() {
     { rank: 5, name: 'رادین کریمی', xp: 310, avatar: '👦', streak: 4, isMe: false },
     { rank: 6, name: 'آوا موسوی', xp: 280, avatar: '👧', streak: 1, isMe: false },
   ];
+
+  function handleCheer(idx: number) {
+    soundFx.playBubblePop();
+    setCheeredIndex(idx);
+    setTimeout(() => setCheeredIndex(null), 1200);
+  }
 
   return (
     <div style={{ padding: '16px 20px 40px' }}>
@@ -49,9 +58,10 @@ export function LeaderboardView() {
 
       {/* Leaderboard List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {ranks.map((item) => (
+        {ranks.map((item, idx) => (
           <div
             key={item.rank}
+            onClick={() => !item.isMe && handleCheer(idx)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -61,6 +71,8 @@ export function LeaderboardView() {
               backgroundColor: item.isMe ? '#ddf4ff' : '#ffffff',
               border: item.isMe ? '2px solid #84d8ff' : '2px solid #e5e5e5',
               boxShadow: item.isMe ? '0 4px 0 #84d8ff' : '0 2px 0 #e5e5e5',
+              cursor: item.isMe ? 'default' : 'pointer',
+              transition: 'transform 0.15s ease',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -97,6 +109,11 @@ export function LeaderboardView() {
                 </div>
                 <div style={{ fontSize: 11, color: '#777', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span>🔥 {toPersianDigits(item.streak)} روز متوالی</span>
+                  {cheeredIndex === idx && (
+                    <span style={{ color: '#e11d48', fontWeight: 800, animation: 'bounceIn 0.3s ease' }}>
+                      👏 تشویق شد!
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

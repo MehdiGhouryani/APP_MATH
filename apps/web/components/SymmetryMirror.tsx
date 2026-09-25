@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { soundFx } from '../lib/sound';
 
 interface SymmetryMirrorProps {
   onSuccess: () => void;
@@ -28,6 +29,7 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
 
   function handleCellClick(index: number) {
     if (solved) return;
+    soundFx.playBubblePop();
     const next = [...rightGrid] as [string | null, string | null, string | null, string | null, string | null, string | null];
     // toggle or set color
     next[index] = next[index] === activeColor ? null : activeColor;
@@ -48,6 +50,7 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
       next[5] === null;
 
     if (isCorrect) {
+      soundFx.playSuccess();
       setSolved(true);
       onSuccess();
     }
@@ -181,7 +184,10 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>انتخاب رنگ مداد:</span>
         <button
-          onClick={() => setActiveColor('#0d9488')}
+          onClick={() => {
+            soundFx.playTap();
+            setActiveColor('#0d9488');
+          }}
           style={{
             width: 32,
             height: 32,
@@ -193,7 +199,10 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
           }}
         />
         <button
-          onClick={() => setActiveColor('#f97316')}
+          onClick={() => {
+            soundFx.playTap();
+            setActiveColor('#f97316');
+          }}
           style={{
             width: 32,
             height: 32,
@@ -205,7 +214,10 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
           }}
         />
         <button
-          onClick={() => setActiveColor('#8b5cf6')}
+          onClick={() => {
+            soundFx.playTap();
+            setActiveColor('#8b5cf6');
+          }}
           style={{
             width: 32,
             height: 32,

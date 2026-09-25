@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { CHARACTERS, toPersianDigits } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 
 interface ProfileViewProps {
   activeCharId: string;
@@ -104,7 +105,10 @@ export function ProfileView({
             return (
               <button
                 key={char.id}
-                onClick={() => onSelectChar(char.id)}
+                onClick={() => {
+                  soundFx.playCharacterChirp(char.id);
+                  onSelectChar(char.id);
+                }}
                 style={{
                   backgroundColor: isSelected ? char.avatarBg : '#ffffff',
                   border: isSelected ? `2px solid ${char.themeColor}` : '2px solid #e5e5e5',

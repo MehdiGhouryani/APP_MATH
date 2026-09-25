@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { soundFx } from '../lib/sound';
 
 export type MainTabType = 'PATH' | 'LEAGUES' | 'BACKPACK' | 'ADULTS' | 'PROFILE';
 
@@ -21,16 +22,16 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
   return (
     <nav
       style={{
-        position: 'sticky',
-        bottom: 0,
         backgroundColor: '#ffffff',
         borderTop: '2px solid #e5e5e5',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
         padding: '6px 8px 10px',
-        zIndex: 35,
+        zIndex: 50,
         flexShrink: 0,
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       {tabs.map((tab) => {
@@ -38,7 +39,11 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
         return (
           <button
             key={tab.id}
-            onClick={() => onChangeTab(tab.id)}
+            type="button"
+            onClick={() => {
+              onChangeTab(tab.id);
+              soundFx.playTap();
+            }}
             style={{
               background: isSelected ? '#ddf4ff' : 'transparent',
               border: isSelected ? '2px solid #84d8ff' : '2px solid transparent',
@@ -52,6 +57,9 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
               position: 'relative',
               transition: 'all 0.15s ease',
               minWidth: 62,
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              outline: 'none',
             }}
           >
             <span style={{ fontSize: 22 }}>{tab.icon}</span>

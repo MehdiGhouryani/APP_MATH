@@ -22,7 +22,7 @@ export function MobileFrame({ children }: MobileFrameProps) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: isFullscreen ? '0' : '20px 12px',
+        padding: isFullscreen ? '0' : '16px 8px',
       }}
     >
       {/* Frame Control Switcher on Desktop */}
@@ -32,16 +32,17 @@ export function MobileFrame({ children }: MobileFrameProps) {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            marginBottom: 16,
+            marginBottom: 12,
             color: '#94a3b8',
             fontSize: 13,
           }}
         >
           <span style={{ fontWeight: 700, color: '#f8fafc' }}>
-            📱 شبیه‌ساز اپ موبایل دولینگو ریاضی (پایه ۱ تا ۶)
+            📱 شبیه‌ساز اپلیکیشن یادگیری ریاضی (پایه‌های ۱ تا ۶)
           </span>
           <span style={{ opacity: 0.4 }}>|</span>
           <button
+            type="button"
             onClick={() => setIsFullscreen(true)}
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
@@ -64,8 +65,8 @@ export function MobileFrame({ children }: MobileFrameProps) {
         style={{
           width: isFullscreen ? '100vw' : '100%',
           maxWidth: isFullscreen ? '100vw' : '430px',
-          height: isFullscreen ? '100vh' : '880px',
-          maxHeight: isFullscreen ? '100vh' : '92vh',
+          height: isFullscreen ? '100vh' : '860px',
+          maxHeight: isFullscreen ? '100vh' : '94vh',
           backgroundColor: '#ffffff',
           borderRadius: isFullscreen ? '0' : '44px',
           boxShadow: isFullscreen
@@ -89,7 +90,7 @@ export function MobileFrame({ children }: MobileFrameProps) {
             fontSize: 14,
             fontWeight: 700,
             color: '#1e293b',
-            zIndex: 50,
+            zIndex: 60,
             flexShrink: 0,
             borderBottom: '1px solid rgba(0, 0, 0, 0.04)',
           }}
@@ -119,6 +120,7 @@ export function MobileFrame({ children }: MobileFrameProps) {
             <span>🔋</span>
             {isFullscreen && (
               <button
+                type="button"
                 onClick={() => setIsFullscreen(false)}
                 title="خروج از تمام‌صفحه"
                 style={{
@@ -127,6 +129,7 @@ export function MobileFrame({ children }: MobileFrameProps) {
                   cursor: 'pointer',
                   fontSize: 14,
                   marginRight: 4,
+                  color: '#1e293b',
                 }}
               >
                 ✕
@@ -135,17 +138,16 @@ export function MobileFrame({ children }: MobileFrameProps) {
           </div>
         </div>
 
-        {/* Inner Phone Viewport */}
+        {/* Inner Phone Viewport - Flex column container */}
         <div
-          className="hide-scrollbar"
           style={{
             flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
+            height: 'calc(100% - 44px)',
             backgroundColor: '#ffffff',
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
+            overflow: 'hidden',
           }}
         >
           {children}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { soundFx } from '../lib/sound';
 
 interface WonderGridProps {
   onSuccess: () => void;
@@ -42,12 +43,14 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
   function handleCellClick(index: number) {
     // Only cells 1 and 3 are playable (0 and 2 are pre-filled clues)
     if (index === 0 || index === 2) return;
+    soundFx.playTap();
     setSelectedCellIndex(index);
     setFeedback(null);
   }
 
   function handleColorSelect(color: ColorType) {
     if (selectedCellIndex === null) return;
+    soundFx.playBubblePop();
     const nextGrid = [...grid] as [ColorType, ColorType, ColorType, ColorType];
     nextGrid[selectedCellIndex] = color;
     setGrid(nextGrid);
@@ -61,9 +64,11 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
     if (c1 !== null && c3 !== null) {
       const isCorrect = c1 === 'blue' && c3 === 'red';
       if (isCorrect) {
+        soundFx.playSuccess();
         setFeedback('correct');
         onSuccess();
       } else {
+        soundFx.playTryAgain();
         setFeedback('duplicate');
       }
     }

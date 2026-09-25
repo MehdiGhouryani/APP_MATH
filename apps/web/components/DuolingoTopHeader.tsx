@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { GRADES, CHARACTERS, toPersianDigits, GradeMeta } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 
 interface DuolingoTopHeaderProps {
   selectedGrade: GradeMeta;
@@ -41,7 +42,10 @@ export function DuolingoTopHeader({
       {/* Grade Selector Pill (پایه‌های ۱ تا ۶) */}
       <div style={{ position: 'relative' }}>
         <button
-          onClick={() => setShowGradeMenu(!showGradeMenu)}
+          onClick={() => {
+            soundFx.playTap();
+            setShowGradeMenu(!showGradeMenu);
+          }}
           style={{
             background: '#f7f7f7',
             border: '2px solid #e5e5e5',
@@ -63,22 +67,31 @@ export function DuolingoTopHeader({
 
         {/* Dropdown Menu for Grades 1 to 6 */}
         {showGradeMenu && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: 6,
-              width: 240,
-              backgroundColor: '#ffffff',
-              borderRadius: 16,
-              border: '2px solid #e5e5e5',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              padding: 8,
-              zIndex: 100,
-              animation: 'duoSlideUp 0.15s ease-out',
-            }}
-          >
+          <>
+            <div
+              onClick={() => setShowGradeMenu(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 90,
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: 6,
+                width: 240,
+                backgroundColor: '#ffffff',
+                borderRadius: 16,
+                border: '2px solid #e5e5e5',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                padding: 8,
+                zIndex: 100,
+                animation: 'duoSlideUp 0.15s ease-out',
+              }}
+            >
             <div style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#777' }}>
               انتخاب پایه تحصیلی (۱ تا ۶)
             </div>
@@ -88,6 +101,7 @@ export function DuolingoTopHeader({
                 <button
                   key={g.id}
                   onClick={() => {
+                    soundFx.playTap();
                     onSelectGrade(g);
                     setShowGradeMenu(false);
                   }}
@@ -133,6 +147,7 @@ export function DuolingoTopHeader({
               );
             })}
           </div>
+          </>
         )}
       </div>
 

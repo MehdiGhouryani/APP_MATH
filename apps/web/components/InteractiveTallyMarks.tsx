@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { toPersianDigits } from '../lib/persian';
+import { soundFx } from '../lib/sound';
 
 interface InteractiveTallyMarksProps {
   count: number;
@@ -20,17 +21,20 @@ export function InteractiveTallyMarks({
 
   function handleAdd() {
     if (count < maxCount) {
+      soundFx.playBubblePop();
       onChangeCount(count + 1);
     }
   }
 
   function handleRemove() {
     if (count > 0) {
+      soundFx.playTap();
       onChangeCount(count - 1);
     }
   }
 
   function handleReset() {
+    soundFx.playTap();
     onChangeCount(0);
   }
 
