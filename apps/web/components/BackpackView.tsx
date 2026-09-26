@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
-import { evaluateLearningEncounter, INITIAL_SKILLS } from '../lib/learningEngine';
 
 interface SkillItem {
   code: string;
@@ -56,19 +55,8 @@ export function BackpackView() {
   const masteredCount = skills.filter((s) => s.status === 'MASTERED').length;
 
   function handleCompleteReview() {
-    const currentSkill = INITIAL_SKILLS.find((s) => s.code === 'G1-SK03')!;
-    const result = evaluateLearningEncounter(
-      {
-        nodeId: 'review-g1-sk03',
-        skillCode: 'G1-SK03',
-        type: 'CHECK',
-        userAnswer: reviewAnswer,
-        expectedAnswer: 8,
-      },
-      currentSkill
-    );
-
-    if (result.evaluation.correct) {
+    const isCorrect = reviewAnswer === 8;
+    if (isCorrect) {
       soundFx.playSuccess();
       setReviewEvaluated('CORRECT');
       setSkills((prev) =>

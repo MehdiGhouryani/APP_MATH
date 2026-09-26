@@ -144,6 +144,11 @@ export function DuolingoPath({
 
   function handleNodeClick(node: PathNodeItem) {
     soundFx.playTap();
+    if (node.status === 'LOCKED') {
+      setLockedNoticeId(node.id);
+      setTimeout(() => setLockedNoticeId(null), 2000);
+      return;
+    }
     onSelectNode(node);
   }
 

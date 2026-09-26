@@ -6,11 +6,8 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     '@math/contracts',
     '@math/content-delivery',
-    '@math/learning-runtime',
-    '@math/assignment-runtime',
-    '@math/adult-projections',
-    '@math/offline-sync',
   ],
+  turbopack: {},
 };
 
 export default nextConfig;

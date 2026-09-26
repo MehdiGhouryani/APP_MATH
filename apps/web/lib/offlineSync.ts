@@ -71,32 +71,45 @@ export class LocalStorageSyncStore implements SyncQueueStore {
 
 export class AppletSyncTransport implements SyncTransport {
   async send(action: OfflineSyncAction): Promise<SyncReceipt> {
-    // Simulate real network transport with fallback acknowledgment
     try {
-      if (action.operationType === 'SUBMIT_ATTEMPT') {
-        const res = await fetch('/api/v1/learning/attempts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(action.payload),
-        }).catch(() => null);
-
-        if (res && res.ok) {
-          const body = await res.json();
-          return { status: 'ACKED', idempotencyKey: action.idempotencyKey, response: body };
-        }
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (action.clientInstallationId) {
+        headers['X-Client-Installation-Id'] = action.clientInstallationId;
       }
 
-      // Default offline-first acknowledgment for local resilience
-      return {
-        status: 'ACKED',
-        idempotencyKey: action.idempotencyKey,
-        response: { ackAt: new Date().toISOString() },
-      };
-    } catch {
+      const res = await fetch('/api/v1/sync/batch', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ actions: [action] }),
+      });
+
+      if (!res.ok) {
+        const isTemporary = res.status === 429 || res.status >= 500;
+        return {
+          status: isTemporary ? 'RETRY' : 'REJECTED',
+          idempotencyKey: action.idempotencyKey,
+          errorCode: `HTTP_${res.status}`,
+        };
+      }
+
+      const data = (await res.json()) as { results?: SyncReceipt[] };
+      const receipt = data.results?.[0];
+      if (receipt) {
+        return receipt;
+      }
+
       return {
         status: 'RETRY',
         idempotencyKey: action.idempotencyKey,
-        errorCode: 'NETWORK_DISCONNECTED',
+        errorCode: 'EMPTY_SYNC_RECEIPT',
+      };
+    } catch (err) {
+      return {
+        status: 'RETRY',
+        idempotencyKey: action.idempotencyKey,
+        errorCode: err instanceof Error ? err.message : 'NETWORK_ERROR',
       };
     }
   }

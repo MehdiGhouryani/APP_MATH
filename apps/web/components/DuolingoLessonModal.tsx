@@ -1,15 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { CHARACTERS, toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
 import { InteractiveTallyMarks } from './InteractiveTallyMarks';
 import { WonderGrid } from './WonderGrid';
 import { SymmetryMirror } from './SymmetryMirror';
 import { ComparisonScale } from './ComparisonScale';
+import { InteractiveCompanion } from './InteractiveCompanion';
 import type { PathNodeItem } from './DuolingoPath';
 import type { AnimationSemanticEvent } from '@math/contracts';
-import { evaluateLearningEncounter, INITIAL_SKILLS } from '../lib/learningEngine';
+import {
+  NODE_CANONICAL_MAPPINGS,
+  type SessionResponse,
+  type EncounterResponse,
+  type SubmitAttemptResponse,
+} from '../lib/learning-api-client';
+import { learningService } from '../lib/learningService';
 
 interface DuolingoLessonModalProps {
   onClose: () => void;
@@ -33,6 +40,14 @@ export function DuolingoLessonModal({
   const [evaluation, setEvaluation] = useState<EvaluationState>(
     activeNode.type === 'CHEST' ? 'FINISHED' : 'UNCHECKED'
   );
+
+  // Server Integration State
+  const [session, setSession] = useState<SessionResponse | null>(null);
+  const [encounter, setEncounter] = useState<EncounterResponse | null>(null);
+  const [attemptKey, setAttemptKey] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [lastServerResult, setLastServerResult] = useState<SubmitAttemptResponse | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<AnimationSemanticEvent>('SESSION_START');
 
   // Exercise states
   // 1. COUNT
@@ -60,6 +75,31 @@ export function DuolingoLessonModal({
   // Chest opened state
   const [isChestOpened, setIsChestOpened] = useState<boolean>(false);
 
+  // Initialize Session & Encounter on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function initLearningEncounter() {
+      if (activeNode.type === 'CHEST') return;
+      try {
+        const { session: newSession, encounter: newEncounter } =
+          await learningService.initiateEncounterForNode(activeNode.id);
+
+        if (!isMounted) return;
+        setSession(newSession);
+        setEncounter(newEncounter);
+        setAttemptKey(`attempt-${newSession.id}-${newEncounter.id}-1`);
+        onEmitSemanticEvent('SESSION_START', `Session=${newSession.id}, Encounter=${newEncounter.id}`);
+      } catch (err) {
+        console.warn('[DuolingoLessonModal] Backend encounter init fallback via learningService', err);
+      }
+    }
+
+    initLearningEncounter();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeNode.id, activeNode.stepNumber, activeNode.type]);
+
   function toggleFruitTap(index: number) {
     soundFx.playBubblePop();
     if (tappedCountItems.includes(index)) {
@@ -69,63 +109,93 @@ export function DuolingoLessonModal({
     }
   }
 
-  function handleCheck() {
-    let userAnswer: unknown = null;
-    let expectedAnswer: unknown = null;
+  async function handleCheck() {
+    setIsSubmitting(true);
+    let userAnswerPayload: unknown = 1;
 
     if (activeNode.type === 'COUNT') {
-      userAnswer = selectedCountNum;
-      expectedAnswer = 5;
+      userAnswerPayload = selectedCountNum === 5 ? 1 : 0;
     } else if (activeNode.type === 'PATTERN') {
-      userAnswer = selectedPatternColor;
-      expectedAnswer = 'blue';
+      userAnswerPayload = selectedPatternColor === 'blue' ? 1 : 0;
     } else if (activeNode.type === 'WONDER_GRID') {
-      userAnswer = isGridSolved;
-      expectedAnswer = true;
+      userAnswerPayload = isGridSolved ? 1 : 0;
     } else if (activeNode.type === 'TALLY') {
-      userAnswer = tallyCount;
-      expectedAnswer = 5;
+      userAnswerPayload = tallyCount === 5 ? 1 : 0;
     } else if (activeNode.type === 'SYMMETRY') {
-      userAnswer = isSymmetrySolved;
-      expectedAnswer = true;
+      userAnswerPayload = isSymmetrySolved ? 2 : 0;
     } else if (activeNode.type === 'SCALE') {
-      userAnswer = isScaleSolved;
-      expectedAnswer = true;
+      userAnswerPayload = isScaleSolved ? 0 : 1;
     } else if (activeNode.type === 'CHECK') {
-      userAnswer = selectedSeqNum;
-      expectedAnswer = 8;
-    } else {
-      userAnswer = true;
-      expectedAnswer = true;
+      userAnswerPayload = selectedSeqNum === 8 ? 1 : 0;
     }
 
-    const currentSkill = INITIAL_SKILLS.find((s) => s.code === `G1-SK0${activeNode.stepNumber}`) ?? INITIAL_SKILLS[0]!;
-    const execution = evaluateLearningEncounter(
-      {
-        nodeId: activeNode.id,
-        skillCode: currentSkill.code,
-        type: activeNode.type,
-        userAnswer,
-        expectedAnswer,
-      },
-      currentSkill
-    );
+    const mapping = NODE_CANONICAL_MAPPINGS[activeNode.id];
+    const isCorrectLocally = userAnswerPayload === (mapping?.expectedIndex ?? 1);
 
-    const correct = execution.evaluation.correct;
+    try {
+      if (session && encounter) {
+        const idempotencyKey = attemptKey || `attempt-${session.id}-${encounter.id}-1`;
+        const result = await learningService.submitAttempt({
+          sessionId: session.id,
+          encounterId: encounter.id,
+          userAnswer: userAnswerPayload,
+          customIdempotencyKey: idempotencyKey,
+        });
 
-    if (correct) {
-      soundFx.playSuccess();
-      onEmitSemanticEvent('ANSWER_CORRECT', `RuntimeEvaluator.evalSuccess(Score=1.0, Feedback="${execution.feedbackText}")`);
-    } else {
-      soundFx.playTryAgain();
-      if (execution.nextStep === 'RECOVERY') {
-        onEmitSemanticEvent('RECOVERY', `LearningEngine.triggerSmartRecovery(Skill=${currentSkill.code})`);
+        setLastServerResult(result);
+        const isServerCorrect = Boolean(result.attempt?.evaluation?.correct || result.semanticEvent === 'ANSWER_CORRECT');
+
+        if (isServerCorrect) {
+          soundFx.playSuccess();
+          setCurrentEvent('ANSWER_CORRECT');
+          onEmitSemanticEvent('ANSWER_CORRECT', `ServerScore=${result.attempt?.evaluation?.score ?? 1.0}`);
+          setEvaluation('CORRECT');
+          if (result.stationPass) {
+            setCurrentEvent('STATION_PASS');
+            onEmitSemanticEvent('STATION_PASS', `StationPassGranted(Station=G1-ST01)`);
+            onCompleteNode(activeNode.id);
+          }
+        } else {
+          soundFx.playTryAgain();
+          if (result.decision?.selectedStep === 'RECOVERY') {
+            setCurrentEvent('RECOVERY');
+            onEmitSemanticEvent('RECOVERY', `LearningRuntime.triggerRecovery(Step=${result.decision.selectedStep})`);
+          } else {
+            setCurrentEvent('ANSWER_WRONG');
+            onEmitSemanticEvent('ANSWER_WRONG', `LearningRuntime.evalTryAgain`);
+          }
+          setEvaluation('WRONG');
+        }
       } else {
-        onEmitSemanticEvent('ANSWER_WRONG', `RuntimeEvaluator.evalTryAgain(Score=0.0, Feedback="${execution.feedbackText}")`);
+        // Fallback for isolated offline preview
+        if (isCorrectLocally) {
+          soundFx.playSuccess();
+          setCurrentEvent('ANSWER_CORRECT');
+          onEmitSemanticEvent('ANSWER_CORRECT', 'EvaluationSuccess');
+          setEvaluation('CORRECT');
+        } else {
+          soundFx.playTryAgain();
+          setCurrentEvent('ANSWER_WRONG');
+          onEmitSemanticEvent('ANSWER_WRONG', 'EvaluationTryAgain');
+          setEvaluation('WRONG');
+        }
       }
+    } catch (err) {
+      console.warn('[DuolingoLessonModal] Submit attempt error, using resilient evaluation', err);
+      if (isCorrectLocally) {
+        soundFx.playSuccess();
+        setCurrentEvent('ANSWER_CORRECT');
+        onEmitSemanticEvent('ANSWER_CORRECT', 'EvaluationSuccess(Resilient)');
+        setEvaluation('CORRECT');
+      } else {
+        soundFx.playTryAgain();
+        setCurrentEvent('ANSWER_WRONG');
+        onEmitSemanticEvent('ANSWER_WRONG', 'EvaluationTryAgain(Resilient)');
+        setEvaluation('WRONG');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setEvaluation(correct ? 'CORRECT' : 'WRONG');
   }
 
   function handleContinue() {
@@ -133,16 +203,19 @@ export function DuolingoLessonModal({
     if (evaluation === 'CORRECT') {
       setEvaluation('FINISHED');
       soundFx.playLevelPass();
+      setCurrentEvent('STATION_PASS');
       onCompleteNode(activeNode.id);
       onEmitSemanticEvent('STATION_PASS', `Runtime.passNode(${activeNode.id})`);
     } else {
       setEvaluation('UNCHECKED');
+      setCurrentEvent('SESSION_START');
     }
   }
 
   function handleOpenChest() {
     soundFx.playLevelPass();
     setIsChestOpened(true);
+    setCurrentEvent('REWARD_GRANTED');
     onEmitSemanticEvent('REWARD_GRANTED', 'TreasureChest.open(Station=ST01)');
   }
 
@@ -196,7 +269,7 @@ export function DuolingoLessonModal({
             soundFx.playTap();
             onClose();
           }}
-          aria-label="بستن پنجره تمرین"
+          aria-label="بستن درس"
           style={{
             background: 'none',
             border: 'none',
@@ -261,55 +334,42 @@ export function DuolingoLessonModal({
             touchAction: 'pan-y',
           }}
         >
-          {/* Mascot Prompt */}
+          {/* Companion Mascot with Semantic Animation */}
           <div
             style={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 14,
-              marginBottom: 20,
+              marginBottom: 16,
             }}
           >
-            <div
-              style={{
-                width: 66,
-                height: 66,
-                borderRadius: '50%',
-                backgroundColor: activeChar.avatarBg,
-                border: `3px solid ${activeChar.themeColor}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 34,
-                flexShrink: 0,
-                boxShadow: `0 6px 16px ${activeChar.themeColor}25`,
-              }}
-            >
-              {activeChar.id === 'aria'
-                ? '🐲'
-                : activeChar.id === 'qbo'
-                ? '🤖'
-                : activeChar.id === 'jiko'
-                ? '🐦'
-                : '🐿️'}
-            </div>
-
-            <div className="math-speech-bubble" style={{ flex: 1 }}>
-              {activeNode.type === 'COUNT' &&
-                '🐊 تمساح مهربان می‌گوید: پرتقال‌ها را لمس کن و بشمار؛ چند تا در سبد هست؟'}
-              {activeNode.type === 'PATTERN' &&
-                '🐒 میمون الگویاب می‌پرسد: قطار رنگ‌ها را ببین! جای علامت سؤال کدام رنگ می‌آید؟'}
-              {activeNode.type === 'WONDER_GRID' &&
-                '🐸 قورباغه با ابزار کار می‌کند: جدول شگفت‌انگیز را بدون رنگ تکراری در هر سطر و ستون کامل کن!'}
-              {activeNode.type === 'TALLY' &&
-                '🦁 شیر باهوش می‌گوید: به تعداد پرتقال‌ها چوب‌خط بکش! خط پنجم کج کشیده می‌شود.'}
-              {activeNode.type === 'SYMMETRY' &&
-                '🐸 قورباغه راهنما: نیمه سمت راست فرش را قرینه سمت چپ رنگ‌آمیزی کن!'}
-              {activeNode.type === 'SCALE' &&
-                '🦁 شیر تحلیل‌گر: دو دسته میوه را مقایسه کن و علامت درست را بگذار!'}
-              {activeNode.type === 'CHECK' &&
-                '🛡️ سنجش مستقل: عدد بعدی دنباله ۲، ۴، ۶ چیست؟'}
-            </div>
+            <InteractiveCompanion
+              characterId={activeChar.id}
+              semanticEvent={currentEvent}
+              size="sm"
+              showBubble={true}
+              customMessage={
+                evaluation === 'CORRECT'
+                  ? activeChar.reactions.correct
+                  : evaluation === 'WRONG'
+                  ? currentEvent === 'RECOVERY'
+                    ? activeChar.reactions.recovery
+                    : activeChar.reactions.wrong
+                  : activeNode.type === 'COUNT'
+                  ? '🐊 تمساح مهربان می‌گوید: پرتقال‌ها را لمس کن و بشمار؛ چند تا در سبد هست؟'
+                  : activeNode.type === 'PATTERN'
+                  ? '🐒 میمون الگویاب می‌پرسد: قطار رنگ‌ها را ببین! جای علامت سؤال کدام رنگ می‌آید؟'
+                  : activeNode.type === 'WONDER_GRID'
+                  ? '🐸 قورباغه با ابزار کار می‌کند: جدول شگفت‌انگیز را بدون رنگ تکراری در هر سطر و ستون کامل کن!'
+                  : activeNode.type === 'TALLY'
+                  ? '🦁 شیر باهوش می‌گوید: به تعداد پرتقال‌ها چوب‌خط بکش! خط پنجم کج کشیده می‌شود.'
+                  : activeNode.type === 'SYMMETRY'
+                  ? '🐸 قورباغه راهنما: نیمه سمت راست فرش را قرینه سمت چپ رنگ‌آمیزی کن!'
+                  : activeNode.type === 'SCALE'
+                  ? '🦁 شیر تحلیل‌گر: دو دسته میوه را مقایسه کن و علامت درست را بگذار!'
+                  : '🛡️ سنجش مستقل: عدد بعدی دنباله ۲، ۴، ۶ چیست؟'
+              }
+            />
           </div>
 
           {/* 1. COUNT EXERCISE */}

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Math Learning",
+    "name": "ماجراجویی ریاضی",
     "slug": "math-learning",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -9,6 +9,20 @@
     "newArchEnabled": true,
     "scheme": "mathlearning",
     "plugins": ["expo-router"],
+    "android": {
+      "package": "com.mathlearning.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#2563EB"
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.mathlearning.app"
+    },
     "experiments": {
       "typedRoutes": true
     }

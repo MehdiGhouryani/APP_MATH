@@ -35,6 +35,26 @@ export default function MobileAppPage() {
   const [isLessonOpen, setIsLessonOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<PathNodeItem | null>(null);
 
+  // Rehydrate state on mount from localStorage (Persistence Verification)
+  useEffect(() => {
+    try {
+      const savedNodes = localStorage.getItem('math_app_completed_node_ids');
+      if (savedNodes) {
+        const parsed = JSON.parse(savedNodes);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCompletedNodeIds(parsed);
+        }
+      }
+      const savedStars = localStorage.getItem('math_app_learning_stars');
+      if (savedStars) {
+        const parsedStars = parseInt(savedStars, 10);
+        if (!isNaN(parsedStars)) {
+          setLearningStars(parsedStars);
+        }
+      }
+    } catch {}
+  }, []);
+
   // Semantic Animation Event Log (ADR 0002 & ADR 0004) - Client safe initialization
   const [semanticEventLog, setSemanticEventLog] = useState<
     Array<{ event: string; time: string; source: string }>
@@ -65,8 +85,20 @@ export default function MobileAppPage() {
   }
 
   function handleCompleteNode(nodeId: string) {
-    setCompletedNodeIds((prev) => (prev.includes(nodeId) ? prev : [...prev, nodeId]));
-    setLearningStars((prev) => prev + 3);
+    setCompletedNodeIds((prev) => {
+      const next = prev.includes(nodeId) ? prev : [...prev, nodeId];
+      try {
+        localStorage.setItem('math_app_completed_node_ids', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setLearningStars((prev) => {
+      const nextStars = prev + 3;
+      try {
+        localStorage.setItem('math_app_learning_stars', nextStars.toString());
+      } catch {}
+      return nextStars;
+    });
     emitSemanticEvent('STATION_PASS', `Runtime.awardMastery(Node=${nodeId})`);
   }
 

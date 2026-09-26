@@ -24,7 +24,7 @@ export async function POST(request: Request) {
           ...(body.relationshipContextId ? { relationshipContextId: body.relationshipContextId } : {}),
           gradeCode: body.gradeId ?? 'G1',
           curriculumVersion: body.curriculumVersionId ?? 'g1-build-001',
-          skillGraphVersion: body.skillGraphVersionId ?? 'g1-provisional-001',
+          skillGraphVersion: body.skillGraphVersionId ?? 'g1-canonical-v1.0',
           sessionType: body.sessionType ?? 'LEARNING',
           clientInstallationId,
         })

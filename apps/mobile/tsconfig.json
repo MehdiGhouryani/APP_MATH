@@ -3,6 +3,16 @@
   "compilerOptions": {
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "@math/learning-runtime": ["../../packages/learning-runtime/dist"],
+      "@math/contracts": ["../../packages/contracts/src"],
+      "@math/content-delivery": ["../../packages/content-delivery/src"],
+      "@math/assignment-runtime": ["../../packages/assignment-runtime/dist"],
+      "@math/adult-projections": ["../../packages/adult-projections/dist"],
+      "@math/offline-sync": ["../../packages/offline-sync/dist"],
+      "@math/api-client": ["../../packages/api-client/src"]
+    }
   }
 }

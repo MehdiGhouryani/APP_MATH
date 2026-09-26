@@ -19,7 +19,8 @@
       "@math/content-delivery": ["../../packages/content-delivery/src"],
       "@math/assignment-runtime": ["../../packages/assignment-runtime/dist"],
       "@math/adult-projections": ["../../packages/adult-projections/dist"],
-      "@math/offline-sync": ["../../packages/offline-sync/dist"]
+      "@math/offline-sync": ["../../packages/offline-sync/dist"],
+      "@math/api-client": ["../../packages/api-client/src"]
     }
   },
   "include": [

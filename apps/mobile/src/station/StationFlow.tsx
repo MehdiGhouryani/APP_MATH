@@ -79,7 +79,7 @@ export function StationFlow({ stationId }: { stationId: string }) {
       }
       setSequence((value) => value + 1);
       setStage(nextStage);
-      dispatch(makeAnimationEvent(nextStage === 'LEARN' ? 'EXPLAIN' : 'THINK', { sessionId: session, stationId }));
+      dispatch(makeAnimationEvent(nextStage === 'LEARN' ? 'EXPLAIN' : 'HINT_OPENED', { sessionId: session, stationId }));
     } finally {
       setBusy(false);
     }
@@ -235,7 +235,7 @@ export function StationFlow({ stationId }: { stationId: string }) {
         setEncounterId(created.encounter.id);
       }
       setStage(nextStage);
-      dispatch(makeAnimationEvent('THINK', { sessionId: freshSessionId ?? undefined, stationId }));
+      dispatch(makeAnimationEvent('EXPLAIN', { sessionId: freshSessionId ?? undefined, stationId }));
     } finally {
       setBusy(false);
     }

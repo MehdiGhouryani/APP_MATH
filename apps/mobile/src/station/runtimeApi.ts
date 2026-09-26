@@ -138,17 +138,17 @@ const localContent: Record<string, StationContent> = {
 };
 
 export function getRecoveryContent(skillId?: string): StationContent {
-  if (skillId === 'G1-SK009') return localContent.recoveryPattern;
-  if (skillId === 'G1-SK011') return localContent.recoveryRule;
-  if (skillId === 'G1-SK003') return localContent.recoveryCardinality;
-  return localContent.recovery;
+  if (skillId === 'G1-SK009' && localContent.recoveryPattern) return localContent.recoveryPattern;
+  if (skillId === 'G1-SK011' && localContent.recoveryRule) return localContent.recoveryRule;
+  if (skillId === 'G1-SK003' && localContent.recoveryCardinality) return localContent.recoveryCardinality;
+  return localContent.recovery ?? localContent.learn!;
 }
 
 export function getRecheckContent(skillId?: string): StationContent {
-  if (skillId === 'G1-SK009') return localContent.recheckPattern;
-  if (skillId === 'G1-SK011') return localContent.recheckRule;
-  if (skillId === 'G1-SK003') return localContent.recheckCardinality;
-  return localContent.recheck;
+  if (skillId === 'G1-SK009' && localContent.recheckPattern) return localContent.recheckPattern;
+  if (skillId === 'G1-SK011' && localContent.recheckRule) return localContent.recheckRule;
+  if (skillId === 'G1-SK003' && localContent.recheckCardinality) return localContent.recheckCardinality;
+  return localContent.recheck ?? localContent.guided!;
 }
 
 async function request<T>(path: string, init: RequestInit): Promise<T> {

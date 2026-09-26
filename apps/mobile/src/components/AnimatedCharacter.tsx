@@ -54,7 +54,7 @@ export function AnimatedCharacter({ state, source, size = 220 }: AnimatedCharact
 
   return (
     <Animated.View style={[styles.wrapper, { width: size, height: size }, animatedWrapper]}> 
-      {showRive ? (
+      {showRive && riveFile ? (
         <RiveView
           hybridRef={setHybridRef}
           file={riveFile}

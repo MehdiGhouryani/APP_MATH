@@ -21,7 +21,7 @@ function resolveFixtureFile(subpath: string): string {
 
 const fixtures = [
   {
-    id: 'dev-g1-st01-v2', gradeId: 'G1', stationId: 'G1-ST01', packageCode: 'G1-ST01', version: '1.1.0-staging',
+    id: 'dev-g1-st01-v2', gradeId: 'G1', stationId: 'G1-ST01', packageCode: 'G1-ST01', version: '1.2.0-staging',
     file: resolveFixtureFile('dev-packs/g1-st01-v2/package.json'), cacheClass: 'CURRENT' as const,
     sequence: 1, prefetchRank: 1,
   },
@@ -128,11 +128,13 @@ async function dbPackage(packageId: string, accessToken: string): Promise<{ desc
     order: 'ordinal.asc',
   });
   const mappedItems = items.map((x) => ({ contentVersionId: x.content_version_id, required: x.required, ordinal: x.ordinal }));
+  const gradeCode = pkg.package_code.includes('-') ? pkg.package_code.split('-')[0]! : 'G1';
+  const stationCode = pkg.package_code;
   const payload = {
     schema: 'math-content-package/v1',
     environment: 'STAGING_ONLY',
-    gradeId: pkg.grade_id,
-    stationId: pkg.station_id,
+    gradeId: gradeCode,
+    stationId: stationCode,
     packageVersion: pkg.version,
     items: mappedItems,
   };
