@@ -133,6 +133,7 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
           return (
             <button
               key={idx}
+              type="button"
               onClick={() => handleCellClick(idx)}
               style={{
                 width: 90,
@@ -151,6 +152,8 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
                 fontSize: 34,
                 boxShadow: isSelected ? '0 4px 12px rgba(59,82,212,0.25)' : 'none',
                 position: 'relative',
+                touchAction: 'manipulation',
+                pointerEvents: 'auto',
               }}
             >
               {meta ? (
@@ -180,6 +183,7 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
       {/* Color Selection Palette */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
         <button
+          type="button"
           onClick={() => handleColorSelect('blue')}
           style={{
             display: 'flex',
@@ -193,6 +197,8 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
             fontWeight: 800,
             fontSize: 13,
             cursor: 'pointer',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           <span>🔵</span>
@@ -200,6 +206,7 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
         </button>
 
         <button
+          type="button"
           onClick={() => handleColorSelect('red')}
           style={{
             display: 'flex',
@@ -213,6 +220,8 @@ export function WonderGrid({ onSuccess }: WonderGridProps) {
             fontWeight: 800,
             fontSize: 13,
             cursor: 'pointer',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           <span>🔴</span>

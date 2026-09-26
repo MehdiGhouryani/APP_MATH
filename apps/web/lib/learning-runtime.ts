@@ -38,7 +38,7 @@ export function createEncounterId(): string {
 }
 
 export function getSessionOrThrow(id: string): Promise<SessionRecord> {
-  return runtimeStore.repo.getSession(id).then((session) => {
+  return runtimeStore.repo.getSession(id).then((session: SessionRecord | null | undefined) => {
     if (!session) throw new Error('SESSION_NOT_FOUND');
     return session;
   });

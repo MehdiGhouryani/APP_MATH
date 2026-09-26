@@ -163,6 +163,7 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
             return (
               <button
                 key={idx}
+                type="button"
                 onClick={() => handleCellClick(idx)}
                 style={{
                   width: 40,
@@ -173,6 +174,8 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
                   boxShadow: cellColor ? 'inset 0 0 0 1px rgba(0,0,0,0.1)' : 'none',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
+                  touchAction: 'manipulation',
+                  pointerEvents: 'auto',
                 }}
               />
             );
@@ -184,6 +187,7 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>انتخاب رنگ مداد:</span>
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setActiveColor('#0d9488');
@@ -196,9 +200,12 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
             border: activeColor === '#0d9488' ? '3px solid #1e293b' : '2px solid #ffffff',
             cursor: 'pointer',
             boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         />
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setActiveColor('#f97316');
@@ -211,9 +218,12 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
             border: activeColor === '#f97316' ? '3px solid #1e293b' : '2px solid #ffffff',
             cursor: 'pointer',
             boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         />
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setActiveColor('#8b5cf6');
@@ -226,6 +236,8 @@ export function SymmetryMirror({ onSuccess }: SymmetryMirrorProps) {
             border: activeColor === '#8b5cf6' ? '3px solid #1e293b' : '2px solid #ffffff',
             cursor: 'pointer',
             boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         />
       </div>

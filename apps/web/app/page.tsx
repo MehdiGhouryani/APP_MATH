@@ -11,12 +11,17 @@ import { LeaderboardView } from '../components/LeaderboardView';
 import { BackpackView } from '../components/BackpackView';
 import { AdultsView } from '../components/AdultsView';
 import { ProfileView } from '../components/ProfileView';
+import { AuthFlowScreen } from '../components/AuthFlowScreen';
 import type { AnimationSemanticEvent } from '@math/contracts';
 
 export default function MobileAppPage() {
   const [selectedGrade, setSelectedGrade] = useState<GradeMeta>(GRADES[0]!);
   const [activeTab, setActiveTab] = useState<MainTabType>('PATH');
   const [activeCharId, setActiveCharId] = useState<string>('aria');
+  const [childName, setChildName] = useState<string>('آرش');
+
+  // Auth & Onboarding Flow State
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
 
   // Progressive unlocking of learning nodes in Station 1
   // Step 1 and Step 2 are completed, Step 3 is active, Steps 4-8 are locked
@@ -53,9 +58,6 @@ export default function MobileAppPage() {
   }
 
   function handleNodeSelect(node: PathNodeItem) {
-    if (node.status === 'LOCKED') {
-      return;
-    }
     // Launch bite-sized learning encounter
     setSelectedNode(node);
     emitSemanticEvent('SESSION_START', `User.startLesson(${node.id})`);
@@ -79,6 +81,7 @@ export default function MobileAppPage() {
         }}
         activeCharId={activeCharId}
         onOpenCompanionModal={() => setActiveTab('PROFILE')}
+        onOpenAuthModal={() => setIsAuthOpen(true)}
         weeklyActiveDays={weeklyActiveDays}
         learningStars={learningStars}
       />
@@ -146,6 +149,24 @@ export default function MobileAppPage() {
           activeNode={selectedNode}
           onEmitSemanticEvent={emitSemanticEvent}
           onCompleteNode={handleCompleteNode}
+        />
+      )}
+
+      {/* 5. Custom Rive Auth & Onboarding Gateway Flow Modal */}
+      {isAuthOpen && (
+        <AuthFlowScreen
+          onClose={() => setIsAuthOpen(false)}
+          onCompleteAuth={(userData) => {
+            setIsAuthOpen(false);
+            if (userData.characterId) setActiveCharId(userData.characterId);
+            if (userData.childName) setChildName(userData.childName);
+            const foundGrade = GRADES.find((g) => g.id === userData.gradeId);
+            if (foundGrade) setSelectedGrade(foundGrade);
+            emitSemanticEvent(
+              'SESSION_START',
+              `User.authCompleted(Method=${userData.authMethod}, Grade=${userData.gradeId}, Companion=${userData.characterId})`
+            );
+          }}
         />
       )}
     </MobileFrame>

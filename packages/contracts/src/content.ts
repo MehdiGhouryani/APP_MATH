@@ -1,4 +1,4 @@
-import type { CacheClass } from './learning';
+import type { CacheClass } from './learning.js';
 
 export interface ContentPackageRef {
   id: string;

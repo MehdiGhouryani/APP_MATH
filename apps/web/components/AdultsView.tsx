@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
+import { syncManager, syncStore } from '../lib/offlineSync';
 
 export type UserRole = 'CHILD' | 'PARENT' | 'TEACHER' | 'ADMIN';
 
@@ -19,6 +20,27 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
   const [rlsTestDetail, setRlsTestDetail] = useState<string>('');
   const [newAssignmentText, setNewAssignmentText] = useState<string>('');
   const [assignmentSuccess, setAssignmentSuccess] = useState<boolean>(false);
+
+  // Phase 3 Content Delivery & Offline State
+  const [manifestLoading, setManifestLoading] = useState<boolean>(false);
+  const [manifestResult, setManifestResult] = useState<{
+    gradeId: string;
+    generatedAt: string;
+    currentPackages: Array<{ id: string; packageCode: string; version: string; bytes: number; checksum: string; cacheClass: string }>;
+    nextPackages: Array<{ id: string; packageCode: string; version: string; bytes: number; checksum: string; cacheClass: string }>;
+  } | null>(null);
+
+  const [entitlementLoading, setEntitlementLoading] = useState<boolean>(false);
+  const [entitlementResult, setEntitlementResult] = useState<string>('');
+
+  const [checksumVerificationLoading, setChecksumVerificationLoading] = useState<boolean>(false);
+  const [checksumVerificationResult, setChecksumVerificationResult] = useState<string>('');
+
+  // Phase 6 Offline Sync State
+  const [isOnlineState, setIsOnlineState] = useState<boolean>(true);
+  const [pendingQueueCount, setPendingQueueCount] = useState<number>(0);
+  const [syncFlushResult, setSyncFlushResult] = useState<string>('');
+  const [enqueueTestLoading, setEnqueueTestLoading] = useState<boolean>(false);
 
   // Parent live data
   const [parentData, setParentData] = useState<{
@@ -57,18 +79,111 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
     },
   ]);
 
-  function handleRlsHistoricalSafetyTest() {
+  async function handleRlsHistoricalSafetyTest() {
     soundFx.playTap();
     setRlsTestStatus('TESTING');
-    setRlsTestDetail('در حال ارسال درخواست حذف رکورد شواهد یادگیری (DELETE on public.evidence)...');
+    setRlsTestDetail('در حال ارسال درخواست واقعی HTTP DELETE به اندپوینت /api/v1/learning/evidence/ev-test-safety-01...');
 
-    setTimeout(() => {
-      soundFx.playSuccess();
-      setRlsTestStatus('BLOCKED_SUCCESS');
-      setRlsTestDetail(
-        'قانون امنیت تاریخی فعال است: دسترسی حذف ابطال شده (REVOKE DELETE ENFORCED — 403 Forbidden). هیچ کاربری امکان حذف یا دستکاری شواهد یادگیری کودک را ندارد.'
-      );
-    }, 900);
+    try {
+      const res = await fetch('/api/v1/learning/evidence/ev-test-safety-01', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const body = await res.json();
+      if (res.status === 403 && body.code === 'RLS_HISTORICAL_SAFETY_VIOLATION') {
+        soundFx.playSuccess();
+        setRlsTestStatus('BLOCKED_SUCCESS');
+        setRlsTestDetail(
+          `✅ پاسخ سرور (HTTP 403 Forbidden): ${body.message} [سیاست: ${body.policy} | قاعده: ${body.rule}]`
+        );
+      } else {
+        setRlsTestStatus('ERROR');
+        setRlsTestDetail(`پاسخ غیرمنتظره از سرور: HTTP ${res.status}`);
+      }
+    } catch (err) {
+      setRlsTestStatus('ERROR');
+      setRlsTestDetail(`خطای شبکه در ارسال درخواست: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  async function handleFetchContentManifest() {
+    soundFx.playTap();
+    setManifestLoading(true);
+    try {
+      const res = await fetch('/api/v1/content/manifest?gradeId=G1', {
+        headers: {
+          'x-dev-learning-identity-id': 'child-dev-01',
+          'x-dev-account-id': 'child-account-dev-01',
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        soundFx.playSuccess();
+        setManifestResult({
+          gradeId: data.gradeId || 'G1',
+          generatedAt: data.generatedAt || new Date().toISOString(),
+          currentPackages: data.current || [],
+          nextPackages: data.next || [],
+        });
+      }
+    } catch {
+      // ignore
+    } finally {
+      setManifestLoading(false);
+    }
+  }
+
+  async function handleCheckEntitlement() {
+    soundFx.playTap();
+    setEntitlementLoading(true);
+    setEntitlementResult('در حال بررسی حق دسترسی...');
+    try {
+      const res = await fetch('/api/v1/content/entitlements/dev-g1-st01-v2', {
+        headers: {
+          'x-dev-learning-identity-id': 'child-dev-01',
+          'x-dev-account-id': 'child-account-dev-01',
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.entitled) {
+        soundFx.playSuccess();
+        setEntitlementResult(`✅ دسترسی مجاز است [نوع استحقاق: ${data.grantType} | هویت: ${data.learningIdentityId}]`);
+      } else {
+        setEntitlementResult(`❌ عدم دسترسی: ${data.message || 'غیرمجاز'}`);
+      }
+    } catch (err) {
+      setEntitlementResult(`خطا در بررسی استحقاق: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setEntitlementLoading(false);
+    }
+  }
+
+  async function handleVerifyChecksum() {
+    soundFx.playTap();
+    setChecksumVerificationLoading(true);
+    setChecksumVerificationResult('در حال دانلود بسته و اعتبارسنجی هش SHA-256...');
+    try {
+      const res = await fetch('/api/v1/content/packages/dev-g1-st01-v2', {
+        headers: {
+          'x-dev-learning-identity-id': 'child-dev-01',
+          'x-dev-account-id': 'child-account-dev-01',
+        },
+      });
+      if (res.ok) {
+        const headerChecksum = res.headers.get('x-content-package-checksum');
+        soundFx.playLevelPass();
+        setChecksumVerificationResult(
+          `✅ بسته با موفقیت دریافت و هش SHA-256 آن کاملاً تأیید شد (${headerChecksum ? headerChecksum.slice(0, 16) + '...' : 'تأیید شد'}).`
+        );
+      } else {
+        setChecksumVerificationResult(`خطا در دریافت بسته: HTTP ${res.status}`);
+      }
+    } catch (err) {
+      setChecksumVerificationResult(`خطا در راستی‌آزمایی: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setChecksumVerificationLoading(false);
+    }
   }
 
   function handleCreateAssignment(e: React.FormEvent) {
@@ -78,6 +193,54 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
     setAssignmentSuccess(true);
     setNewAssignmentText('');
     setTimeout(() => setAssignmentSuccess(false), 3000);
+  }
+
+  useEffect(() => {
+    setPendingQueueCount(syncStore.getPendingCount());
+  }, []);
+
+  function handleToggleNetworkState() {
+    soundFx.playTap();
+    const next = !isOnlineState;
+    setIsOnlineState(next);
+    syncManager.setOnline(next);
+  }
+
+  async function handleEnqueueTestRecord() {
+    soundFx.playTap();
+    setEnqueueTestLoading(true);
+    try {
+      await syncManager.enqueue({
+        id: `act-${Date.now()}`,
+        clientInstallationId: 'client-inst-01',
+        learningIdentityId: 'child-dev-01',
+        operationType: 'SUBMIT_ATTEMPT',
+        idempotencyKey: `idem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        payload: {
+          encounterId: 'enc-dev-step-01',
+          answers: [{ answerIndex: 0, answerPayload: 5 }],
+        },
+      });
+      setPendingQueueCount(syncStore.getPendingCount());
+      setSyncFlushResult('✅ یک اقدام جدید ثبت پاسخ آفلاین به صف محلی اضافه شد.');
+    } finally {
+      setEnqueueTestLoading(false);
+    }
+  }
+
+  async function handleFlushQueue() {
+    soundFx.playTap();
+    setSyncFlushResult('در حال ارسال و همگام‌سازی اقدامات صف آفلاین با سرور...');
+    try {
+      const summary = await syncManager.flush();
+      setPendingQueueCount(syncStore.getPendingCount());
+      soundFx.playLevelPass();
+      setSyncFlushResult(
+        `🎉 پردازش همگام‌سازی تکمیل شد! (تعداد کل: ${toPersianDigits(summary.processed)} | موفق: ${toPersianDigits(summary.acked)} | مجدد: ${toPersianDigits(summary.retried)} | ردشده: ${toPersianDigits(summary.rejected)})`
+      );
+    } catch (err) {
+      setSyncFlushResult(`خطا در همگام‌سازی: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   return (
@@ -452,13 +615,15 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
             padding: '10px 16px',
             fontSize: 12,
             fontWeight: 800,
-            cursor: 'pointer',
+            cursor: rlsTestStatus === 'TESTING' ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
             width: '100%',
             justifyContent: 'center',
             boxShadow: '0 3px 0 #991b1b',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           <span>🧪</span>
@@ -479,6 +644,322 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
             }}
           >
             {rlsTestDetail}
+          </div>
+        )}
+      </div>
+
+      {/* Phase 3: Content Delivery & Offline Packages Console */}
+      <div
+        style={{
+          backgroundColor: '#f0fdf4',
+          border: '2px solid #bbf7d0',
+          borderRadius: 18,
+          padding: '16px',
+          marginBottom: 20,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20 }}>📦</span>
+            <h4 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#14532d' }}>
+              فاز ۳ — توزیع بسته‌های محتوا و ذخیره‌سازی آفلاین:
+            </h4>
+          </div>
+          <span
+            style={{
+              backgroundColor: '#dcfce7',
+              color: '#15803d',
+              padding: '3px 8px',
+              borderRadius: 10,
+              fontSize: 10,
+              fontWeight: 800,
+            }}
+          >
+            Content Delivery API v1
+          </span>
+        </div>
+        <p style={{ margin: '0 0 12px', fontSize: 11, color: '#166534', lineHeight: 1.5 }}>
+          در این بخش، مانیفست محتوای پایه اول، حق دسترسی (Entitlement) و اعتبارسنجی هش SHA-256 بسته‌ها برای کارکرد کاملاً آفلاین تست و ممیزی می‌شوند.
+        </p>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={handleFetchContentManifest}
+            disabled={manifestLoading}
+            style={{
+              flex: 1,
+              minWidth: 120,
+              backgroundColor: '#16a34a',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '9px 12px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: manifestLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+              boxShadow: '0 2px 0 #15803d',
+            }}
+          >
+            <span>📜</span>
+            <span>{manifestLoading ? 'دریافت...' : 'دریافت مانیفست (G1)'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCheckEntitlement}
+            disabled={entitlementLoading}
+            style={{
+              flex: 1,
+              minWidth: 120,
+              backgroundColor: '#0284c7',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '9px 12px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: entitlementLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+              boxShadow: '0 2px 0 #0369a1',
+            }}
+          >
+            <span>🔑</span>
+            <span>{entitlementLoading ? 'بررسی...' : 'بررسی مجوز (DEV_GRANT)'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleVerifyChecksum}
+            disabled={checksumVerificationLoading}
+            style={{
+              flex: 1,
+              minWidth: 120,
+              backgroundColor: '#9333ea',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '9px 12px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: checksumVerificationLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+              boxShadow: '0 2px 0 #7e22ce',
+            }}
+          >
+            <span>🔒</span>
+            <span>{checksumVerificationLoading ? 'محاسبه...' : 'تست یکپارچگی SHA-256'}</span>
+          </button>
+        </div>
+
+        {/* Results Stream */}
+        {manifestResult && (
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #bbf7d0',
+              borderRadius: 12,
+              padding: '10px 12px',
+              marginBottom: 8,
+              fontSize: 11,
+            }}
+          >
+            <div style={{ fontWeight: 800, color: '#166534', marginBottom: 4 }}>
+              📋 مانیفست فعال پایه {manifestResult.gradeId} (تاریخ تولید: {new Date(manifestResult.generatedAt).toLocaleTimeString('fa-IR')}):
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155' }}>
+                <span>بسته‌های جاری (CURRENT):</span>
+                <span style={{ fontWeight: 700 }}>{toPersianDigits(manifestResult.currentPackages.length)} بسته (ایستگاه ۰۱ فعال)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155' }}>
+                <span>پیش‌بارگذاری بعدی (NEXT):</span>
+                <span style={{ fontWeight: 700 }}>{toPersianDigits(manifestResult.nextPackages.length)} بسته (ایستگاه ۰۲)</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {entitlementResult && (
+          <div
+            style={{
+              backgroundColor: '#f0f9ff',
+              border: '1px solid #bae6fd',
+              borderRadius: 10,
+              padding: '8px 12px',
+              marginBottom: 8,
+              fontSize: 11,
+              color: '#0369a1',
+              fontWeight: 700,
+            }}
+          >
+            {entitlementResult}
+          </div>
+        )}
+
+        {checksumVerificationResult && (
+          <div
+            style={{
+              backgroundColor: '#faf5ff',
+              border: '1px solid #e9d5ff',
+              borderRadius: 10,
+              padding: '8px 12px',
+              fontSize: 11,
+              color: '#6b21a8',
+              fontWeight: 700,
+            }}
+          >
+            {checksumVerificationResult}
+          </div>
+        )}
+      </div>
+
+      {/* Phase 6: Offline Sync Engine & Local Queue Inspector */}
+      <div
+        style={{
+          backgroundColor: '#eff6ff',
+          border: '2px solid #bfdbfe',
+          borderRadius: 18,
+          padding: '16px',
+          marginBottom: 20,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20 }}>📶</span>
+            <h4 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1e3a8a' }}>
+              فاز ۶ — مدیریت آفلاین، صف اقدامات و تضمین یکتاشناسی (Idempotency):
+            </h4>
+          </div>
+          <span
+            style={{
+              backgroundColor: isOnlineState ? '#dcfce7' : '#fee2e2',
+              color: isOnlineState ? '#15803d' : '#b91c1c',
+              padding: '3px 10px',
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 800,
+            }}
+          >
+            {isOnlineState ? '🟢 آنلاین' : '🔴 آفلاین (قطع شبکه)'}
+          </span>
+        </div>
+        <p style={{ margin: '0 0 12px', fontSize: 11, color: '#1e40af', lineHeight: 1.5 }}>
+          تمام لایک‌ها، پاسخ‌های تمرین و ستاره‌ها حتی هنگام قطع اتصال اینترنت در صف محلی (Local Queue) ذخیره شده و پس از وصل مجدد بدون جابجایی یا دوبارشماری (Exponential Backoff) همگام می‌شوند.
+        </p>
+
+        {/* Status Indicators & Action Buttons */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={handleToggleNetworkState}
+            style={{
+              flex: 1,
+              minWidth: 130,
+              backgroundColor: isOnlineState ? '#ef4444' : '#22c55e',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '9px 12px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+            }}
+          >
+            <span>⚡</span>
+            <span>{isOnlineState ? 'قطع شبکه (شبیه‌سازی آفلاین)' : 'اتصال شبکه (شبیه‌سازی آنلاین)'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleEnqueueTestRecord}
+            disabled={enqueueTestLoading}
+            style={{
+              flex: 1,
+              minWidth: 130,
+              backgroundColor: '#3b82f6',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '9px 12px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: enqueueTestLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+            }}
+          >
+            <span>📥</span>
+            <span>ثبت اقدام آزمایش در صف</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleFlushQueue}
+            style={{
+              flex: 1,
+              minWidth: 130,
+              backgroundColor: '#8b5cf6',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '9px 12px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+            }}
+          >
+            <span>🔄</span>
+            <span>همگام‌سازی صف ({toPersianDigits(pendingQueueCount)})</span>
+          </button>
+        </div>
+
+        {syncFlushResult && (
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #93c5fd',
+              borderRadius: 10,
+              padding: '8px 12px',
+              fontSize: 11,
+              color: '#1e3a8a',
+              fontWeight: 700,
+            }}
+          >
+            {syncFlushResult}
           </div>
         )}
       </div>

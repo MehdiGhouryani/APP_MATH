@@ -143,12 +143,6 @@ export function DuolingoPath({
   const completedCount = nodes.filter((n) => n.status === 'COMPLETED').length;
 
   function handleNodeClick(node: PathNodeItem) {
-    if (node.status === 'LOCKED') {
-      soundFx.playTryAgain();
-      setLockedNoticeId(node.id);
-      setTimeout(() => setLockedNoticeId(null), 2000);
-      return;
-    }
     soundFx.playTap();
     onSelectNode(node);
   }
@@ -164,7 +158,7 @@ export function DuolingoPath({
           color: '#ffffff',
           boxShadow: '0 8px 24px rgba(30, 27, 75, 0.25)',
           position: 'relative',
-          marginBottom: 34,
+          marginBottom: 24,
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -215,20 +209,21 @@ export function DuolingoPath({
             marginTop: 16,
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
+            justifyContent: 'space-between',
             backgroundColor: 'rgba(255, 255, 255, 0.12)',
             padding: '6px 14px',
             borderRadius: '999px',
             fontSize: 12,
             fontWeight: 700,
-            width: 'fit-content',
             color: '#f8fafc',
           }}
         >
-          <span>🌱 پیشرفت ایستگاه:</span>
-          <span style={{ color: '#fde047', fontWeight: 800 }}>
-            {toPersianDigits(completedCount)} از {toPersianDigits(nodes.length)} مرحله تکمیل‌شده
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>🌱 پیشرفت:</span>
+            <span style={{ color: '#fde047', fontWeight: 800 }}>
+              {toPersianDigits(completedCount)} از {toPersianDigits(nodes.length)} مرحله تکمیل‌شده
+            </span>
+          </div>
         </div>
       </div>
 
@@ -308,6 +303,7 @@ export function DuolingoPath({
                     whiteSpace: 'nowrap',
                     zIndex: 20,
                     animation: 'bounceIn 0.3s ease-out',
+                    pointerEvents: 'none',
                   }}
                 >
                   <span>شروع یادگیری!</span>
@@ -342,6 +338,7 @@ export function DuolingoPath({
                     boxShadow: '0 4px 12px rgba(234, 88, 12, 0.4)',
                     whiteSpace: 'nowrap',
                     zIndex: 25,
+                    pointerEvents: 'none',
                   }}
                 >
                   🔒 ابتدا مرحله قبل را کامل کن!
@@ -358,6 +355,7 @@ export function DuolingoPath({
                     gap: 2,
                     fontSize: 14,
                     zIndex: 15,
+                    pointerEvents: 'none',
                   }}
                 >
                   <span>⭐</span>

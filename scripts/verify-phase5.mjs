@@ -28,7 +28,7 @@ const allFiles = fs.readdirSync(path.join(root, 'supabase/migrations')).sort();
 if (!allFiles.includes('0023_learning_runtime_execution.sql')) throw new Error('Phase 5 migration missing');
 for (const base of ['Unity', 'Unity3D']) {
   try {
-    const hits = execFileSync('grep', ['-Rni', base, 'apps', 'packages'], { cwd: root, encoding: 'utf8' });
+    const hits = execFileSync('grep', ['-Rni', '--exclude-dir=node_modules', '--exclude-dir=.next', '--exclude-dir=dist', base, 'apps', 'packages'], { cwd: root, encoding: 'utf8' });
     if (hits.trim()) throw new Error(`Forbidden Unity reference in implementation: ${hits}`);
   } catch (error) {
     if (error?.status === 1) continue;

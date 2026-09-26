@@ -3,10 +3,13 @@ import { test } from 'node:test';
 import { execFileSync } from 'node:child_process';
 import { rmSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
 
 const root = resolve(process.cwd());
+const require = createRequire(import.meta.url);
+const tscPath = require.resolve('typescript/bin/tsc');
 const pkg = resolve(root, 'packages/learning-runtime');
-execFileSync('tsc', ['-p', resolve(pkg, 'tsconfig.build.json')], { stdio: 'inherit' });
+execFileSync(process.execPath, [tscPath, '-p', resolve(pkg, 'tsconfig.build.json')], { stdio: 'inherit' });
 const runtime = await import(resolve(pkg, 'dist/index.js'));
 
 function makeContent(id = 'cv-st01-check') {

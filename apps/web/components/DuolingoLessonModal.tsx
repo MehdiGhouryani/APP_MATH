@@ -9,6 +9,7 @@ import { SymmetryMirror } from './SymmetryMirror';
 import { ComparisonScale } from './ComparisonScale';
 import type { PathNodeItem } from './DuolingoPath';
 import type { AnimationSemanticEvent } from '@math/contracts';
+import { evaluateLearningEncounter, INITIAL_SKILLS } from '../lib/learningEngine';
 
 interface DuolingoLessonModalProps {
   onClose: () => void;
@@ -69,65 +70,59 @@ export function DuolingoLessonModal({
   }
 
   function handleCheck() {
-    let correct = false;
+    let userAnswer: unknown = null;
+    let expectedAnswer: unknown = null;
 
     if (activeNode.type === 'COUNT') {
-      correct = selectedCountNum === 5;
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.eval(CountTask, answer=5)');
-      } else {
-        onEmitSemanticEvent('ANSWER_WRONG', `RuntimeEvaluator.eval(CountTask, answer=${selectedCountNum})`);
-      }
+      userAnswer = selectedCountNum;
+      expectedAnswer = 5;
     } else if (activeNode.type === 'PATTERN') {
-      correct = selectedPatternColor === 'blue';
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.eval(PatternTask, answer=BLUE)');
-      } else {
-        onEmitSemanticEvent('ANSWER_WRONG', 'RuntimeEvaluator.eval(PatternTask, answer=YELLOW)');
-      }
+      userAnswer = selectedPatternColor;
+      expectedAnswer = 'blue';
     } else if (activeNode.type === 'WONDER_GRID') {
-      correct = isGridSolved;
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.eval(WonderGrid, solved=true)');
-      } else {
-        onEmitSemanticEvent('ANSWER_WRONG', 'RuntimeEvaluator.eval(WonderGrid, solved=false)');
-      }
+      userAnswer = isGridSolved;
+      expectedAnswer = true;
     } else if (activeNode.type === 'TALLY') {
-      correct = tallyCount === 5;
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.eval(TallyMarks, count=5)');
-      } else {
-        onEmitSemanticEvent('ANSWER_WRONG', `RuntimeEvaluator.eval(TallyMarks, count=${tallyCount})`);
-      }
+      userAnswer = tallyCount;
+      expectedAnswer = 5;
     } else if (activeNode.type === 'SYMMETRY') {
-      correct = isSymmetrySolved;
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.eval(SymmetryMirror, solved=true)');
-      } else {
-        onEmitSemanticEvent('ANSWER_WRONG', 'RuntimeEvaluator.eval(SymmetryMirror, solved=false)');
-      }
+      userAnswer = isSymmetrySolved;
+      expectedAnswer = true;
     } else if (activeNode.type === 'SCALE') {
-      correct = isScaleSolved;
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.eval(ComparisonScale, solved=true)');
-      } else {
-        onEmitSemanticEvent('ANSWER_WRONG', 'RuntimeEvaluator.eval(ComparisonScale, solved=false)');
-      }
+      userAnswer = isScaleSolved;
+      expectedAnswer = true;
     } else if (activeNode.type === 'CHECK') {
-      correct = selectedSeqNum === 8;
-      if (correct) {
-        onEmitSemanticEvent('ANSWER_CORRECT', 'RuntimeEvaluator.evalIndependentCheck(Check1, answer=8)');
-      } else {
-        onEmitSemanticEvent('RECOVERY', 'LearningEngine.triggerSmartRecovery(Skill=G1-SK02)');
-      }
+      userAnswer = selectedSeqNum;
+      expectedAnswer = 8;
     } else {
-      correct = true;
+      userAnswer = true;
+      expectedAnswer = true;
     }
+
+    const currentSkill = INITIAL_SKILLS.find((s) => s.code === `G1-SK0${activeNode.stepNumber}`) ?? INITIAL_SKILLS[0]!;
+    const execution = evaluateLearningEncounter(
+      {
+        nodeId: activeNode.id,
+        skillCode: currentSkill.code,
+        type: activeNode.type,
+        userAnswer,
+        expectedAnswer,
+      },
+      currentSkill
+    );
+
+    const correct = execution.evaluation.correct;
 
     if (correct) {
       soundFx.playSuccess();
+      onEmitSemanticEvent('ANSWER_CORRECT', `RuntimeEvaluator.evalSuccess(Score=1.0, Feedback="${execution.feedbackText}")`);
     } else {
       soundFx.playTryAgain();
+      if (execution.nextStep === 'RECOVERY') {
+        onEmitSemanticEvent('RECOVERY', `LearningEngine.triggerSmartRecovery(Skill=${currentSkill.code})`);
+      } else {
+        onEmitSemanticEvent('ANSWER_WRONG', `RuntimeEvaluator.evalTryAgain(Score=0.0, Feedback="${execution.feedbackText}")`);
+      }
     }
 
     setEvaluation(correct ? 'CORRECT' : 'WRONG');
@@ -138,6 +133,7 @@ export function DuolingoLessonModal({
     if (evaluation === 'CORRECT') {
       setEvaluation('FINISHED');
       soundFx.playLevelPass();
+      onCompleteNode(activeNode.id);
       onEmitSemanticEvent('STATION_PASS', `Runtime.passNode(${activeNode.id})`);
     } else {
       setEvaluation('UNCHECKED');
@@ -148,6 +144,12 @@ export function DuolingoLessonModal({
     soundFx.playLevelPass();
     setIsChestOpened(true);
     onEmitSemanticEvent('REWARD_GRANTED', 'TreasureChest.open(Station=ST01)');
+  }
+
+  function handleOptionSelect(exerciseType: string, choiceValue: unknown, onSelect: () => void) {
+    console.log(`[DuolingoLessonModal] Choice selected -> Exercise: ${exerciseType}, Value:`, choiceValue);
+    soundFx.playBubblePop();
+    onSelect();
   }
 
   const isCheckDisabled =
@@ -168,9 +170,11 @@ export function DuolingoLessonModal({
         right: 0,
         bottom: 0,
         backgroundColor: '#ffffff',
-        zIndex: 50,
+        zIndex: 100,
         display: 'flex',
         flexDirection: 'column',
+        pointerEvents: 'auto',
+        touchAction: 'pan-y',
       }}
     >
       {/* Top Header */}
@@ -182,21 +186,32 @@ export function DuolingoLessonModal({
           gap: 14,
           borderBottom: '2px solid var(--border-subtle)',
           backgroundColor: '#ffffff',
+          zIndex: 10,
+          flexShrink: 0,
         }}
       >
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             onClose();
           }}
+          aria-label="بستن پنجره تمرین"
           style={{
             background: 'none',
             border: 'none',
             fontSize: 22,
             color: '#94a3b8',
             cursor: 'pointer',
-            padding: 4,
+            padding: 8,
+            minWidth: 44,
+            minHeight: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             fontWeight: 800,
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           ✕
@@ -237,9 +252,13 @@ export function DuolingoLessonModal({
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '20px 22px 140px',
+            padding: '20px 22px 150px',
             display: 'flex',
             flexDirection: 'column',
+            position: 'relative',
+            zIndex: 1,
+            pointerEvents: 'auto',
+            touchAction: 'pan-y',
           }}
         >
           {/* Mascot Prompt */}
@@ -295,7 +314,7 @@ export function DuolingoLessonModal({
 
           {/* 1. COUNT EXERCISE */}
           {activeNode.type === 'COUNT' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <div
                 style={{
                   backgroundColor: '#fffbeb',
@@ -309,6 +328,8 @@ export function DuolingoLessonModal({
                   flexWrap: 'wrap',
                   width: '100%',
                   marginBottom: 24,
+                  position: 'relative',
+                  zIndex: 5,
                 }}
               >
                 {[1, 2, 3, 4, 5].map((idx) => {
@@ -316,7 +337,11 @@ export function DuolingoLessonModal({
                   return (
                     <button
                       key={idx}
-                      onClick={() => toggleFruitTap(idx)}
+                      type="button"
+                      onClick={() => {
+                        console.log(`[DuolingoLessonModal] Orange tapped: item #${idx}`);
+                        toggleFruitTap(idx);
+                      }}
                       style={{
                         width: 58,
                         height: 58,
@@ -330,6 +355,10 @@ export function DuolingoLessonModal({
                         cursor: 'pointer',
                         transform: isTapped ? 'scale(1.1)' : 'scale(1)',
                         transition: 'all 0.15s ease',
+                        pointerEvents: 'auto',
+                        touchAction: 'manipulation',
+                        position: 'relative',
+                        zIndex: 5,
                       }}
                     >
                       🍊
@@ -344,6 +373,8 @@ export function DuolingoLessonModal({
                   gridTemplateColumns: 'repeat(4, 1fr)',
                   gap: 12,
                   width: '100%',
+                  position: 'relative',
+                  zIndex: 5,
                 }}
               >
                 {[3, 4, 5, 6].map((num) => {
@@ -351,12 +382,18 @@ export function DuolingoLessonModal({
                   return (
                     <button
                       key={num}
-                      onClick={() => {
-                        soundFx.playBubblePop();
-                        setSelectedCountNum(num);
-                      }}
+                      type="button"
+                      onClick={() => handleOptionSelect('COUNT', num, () => setSelectedCountNum(num))}
                       className={`math-choice-card ${isSelected ? 'selected' : ''}`}
-                      style={{ fontSize: 24, padding: '16px 0' }}
+                      style={{
+                        fontSize: 24,
+                        padding: '16px 0',
+                        cursor: 'pointer',
+                        pointerEvents: 'auto',
+                        touchAction: 'manipulation',
+                        position: 'relative',
+                        zIndex: 5,
+                      }}
                     >
                       {toPersianDigits(num)}
                     </button>
@@ -368,7 +405,7 @@ export function DuolingoLessonModal({
 
           {/* 2. PATTERN EXERCISE */}
           {activeNode.type === 'PATTERN' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <div
                 style={{
                   backgroundColor: '#f8fafc',
@@ -410,25 +447,39 @@ export function DuolingoLessonModal({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 14, width: '100%' }}>
+              <div style={{ display: 'flex', gap: 14, width: '100%', position: 'relative', zIndex: 5 }}>
                 <button
-                  onClick={() => {
-                    soundFx.playBubblePop();
-                    setSelectedPatternColor('blue');
-                  }}
+                  type="button"
+                  onClick={() => handleOptionSelect('PATTERN', 'blue', () => setSelectedPatternColor('blue'))}
                   className={`math-choice-card ${selectedPatternColor === 'blue' ? 'selected' : ''}`}
-                  style={{ flex: 1, gap: 8, fontSize: 16 }}
+                  style={{
+                    flex: 1,
+                    gap: 8,
+                    fontSize: 16,
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 5,
+                  }}
                 >
                   <span style={{ fontSize: 24 }}>🔵</span>
                   <span>دایره آبی</span>
                 </button>
                 <button
-                  onClick={() => {
-                    soundFx.playBubblePop();
-                    setSelectedPatternColor('yellow');
-                  }}
+                  type="button"
+                  onClick={() => handleOptionSelect('PATTERN', 'yellow', () => setSelectedPatternColor('yellow'))}
                   className={`math-choice-card ${selectedPatternColor === 'yellow' ? 'selected' : ''}`}
-                  style={{ flex: 1, gap: 8, fontSize: 16 }}
+                  style={{
+                    flex: 1,
+                    gap: 8,
+                    fontSize: 16,
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 5,
+                  }}
                 >
                   <span style={{ fontSize: 24 }}>🟡</span>
                   <span>دایره زرد</span>
@@ -439,8 +490,9 @@ export function DuolingoLessonModal({
 
           {/* 3. WONDER GRID EXERCISE */}
           {activeNode.type === 'WONDER_GRID' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <WonderGrid onSuccess={() => {
+                console.log('[DuolingoLessonModal] WonderGrid solved successfully');
                 soundFx.playSuccess();
                 setIsGridSolved(true);
               }} />
@@ -449,7 +501,7 @@ export function DuolingoLessonModal({
 
           {/* 4. TALLY EXERCISE */}
           {activeNode.type === 'TALLY' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <div
                 style={{
                   backgroundColor: '#fffbeb',
@@ -468,14 +520,18 @@ export function DuolingoLessonModal({
                   <div key={idx} style={{ fontSize: 36 }}>🍊</div>
                 ))}
               </div>
-              <InteractiveTallyMarks count={tallyCount} maxCount={8} onChangeCount={setTallyCount} />
+              <InteractiveTallyMarks count={tallyCount} maxCount={8} onChangeCount={(newCount) => {
+                console.log(`[DuolingoLessonModal] Tally count changed: ${newCount}`);
+                setTallyCount(newCount);
+              }} />
             </div>
           )}
 
           {/* 5. SYMMETRY EXERCISE */}
           {activeNode.type === 'SYMMETRY' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <SymmetryMirror onSuccess={() => {
+                console.log('[DuolingoLessonModal] SymmetryMirror solved successfully');
                 soundFx.playSuccess();
                 setIsSymmetrySolved(true);
               }} />
@@ -484,13 +540,14 @@ export function DuolingoLessonModal({
 
           {/* 6. SCALE EXERCISE */}
           {activeNode.type === 'SCALE' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <ComparisonScale
                 leftCount={4}
                 rightCount={2}
                 leftItem="🍎"
                 rightItem="🍐"
                 onCorrect={() => {
+                  console.log('[DuolingoLessonModal] ComparisonScale solved correctly');
                   soundFx.playSuccess();
                   setIsScaleSolved(true);
                 }}
@@ -500,7 +557,7 @@ export function DuolingoLessonModal({
 
           {/* 7. CHECK EXERCISE */}
           {activeNode.type === 'CHECK' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 5 }}>
               <div
                 style={{
                   backgroundColor: '#eef2ff',
@@ -535,6 +592,8 @@ export function DuolingoLessonModal({
                   gridTemplateColumns: 'repeat(4, 1fr)',
                   gap: 12,
                   width: '100%',
+                  position: 'relative',
+                  zIndex: 5,
                 }}
               >
                 {[7, 8, 9, 10].map((num) => {
@@ -542,12 +601,18 @@ export function DuolingoLessonModal({
                   return (
                     <button
                       key={num}
-                      onClick={() => {
-                        soundFx.playBubblePop();
-                        setSelectedSeqNum(num);
-                      }}
+                      type="button"
+                      onClick={() => handleOptionSelect('CHECK_SEQUENCE', num, () => setSelectedSeqNum(num))}
                       className={`math-choice-card ${isSelected ? 'selected' : ''}`}
-                      style={{ fontSize: 24, padding: '16px 0' }}
+                      style={{
+                        fontSize: 24,
+                        padding: '16px 0',
+                        cursor: 'pointer',
+                        pointerEvents: 'auto',
+                        touchAction: 'manipulation',
+                        position: 'relative',
+                        zIndex: 5,
+                      }}
                     >
                       {toPersianDigits(num)}
                     </button>
@@ -603,21 +668,23 @@ export function DuolingoLessonModal({
 
           {isChestOpened ? (
             <button
+              type="button"
               onClick={() => {
                 soundFx.playTap();
                 onCompleteNode(activeNode.id);
                 onClose();
               }}
               className="math-btn-success"
-              style={{ width: '100%', padding: '16px 0', fontSize: 17 }}
+              style={{ width: '100%', padding: '16px 0', fontSize: 17, cursor: 'pointer', pointerEvents: 'auto', touchAction: 'manipulation' }}
             >
               دریافت و بازگشت به نقشه
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleOpenChest}
               className="math-btn-saffron"
-              style={{ width: '100%', padding: '16px 0', fontSize: 17 }}
+              style={{ width: '100%', padding: '16px 0', fontSize: 17, cursor: 'pointer', pointerEvents: 'auto', touchAction: 'manipulation' }}
             >
               باز کردن صندوق 🎁
             </button>
@@ -683,13 +750,14 @@ export function DuolingoLessonModal({
           </div>
 
           <button
+            type="button"
             onClick={() => {
               soundFx.playTap();
               onCompleteNode(activeNode.id);
               onClose();
             }}
             className="math-btn-success"
-            style={{ width: '100%', padding: '16px 0', fontSize: 17 }}
+            style={{ width: '100%', padding: '16px 0', fontSize: 17, cursor: 'pointer', pointerEvents: 'auto', touchAction: 'manipulation' }}
           >
             ادامه مسیر یادگیری
           </button>
@@ -719,6 +787,7 @@ export function DuolingoLessonModal({
                 : '2px solid var(--border-subtle)',
             padding: '16px 22px 20px',
             zIndex: 60,
+            pointerEvents: 'auto',
           }}
         >
           {evaluation === 'CORRECT' && (
@@ -788,18 +857,20 @@ export function DuolingoLessonModal({
           {/* Action Button */}
           {evaluation === 'UNCHECKED' ? (
             <button
+              type="button"
               onClick={handleCheck}
               disabled={isCheckDisabled}
               className={isCheckDisabled ? 'math-btn-disabled' : 'math-btn-primary'}
-              style={{ width: '100%', padding: '15px 0', fontSize: 17 }}
+              style={{ width: '100%', padding: '15px 0', fontSize: 17, cursor: isCheckDisabled ? 'not-allowed' : 'pointer', pointerEvents: 'auto', touchAction: 'manipulation' }}
             >
               بررسی کن
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleContinue}
               className={evaluation === 'CORRECT' ? 'math-btn-success' : 'math-btn-saffron'}
-              style={{ width: '100%', padding: '15px 0', fontSize: 17 }}
+              style={{ width: '100%', padding: '15px 0', fontSize: 17, cursor: 'pointer', pointerEvents: 'auto', touchAction: 'manipulation' }}
             >
               {evaluation === 'CORRECT' ? 'ادامه' : 'تلاش دوباره'}
             </button>

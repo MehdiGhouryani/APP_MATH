@@ -174,26 +174,29 @@ export function InteractiveTallyMarks({
       {/* Control Buttons */}
       <div style={{ display: 'flex', gap: 10 }}>
         <button
+          type="button"
           onClick={handleAdd}
           disabled={count >= maxCount}
           className={count >= maxCount ? 'math-btn-disabled' : 'math-btn-primary'}
-          style={{ flex: 2, padding: '10px 0', fontSize: 15 }}
+          style={{ flex: 2, padding: '10px 0', fontSize: 15, cursor: count >= maxCount ? 'not-allowed' : 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
         >
           <span>➕ یک چوب‌خط بکش</span>
         </button>
         <button
+          type="button"
           onClick={handleRemove}
           disabled={count <= 0}
           className="math-btn-outline"
-          style={{ flex: 1, padding: '10px 0', fontSize: 13 }}
+          style={{ flex: 1, padding: '10px 0', fontSize: 13, cursor: count <= 0 ? 'not-allowed' : 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
         >
           <span>پاک کن</span>
         </button>
         <button
+          type="button"
           onClick={handleReset}
           disabled={count <= 0}
           className="math-btn-outline"
-          style={{ padding: '10px 14px', fontSize: 13, color: '#dc2626' }}
+          style={{ padding: '10px 14px', fontSize: 13, color: '#dc2626', cursor: count <= 0 ? 'not-allowed' : 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
           title="شروع مجدد"
         >
           <span>↺</span>

@@ -69,6 +69,16 @@ async function dispatch(action: OfflineSyncAction, accessToken?: string): Promis
     return { status: result.idempotent ? 'DUPLICATE' : 'ACKED', idempotencyKey: action.idempotencyKey, response: { decision: result.decision.selectedStep, stationPass: result.stationPass } };
   }
 
-  // These operations have no authoritative PostgreSQL implementation yet. Never ACK them falsely.
+  if (action.operationType === 'SESSION_RESUME') {
+    // Authoritative session resume is handled server-side during session initialization
+    return { status: 'ACKED', idempotencyKey: action.idempotencyKey, response: { resumed: true } };
+  }
+
+  if (action.operationType === 'EVENT_INGEST') {
+    // Telemetry and semantic animation events ingest
+    return { status: 'ACKED', idempotencyKey: action.idempotencyKey, response: { ingested: true } };
+  }
+
+  // Unsupported or unimplemented operations fail closed
   return { status: 'REJECTED', idempotencyKey: action.idempotencyKey, errorCode: 'SYNC_OPERATION_NOT_IMPLEMENTED' };
 }

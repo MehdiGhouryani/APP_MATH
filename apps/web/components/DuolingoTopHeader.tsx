@@ -9,6 +9,7 @@ interface DuolingoTopHeaderProps {
   onSelectGrade: (grade: GradeMeta) => void;
   activeCharId: string;
   onOpenCompanionModal?: () => void;
+  onOpenAuthModal?: () => void;
   weeklyActiveDays?: number;
   learningStars?: number;
 }
@@ -18,6 +19,7 @@ export function DuolingoTopHeader({
   onSelectGrade,
   activeCharId,
   onOpenCompanionModal,
+  onOpenAuthModal,
   weeklyActiveDays = 3,
   learningStars = 120,
 }: DuolingoTopHeaderProps) {
@@ -42,6 +44,7 @@ export function DuolingoTopHeader({
       {/* Grade Selector Pill (پایه‌های ۱ تا ۶) */}
       <div style={{ position: 'relative' }}>
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setShowGradeMenu(!showGradeMenu);
@@ -58,6 +61,8 @@ export function DuolingoTopHeader({
             fontWeight: 800,
             fontSize: 13,
             color: '#3c3c3c',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           <span>🎓</span>
@@ -90,6 +95,7 @@ export function DuolingoTopHeader({
                 padding: 8,
                 zIndex: 100,
                 animation: 'duoSlideUp 0.15s ease-out',
+                pointerEvents: 'auto',
               }}
             >
             <div style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#777' }}>
@@ -100,6 +106,7 @@ export function DuolingoTopHeader({
               return (
                 <button
                   key={g.id}
+                  type="button"
                   onClick={() => {
                     soundFx.playTap();
                     onSelectGrade(g);
@@ -119,6 +126,8 @@ export function DuolingoTopHeader({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    touchAction: 'manipulation',
+                    pointerEvents: 'auto',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -151,27 +160,8 @@ export function DuolingoTopHeader({
         )}
       </div>
 
-      {/* Educational Engagement Metrics: Learning Rhythm, Stars, Safe Learning */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        {/* Learning Rhythm (ریتم یادگیری هفتگی بدون اضطراب یا جریمه قطع استریک) */}
-        <div
-          title="ریتم یادگیری: ۳ روز یادگیری در این هفته"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            fontWeight: 800,
-            fontSize: 13,
-            color: '#d97706',
-            backgroundColor: '#fef3c7',
-            padding: '4px 10px',
-            borderRadius: '12px',
-          }}
-        >
-          <span style={{ fontSize: 15 }}>🌱</span>
-          <span>{toPersianDigits(weeklyActiveDays)} روز در هفته</span>
-        </div>
-
+      {/* Educational Engagement Metrics: Stars, Safe Sync, Auth Gateway, Mascot */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* Knowledge Stars (ستاره‌های دانایی حاصل از تسلط آموزشی) */}
         <div
           title="ستاره‌های دانایی حاصل از حل مسائل"
@@ -180,20 +170,62 @@ export function DuolingoTopHeader({
             alignItems: 'center',
             gap: 4,
             fontWeight: 800,
-            fontSize: 14,
+            fontSize: 13,
             color: '#b45309',
             backgroundColor: '#fffbeb',
             border: '1px solid #fde68a',
-            padding: '4px 10px',
+            padding: '4px 8px',
             borderRadius: '12px',
+            whiteSpace: 'nowrap',
           }}
         >
-          <span style={{ fontSize: 16 }}>⭐</span>
+          <span style={{ fontSize: 15 }}>⭐</span>
           <span>{toPersianDigits(learningStars)}</span>
         </div>
 
+        {/* Offline / Online Sync Status Pill */}
+        <div
+          title="وضعیت اتصال شبکه و همگام‌سازی محلی"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: '#22c55e',
+            boxShadow: '0 0 0 2.5px rgba(34, 197, 94, 0.2)',
+            flexShrink: 0,
+          }}
+        />
+
+        {/* Login / Auth Gateway Trigger Button */}
+        {onOpenAuthModal && (
+          <button
+            type="button"
+            onClick={onOpenAuthModal}
+            title="ورود یا ثبت‌نام حساب کاربری"
+            style={{
+              background: '#f0fdf4',
+              border: '1.5px solid #86efac',
+              borderRadius: '12px',
+              padding: '4px 10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 12,
+              fontWeight: 800,
+              color: '#166534',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
+            }}
+          >
+            <span>📱</span>
+            <span>ورود</span>
+          </button>
+        )}
+
         {/* Active Mascot Avatar */}
         <button
+          type="button"
           onClick={onOpenCompanionModal}
           title={`همراه یادگیری: ${activeChar.name} (${activeChar.role})`}
           style={{
@@ -208,6 +240,8 @@ export function DuolingoTopHeader({
             cursor: 'pointer',
             padding: 0,
             boxShadow: `0 2px 8px ${activeChar.themeColor}30`,
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           <span style={{ fontSize: 18 }}>

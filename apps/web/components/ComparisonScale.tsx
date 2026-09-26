@@ -133,23 +133,26 @@ export function ComparisonScale({
       {/* Choice Buttons */}
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
         <button
+          type="button"
           onClick={() => handleSelect('>')}
           className={`math-choice-card ${selectedSign === '>' ? 'selected' : ''}`}
-          style={{ flex: 1, fontSize: 24, padding: '12px 0' }}
+          style={{ flex: 1, fontSize: 24, padding: '12px 0', cursor: 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
         >
           {'>'}
         </button>
         <button
+          type="button"
           onClick={() => handleSelect('=')}
           className={`math-choice-card ${selectedSign === '=' ? 'selected' : ''}`}
-          style={{ flex: 1, fontSize: 24, padding: '12px 0' }}
+          style={{ flex: 1, fontSize: 24, padding: '12px 0', cursor: 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
         >
           {'='}
         </button>
         <button
+          type="button"
           onClick={() => handleSelect('<')}
           className={`math-choice-card ${selectedSign === '<' ? 'selected' : ''}`}
-          style={{ flex: 1, fontSize: 24, padding: '12px 0' }}
+          style={{ flex: 1, fontSize: 24, padding: '12px 0', cursor: 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
         >
           {'<'}
         </button>

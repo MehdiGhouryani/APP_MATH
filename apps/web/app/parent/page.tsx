@@ -51,7 +51,6 @@ export default function ParentHome() {
         <h1>پرتال والدین</h1>
         <p style={{ color: '#dc2626' }}>{error}</p>
         <Link href="/" className="btn-back">بازگشت به خانه</Link>
-        <style>{css}</style>
       </main>
     );
   }
@@ -61,7 +60,6 @@ export default function ParentHome() {
       <main className="adult-shell">
         <h1>پرتال والدین</h1>
         <p>در حال بارگذاری گزارش...</p>
-        <style>{css}</style>
       </main>
     );
   }
@@ -154,29 +152,6 @@ export default function ParentHome() {
       <p className="muted" style={{ marginTop: 24 }}>
         🛡️ پرتال والدین (Parent Lite) صرفاً جهت آگاهی، مشاهده و حمایت عاطفی است؛ وضعیت تسلط (Learning State) و مسیر یادگیری کودک را مستقیماً تغییر نمی‌دهد.
       </p>
-      <style>{css}</style>
     </main>
   );
 }
-
-const css = `
-  body { margin: 0; background: #fffaf5; font-family: var(--font-vazir, 'Vazirmatn', system-ui); }
-  .adult-shell { max-width: 1100px; margin: auto; padding: 32px; }
-  .adult-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px; }
-  .eyebrow { font-size: 13px; color: #64748b; margin: 0 0 6px; font-weight: 600; }
-  .adult-header h1 { margin: 0; font-size: 26px; color: #1e293b; font-weight: 800; }
-  .btn-back { padding: 8px 16px; border-radius: 12px; background: #ffffff; border: 1px solid #cbd5e1; text-decoration: none; color: #1e293b; font-weight: 600; font-size: 14px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0; }
-  .card { background: white; border: 1px solid #eadfd4; border-radius: 22px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-  .card h2 { margin-top: 0; font-size: 18px; color: #1e293b; }
-  .card strong { display: block; font-size: 32px; margin: 8px 0; color: #0f172a; font-weight: 800; }
-  .row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0e9e2; font-size: 14px; }
-  .pill { padding: 4px 12px; border-radius: 999px; background: #f1eee8; font-size: 12px; font-weight: 700; }
-  .pill.ok { background: #e8f6ea; color: #166534; }
-  .pill.info { background: #e8f0ff; color: #1e40af; }
-  .pill.warning { background: #fff0d8; color: #9a3412; }
-  .tip { background: #fff7e9; border: 1px solid #fed7aa; border-radius: 14px; padding: 14px; margin-top: 14px; color: #7c2d12; }
-  .muted { opacity: .75; font-size: 13px; color: #64748b; }
-  @media(max-width:800px){ .grid-3, .grid-2 { grid-template-columns: 1fr; } .adult-shell { padding: 20px; } }
-`;

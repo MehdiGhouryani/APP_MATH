@@ -1,5 +1,44 @@
 'use client';
-import { useEffect,useState } from 'react';
-const T='teacher-dev-01';
-export default function TeacherClass(){ const [rows,setRows]=useState<any[]>([]); const [className,setClassName]=useState(''); const [classId,setClassId]=useState('class-g1-demo'); useEffect(()=>{const q=new URLSearchParams(window.location.search); const id=q.get('classId')||'class-g1-demo'; setClassId(id); fetch(`/api/v1/teacher/${T}/classes/${id}`).then(r=>r.json()).then(x=>{setRows(x.students||[]);setClassName(x.className||id)});},[]); return <main dir="rtl" className="adult-shell"><a href="/teacher">← برگشت</a><h1>{className}</h1><section className="grid-2">{rows.map(s=><article className="card" key={s.learningIdentityId}><h2>{s.displayName}</h2><p>ایستگاه: {s.currentStation}</p><p>وضعیت: {s.status}</p><p>تصمیم اخیر: {s.recentDecision}</p><a href={`/teacher/students/${s.learningIdentityId}`}>Snapshot</a></article>)}</section><style>{css}</style></main> }
-const css=`body{margin:0;background:#fffaf5;font-family:system-ui}.adult-shell{max-width:1100px;margin:auto;padding:32px}.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:20px}.card{background:#fff;border:1px solid #eadfd4;border-radius:20px;padding:20px}@media(max-width:800px){.grid-2{grid-template-columns:1fr}}`;
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+const T = 'teacher-dev-01';
+
+export default function TeacherClass() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [className, setClassName] = useState('');
+
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const id = q.get('classId') || 'class-g1-demo';
+    fetch(`/api/v1/teacher/${T}/classes/${id}`)
+      .then((r) => r.json())
+      .then((x) => {
+        setRows(x.students || []);
+        setClassName(x.className || id);
+      });
+  }, []);
+
+  return (
+    <main dir="rtl" className="adult-shell">
+      <Link href="/teacher" className="btn-back">← برگشت</Link>
+      <h1 style={{ marginTop: 16 }}>{className}</h1>
+      <section className="grid-2">
+        {rows.map((s) => (
+          <article className="card" key={s.learningIdentityId}>
+            <h2 style={{ marginTop: 0 }}>{s.displayName}</h2>
+            <p style={{ color: '#475569', margin: '4px 0' }}>ایستگاه: {s.currentStation}</p>
+            <p style={{ color: '#475569', margin: '4px 0' }}>وضعیت: {s.status}</p>
+            <p style={{ color: '#475569', margin: '4px 0' }}>تصمیم اخیر: {s.recentDecision}</p>
+            <div style={{ marginTop: 12 }}>
+              <Link href={`/teacher/students/${s.learningIdentityId}`} className="btn-back">
+                مشاهده پروندۀ یادگیری
+              </Link>
+            </div>
+          </article>
+        ))}
+      </section>
+    </main>
+  );
+}

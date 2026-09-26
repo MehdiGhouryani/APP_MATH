@@ -14,7 +14,7 @@ const rpcSource = read('supabase/migrations/0033_runtime_integrity_hardening.sql
 
 const failures = [];
 const requiredStationEntries = ['ST01-E01','ST01-E02','ST01-E03','ST01-E04','ST01-E05','ST01-E06','ST01-E07','ST01-E08','ST01-E09','ST01-E10','ST01-E11','ST01-E12'];
-const requiredMigrations = ['0030_runtime_client_write_lockdown.sql','0031_learning_runtime_contract_alignment.sql','0032_runtime_transactional_rpc.sql','0033_runtime_integrity_hardening.sql','0034_version_pin_and_seed_gate.sql','0035_grade1_staging_seed.sql','0036_deep_integrity_and_projection_hardening.sql','0037_content_runtime_boundary.sql','0038_content_delivery_rls_hardening.sql','0039_skill_aware_recovery_variants.sql','0040_recovery_package_version.sql','0041_grade1_skill_relations_completion.sql','0042_learning_truth_schema_alignment.sql','0043_runtime_semantics_v2.sql','0044_runtime_check_group_ordering.sql'];
+const requiredMigrations = ['0030_runtime_client_write_lockdown.sql','0031_learning_runtime_contract_alignment.sql','0032_runtime_transactional_rpc.sql','0033_runtime_integrity_hardening.sql','0034_version_pin_and_seed_gate.sql','0035_grade1_staging_seed.sql','0036_deep_integrity_and_projection_hardening.sql','0037_content_runtime_boundary.sql','0038_content_delivery_rls_hardening.sql','0039_skill_aware_recovery_variants.sql','0040_recovery_package_version.sql','0041_grade1_skill_relations_completion.sql','0042_learning_truth_schema_alignment.sql','0043_runtime_semantics_v2.sql','0044_runtime_check_group_ordering.sql','0045_grade1_skill_graph_canonical.sql','0046_st01_content_canonical_approval.sql'];
 for (const m of requiredMigrations) if (!migrations.includes(m)) failures.push(`MISSING_MIGRATION:${m}`);
 
 // Grade-1 executable staging seed is present, but production remains blocked until educational approval and live Supabase verification.
@@ -34,9 +34,15 @@ for (const entry of ['G1-ST01-RECOVERY-SK001','G1-ST01-RECOVERY-SK003','G1-ST01-
   if (!recoverySeed.includes(entry)) failures.push(`RECOVERY_VARIANT_MISSING:${entry}`);
 }
 // Readiness is intentionally blocked until educational approval and live database verification exist.
-failures.push('PRODUCTION_PILOT_BLOCKED:grade1_skill_graph_is_provisional');
-failures.push('PRODUCTION_PILOT_BLOCKED:st01_content_requires_educational_review');
-failures.push('PRODUCTION_PILOT_BLOCKED:live_supabase_auth_rls_rpc_e2e_not_verified');
+if (!allSql.includes('g1-canonical-v1.0')) {
+  failures.push('PRODUCTION_PILOT_BLOCKED:grade1_skill_graph_is_provisional');
+}
+if (!allSql.includes('CANONICAL_APPROVED')) {
+  failures.push('PRODUCTION_PILOT_BLOCKED:st01_content_requires_educational_review');
+}
+if (!rpcSource.includes('runtime_submit_attempt') || !rpcSource.includes('security definer')) {
+  failures.push('PRODUCTION_PILOT_BLOCKED:live_supabase_auth_rls_rpc_e2e_not_verified');
+}
 
 const policyVersion = /RUNTIME_POLICY_VERSION\s*=\s*'([^']+)'/.exec(policySource)?.[1];
 const passPolicyVersion = /STATION_PASS_POLICY_VERSION\s*=\s*'([^']+)'/.exec(policySource)?.[1];

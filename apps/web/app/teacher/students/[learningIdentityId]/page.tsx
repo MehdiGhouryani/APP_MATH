@@ -1,5 +1,99 @@
 'use client';
-import { useEffect, useState } from 'react';
-const T='teacher-dev-01';
-export default function StudentSnapshot({params}:{params:{learningIdentityId:string}}){const [data,setData]=useState<any>(null);const [observation,setObservation]=useState('');const [message,setMessage]=useState(''); const load=()=>fetch(`/api/v1/teacher/${T}/students/${params.learningIdentityId}`).then(r=>r.json()).then(setData); useEffect(()=>{void load();},[params.learningIdentityId]); async function save(){const r=await fetch(`/api/v1/teacher/students/${params.learningIdentityId}/observations`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({teacherAccountId:T,observation})});setMessage(r.ok?'ثبت شد':'ثبت نشد');setObservation('');void load();} if(!data)return <main className="adult-shell"><p>در حال بارگذاری...</p></main>; return <main dir="rtl" className="adult-shell"><a href="/teacher">← برگشت</a><h1>{data.displayName}</h1><section className="card"><h2>وضعیت فعلی</h2><p>{data.currentStation.code} — {data.currentStation.title}</p><p>قدم پیشنهادی: {data.recommendedNextAction}</p>{data.currentDecision&&<p>Decision: {data.currentDecision.step} / {data.currentDecision.objectiveContext}</p>}</section><section className="card"><h2>Skills</h2>{data.skills.map((s:any)=><div className="row" key={s.skillCode}><span>{s.title}</span><span>{s.bucket}</span></div>)}</section><section className="card"><h2>Observation</h2><textarea value={observation} onChange={e=>setObservation(e.target.value)} rows={4} style={{width:'100%',padding:10}}/><button onClick={()=>void save()} style={{marginTop:10,padding:'10px 14px'}}>ثبت مشاهده</button><p>{message}</p><small>Observation با provenance ذخیره می‌شود و Learning State را مستقیماً تغییر نمی‌دهد.</small></section><style>{css}</style></main>}
-const css=`body{margin:0;background:#fffaf5;font-family:system-ui}.adult-shell{max-width:900px;margin:auto;padding:32px}.card{background:#fff;border:1px solid #eadfd4;border-radius:20px;padding:20px;margin:16px 0}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0e9e2}`;
+
+import { useEffect, useState, use } from 'react';
+import Link from 'next/link';
+
+const T = 'teacher-dev-01';
+
+export default function StudentSnapshot({ params }: { params: Promise<{ learningIdentityId: string }> }) {
+  const resolvedParams = use(params);
+  const [data, setData] = useState<any>(null);
+  const [observation, setObservation] = useState('');
+  const [message, setMessage] = useState('');
+
+  const load = () =>
+    fetch(`/api/v1/teacher/${T}/students/${resolvedParams.learningIdentityId}`)
+      .then((r) => r.json())
+      .then(setData);
+
+  useEffect(() => {
+    void load();
+  }, [resolvedParams.learningIdentityId]);
+
+  async function save() {
+    const r = await fetch(`/api/v1/teacher/students/${resolvedParams.learningIdentityId}/observations`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ teacherAccountId: T, observation }),
+    });
+    setMessage(r.ok ? 'ثبت شد' : 'ثبت نشد');
+    setObservation('');
+    void load();
+  }
+
+  if (!data)
+    return (
+      <main className="adult-shell">
+        <p>در حال بارگذاری پرونده دانش‌آموز...</p>
+      </main>
+    );
+
+  return (
+    <main dir="rtl" className="adult-shell">
+      <Link href="/teacher" className="btn-back">← برگشت</Link>
+      <h1 style={{ marginTop: 16 }}>{data.displayName}</h1>
+      
+      <section className="card">
+        <h2>وضعیت فعلی یادگیری</h2>
+        <p>{data.currentStation.code} — {data.currentStation.title}</p>
+        <p>قدم پیشنهادی: {data.recommendedNextAction}</p>
+        {data.currentDecision && (
+          <p>
+            تصمیم موتور یادگیری: {data.currentDecision.step} / {data.currentDecision.objectiveContext}
+          </p>
+        )}
+      </section>
+
+      <section className="card">
+        <h2>مهارت‌ها (Skills)</h2>
+        {data.skills.map((s: any) => (
+          <div className="row" key={s.skillCode}>
+            <span>{s.title}</span>
+            <span className={`pill ${s.bucket.toLowerCase()}`}>{s.bucket}</span>
+          </div>
+        ))}
+      </section>
+
+      <section className="card">
+        <h2>ثبت مشاهده معلم (Teacher Observation)</h2>
+        <textarea
+          value={observation}
+          onChange={(e) => setObservation(e.target.value)}
+          rows={4}
+          style={{ width: '100%', padding: 10, borderRadius: 12, border: '1px solid #cbd5e1' }}
+          placeholder="یادداشت در مورد سطح تسلط دانش‌آموز..."
+        />
+        <button
+          type="button"
+          onClick={() => void save()}
+          style={{
+            marginTop: 10,
+            padding: '10px 18px',
+            backgroundColor: '#3b52d4',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 12,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          ثبت مشاهده
+        </button>
+        {message && <p style={{ marginTop: 8, fontWeight: 700 }}>{message}</p>}
+        <small style={{ display: 'block', marginTop: 8, color: '#64748b' }}>
+          مشاهده معلمان با حفظ منشأ (Provenance) ذخیره شده و وضعیت تسلط را مستقیماً دستکاری نمی‌کند.
+        </small>
+      </section>
+    </main>
+  );
+}

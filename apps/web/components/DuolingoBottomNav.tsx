@@ -22,16 +22,18 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
   return (
     <nav
       style={{
+        position: 'relative',
         backgroundColor: '#ffffff',
         borderTop: '2px solid #e5e5e5',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
         padding: '6px 8px 10px',
-        zIndex: 50,
+        zIndex: 40,
         flexShrink: 0,
         width: '100%',
         boxSizing: 'border-box',
+        pointerEvents: 'auto',
       }}
     >
       {tabs.map((tab) => {
@@ -60,6 +62,7 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
               touchAction: 'manipulation',
               userSelect: 'none',
               outline: 'none',
+              pointerEvents: 'auto',
             }}
           >
             <span style={{ fontSize: 22 }}>{tab.icon}</span>

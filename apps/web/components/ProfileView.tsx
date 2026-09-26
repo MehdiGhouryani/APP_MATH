@@ -105,6 +105,7 @@ export function ProfileView({
             return (
               <button
                 key={char.id}
+                type="button"
                 onClick={() => {
                   soundFx.playCharacterChirp(char.id);
                   onSelectChar(char.id);
@@ -120,6 +121,8 @@ export function ProfileView({
                   alignItems: 'center',
                   cursor: 'pointer',
                   textAlign: 'center',
+                  touchAction: 'manipulation',
+                  pointerEvents: 'auto',
                 }}
               >
                 <div style={{ fontSize: 32, marginBottom: 4 }}>

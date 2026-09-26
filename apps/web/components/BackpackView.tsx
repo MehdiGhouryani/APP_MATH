@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
+import { evaluateLearningEncounter, INITIAL_SKILLS } from '../lib/learningEngine';
 
 interface SkillItem {
   code: string;
@@ -55,7 +56,19 @@ export function BackpackView() {
   const masteredCount = skills.filter((s) => s.status === 'MASTERED').length;
 
   function handleCompleteReview() {
-    if (reviewAnswer === 8) {
+    const currentSkill = INITIAL_SKILLS.find((s) => s.code === 'G1-SK03')!;
+    const result = evaluateLearningEncounter(
+      {
+        nodeId: 'review-g1-sk03',
+        skillCode: 'G1-SK03',
+        type: 'CHECK',
+        userAnswer: reviewAnswer,
+        expectedAnswer: 8,
+      },
+      currentSkill
+    );
+
+    if (result.evaluation.correct) {
       soundFx.playSuccess();
       setReviewEvaluated('CORRECT');
       setSkills((prev) =>
@@ -94,6 +107,7 @@ export function BackpackView() {
       {/* View Switcher: SKILLS | BADGES | TOOLS */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setActiveTab('SKILLS');
@@ -108,11 +122,14 @@ export function BackpackView() {
             fontWeight: 800,
             fontSize: 13,
             cursor: 'pointer',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           📜 مهارت‌ها ({toPersianDigits(skills.length)})
         </button>
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setActiveTab('BADGES');
@@ -127,11 +144,14 @@ export function BackpackView() {
             fontWeight: 800,
             fontSize: 13,
             cursor: 'pointer',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           🏅 مدال‌ها ({toPersianDigits(badges.filter((b) => b.unlocked).length)})
         </button>
         <button
+          type="button"
           onClick={() => {
             soundFx.playTap();
             setActiveTab('TOOLS');
@@ -146,6 +166,8 @@ export function BackpackView() {
             fontWeight: 800,
             fontSize: 13,
             cursor: 'pointer',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
           }}
         >
           🛠️ ابزارها ({toPersianDigits(tools.length)})
@@ -179,6 +201,7 @@ export function BackpackView() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   soundFx.playTap();
                   setReviewModalOpen(true);
@@ -186,7 +209,7 @@ export function BackpackView() {
                   setReviewAnswer(null);
                 }}
                 className="math-btn-saffron"
-                style={{ padding: '8px 14px', fontSize: 13 }}
+                style={{ padding: '8px 14px', fontSize: 13, touchAction: 'manipulation', pointerEvents: 'auto' }}
               >
                 شروع مرور
               </button>
@@ -196,6 +219,7 @@ export function BackpackView() {
           {/* Filter Sub-Tabs */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <button
+              type="button"
               onClick={() => {
                 soundFx.playTap();
                 setFilter('ALL');
@@ -210,11 +234,14 @@ export function BackpackView() {
                 fontWeight: 800,
                 fontSize: 12,
                 cursor: 'pointer',
+                touchAction: 'manipulation',
+                pointerEvents: 'auto',
               }}
             >
               همه ({toPersianDigits(skills.length)})
             </button>
             <button
+              type="button"
               onClick={() => {
                 soundFx.playTap();
                 setFilter('MASTERED');
@@ -229,11 +256,14 @@ export function BackpackView() {
                 fontWeight: 800,
                 fontSize: 12,
                 cursor: 'pointer',
+                touchAction: 'manipulation',
+                pointerEvents: 'auto',
               }}
             >
               تثبیت‌شده ({toPersianDigits(masteredCount)})
             </button>
             <button
+              type="button"
               onClick={() => {
                 soundFx.playTap();
                 setFilter('REVIEW');
@@ -248,6 +278,8 @@ export function BackpackView() {
                 fontWeight: 800,
                 fontSize: 12,
                 cursor: 'pointer',
+                touchAction: 'manipulation',
+                pointerEvents: 'auto',
               }}
             >
               مرور ({toPersianDigits(reviewCount)})
@@ -483,13 +515,14 @@ export function BackpackView() {
               {[7, 8, 9, 10].map((num) => (
                 <button
                   key={num}
+                  type="button"
                   onClick={() => {
                     soundFx.playBubblePop();
                     setReviewAnswer(num);
                     setReviewEvaluated('UNCHECKED');
                   }}
                   className={`math-choice-card ${reviewAnswer === num ? 'selected' : ''}`}
-                  style={{ fontSize: 22, padding: '12px 0' }}
+                  style={{ fontSize: 22, padding: '12px 0', cursor: 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
                 >
                   {toPersianDigits(num)}
                 </button>
@@ -502,12 +535,13 @@ export function BackpackView() {
                   🎉 آفرین! مهارت به وضعیت تثبیت‌شده ارتقا یافت!
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     soundFx.playTap();
                     setReviewModalOpen(false);
                   }}
                   className="math-btn-success"
-                  style={{ width: '100%', padding: '12px 0', fontSize: 15 }}
+                  style={{ width: '100%', padding: '12px 0', fontSize: 15, cursor: 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
                 >
                   بستن و ثبت
                 </button>
@@ -515,16 +549,18 @@ export function BackpackView() {
             ) : (
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
+                  type="button"
                   onClick={() => {
                     soundFx.playTap();
                     setReviewModalOpen(false);
                   }}
                   className="math-btn-neutral"
-                  style={{ flex: 1, padding: '12px 0', fontSize: 14 }}
+                  style={{ flex: 1, padding: '12px 0', fontSize: 14, cursor: 'pointer', touchAction: 'manipulation', pointerEvents: 'auto' }}
                 >
                   انصراف
                 </button>
                 <button
+                  type="button"
                   onClick={handleCompleteReview}
                   disabled={reviewAnswer === null}
                   className="math-btn-primary"
@@ -533,6 +569,9 @@ export function BackpackView() {
                     padding: '12px 0',
                     fontSize: 14,
                     opacity: reviewAnswer === null ? 0.5 : 1,
+                    cursor: reviewAnswer === null ? 'not-allowed' : 'pointer',
+                    touchAction: 'manipulation',
+                    pointerEvents: 'auto',
                   }}
                 >
                   بررسی کن
