@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "2b580a79-15e5-4af8-a759-e515662341c8"
+      }
+    },
+    "android": {
+      "package": "com.mohammadmahdi670.mathlearningproduct"
+    }
+  }
+}

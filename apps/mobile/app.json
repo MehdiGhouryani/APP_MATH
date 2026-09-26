@@ -8,7 +8,18 @@
     "jsEngine": "hermes",
     "newArchEnabled": true,
     "scheme": "mathlearning",
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
+        }
+      ]
+    ],
     "android": {
       "package": "com.mathlearning.app",
       "adaptiveIcon": {
@@ -24,6 +35,12 @@
     },
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a268f69d-d2c0-4846-bc57-29bad235f20f"
+      }
     }
   }
 }
