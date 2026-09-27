@@ -93,6 +93,65 @@ export default function MobileAppPage() {
     ]);
   }, []);
 
+  // Periodic device state sync hook (ensuring data consistency across devices)
+  useEffect(() => {
+    let active = true;
+
+    async function syncProgress(nodesToSync: string[], starsToSync: number, isInitial = false) {
+      try {
+        const response = await fetch('/api/v1/sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            completedNodeIds: nodesToSync,
+            learningStars: starsToSync,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Sync failed: HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data && active) {
+          // Reconcile and update local state with values returned from the backend merge
+          if (Array.isArray(data.completedNodeIds)) {
+            const currentSorted = [...completedNodeIds].sort().join(',');
+            const responseSorted = [...data.completedNodeIds].sort().join(',');
+            if (currentSorted !== responseSorted) {
+              setCompletedNodeIds(data.completedNodeIds);
+              localStorage.setItem('math_app_completed_node_ids', JSON.stringify(data.completedNodeIds));
+            }
+          }
+          if (typeof data.learningStars === 'number' && data.learningStars !== learningStars) {
+            setLearningStars(data.learningStars);
+            localStorage.setItem('math_app_learning_stars', data.learningStars.toString());
+          }
+          emitSemanticEvent('REWARD_GRANTED', `Sync.success(${isInitial ? 'Initial' : 'Periodic'})`);
+        }
+      } catch (err) {
+        console.warn('[Sync] Failed to synchronize state with backend', err);
+      }
+    }
+
+    // Wait a brief moment on mount or change to let local storage rehydration resolve
+    const initialSyncTimer = setTimeout(() => {
+      syncProgress(completedNodeIds, learningStars, true);
+    }, 1500);
+
+    const intervalId = setInterval(() => {
+      syncProgress(completedNodeIds, learningStars, false);
+    }, 10000); // Sync every 10 seconds
+
+    return () => {
+      active = false;
+      clearTimeout(initialSyncTimer);
+      clearInterval(intervalId);
+    };
+  }, [completedNodeIds, learningStars]);
+
   function emitSemanticEvent(event: AnimationSemanticEvent, source: string) {
     setSemanticEventLog((prev) => [
       { event, time: new Date().toLocaleTimeString('fa-IR'), source },
