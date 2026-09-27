@@ -290,6 +290,8 @@ export function DuolingoLessonModal({
           ✕
         </button>
 
+        <span style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a' }}>ماموریت یادگیری</span>
+
         {/* Progress Bar */}
         <div className="math-progress-track">
           <div
@@ -767,7 +769,7 @@ export function DuolingoLessonModal({
             🎉⭐🏆
           </div>
           <h2 style={{ fontSize: 24, fontWeight: 900, color: '#10b981', margin: '0 0 8px' }}>
-            {activeNode.title} کامل شد!
+            {activeNode.title} کامل شد! (پایان جلسه)
           </h2>
           <p style={{ color: '#64748b', fontSize: 14, margin: '0 0 24px', lineHeight: 1.6 }}>
             پاسخ شما با موفقیت در موتور یادگیری ثبت و گام بعدی نقشه باز شد.

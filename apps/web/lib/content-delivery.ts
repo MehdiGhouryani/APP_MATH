@@ -165,7 +165,7 @@ async function dbPackage(packageId: string, accessToken: string): Promise<{ desc
 }
 
 export async function getManifest(gradeId: string, accessToken?: string): Promise<ContentManifest> {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL)) {
     if (!accessToken) throw new Error('AUTH_BEARER_REQUIRED');
     return dbManifest(gradeId, accessToken);
   }
@@ -178,7 +178,7 @@ export async function getManifest(gradeId: string, accessToken?: string): Promis
 }
 
 export async function getPackage(packageId: string, accessToken?: string): Promise<{ descriptor: ContentPackageDescriptor; bytes: Buffer } | null> {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL)) {
     if (!accessToken) throw new Error('AUTH_BEARER_REQUIRED');
     return dbPackage(packageId, accessToken);
   }
@@ -189,7 +189,7 @@ export async function getPackage(packageId: string, accessToken?: string): Promi
 }
 
 export async function checkEntitlement(packageId: string, learningIdentityId: string | null, accessToken?: string): Promise<EntitlementCheck> {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL)) {
     if (!accessToken) throw new Error('AUTH_BEARER_REQUIRED');
     if (!learningIdentityId) return { packageId, entitled: false, source: null, expiresAt: null, reason: 'NOT_ENTITLED' };
     const entitled = await supabaseRpc<boolean>(accessToken, 'can_access_content_package', {

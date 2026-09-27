@@ -13,11 +13,7 @@ interface AdultsViewProps {
 }
 
 export function AdultsView({ semanticEventLog }: AdultsViewProps) {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('PARENT');
-  const [rlsTestStatus, setRlsTestStatus] = useState<
-    'IDLE' | 'TESTING' | 'BLOCKED_SUCCESS' | 'ERROR'
-  >('IDLE');
-  const [rlsTestDetail, setRlsTestDetail] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('TEACHER');
   const [newAssignmentText, setNewAssignmentText] = useState<string>('');
   const [assignmentSuccess, setAssignmentSuccess] = useState<boolean>(false);
 
@@ -78,34 +74,6 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
       currentStation: 'نگاره ۱ — الگویابی شکل‌ها',
     },
   ]);
-
-  async function handleRlsHistoricalSafetyTest() {
-    soundFx.playTap();
-    setRlsTestStatus('TESTING');
-    setRlsTestDetail('در حال ارسال درخواست واقعی HTTP DELETE به اندپوینت /api/v1/learning/evidence/ev-test-safety-01...');
-
-    try {
-      const res = await fetch('/api/v1/learning/evidence/ev-test-safety-01', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      const body = await res.json();
-      if (res.status === 403 && body.code === 'RLS_HISTORICAL_SAFETY_VIOLATION') {
-        soundFx.playSuccess();
-        setRlsTestStatus('BLOCKED_SUCCESS');
-        setRlsTestDetail(
-          `✅ پاسخ سرور (HTTP 403 Forbidden): ${body.message} [سیاست: ${body.policy} | قاعده: ${body.rule}]`
-        );
-      } else {
-        setRlsTestStatus('ERROR');
-        setRlsTestDetail(`پاسخ غیرمنتظره از سرور: HTTP ${res.status}`);
-      }
-    } catch (err) {
-      setRlsTestStatus('ERROR');
-      setRlsTestDetail(`خطای شبکه در ارسال درخواست: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }
 
   async function handleFetchContentManifest() {
     soundFx.playTap();
@@ -263,7 +231,7 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
               فاز ۲ — زیرساخت هویت و دسترسی‌ها (RBAC + RLS)
             </div>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>
-              پنل همراهان و شبیه‌ساز دسترسی‌ها
+              داشبورد اختصاصی همراهان (پنل همراهان و شبیه‌ساز دسترسی‌ها)
             </h2>
           </div>
         </div>
@@ -272,59 +240,7 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
         </p>
       </div>
 
-      {/* Role Switcher Tabs */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: '#475569', marginBottom: 8 }}>
-          نقش جاری در سیستم احراز هویت:
-        </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 6,
-            backgroundColor: '#f1f5f9',
-            padding: 4,
-            borderRadius: 16,
-          }}
-        >
-          {[
-            { id: 'PARENT', label: 'والد', icon: '👨‍👩‍👧' },
-            { id: 'TEACHER', label: 'معلم', icon: '👩‍🏫' },
-            { id: 'CHILD', label: 'کودک', icon: '🧒' },
-            { id: 'ADMIN', label: 'مدیر', icon: '🛡️' },
-          ].map((role) => {
-            const isSelected = selectedRole === role.id;
-            return (
-              <button
-                key={role.id}
-                type="button"
-                onClick={() => {
-                  soundFx.playTap();
-                  setSelectedRole(role.id as UserRole);
-                }}
-                style={{
-                  background: isSelected ? '#ffffff' : 'transparent',
-                  border: isSelected ? '1px solid #cbd5e1' : '1px solid transparent',
-                  boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
-                  borderRadius: 12,
-                  padding: '8px 4px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 2,
-                  cursor: 'pointer',
-                  fontWeight: isSelected ? 800 : 600,
-                  fontSize: 11,
-                  color: isSelected ? '#1e40af' : '#64748b',
-                }}
-              >
-                <span style={{ fontSize: 16 }}>{role.icon}</span>
-                <span>{role.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+
 
       {/* 1. PARENT VIEW CONTENT */}
       {selectedRole === 'PARENT' && (
@@ -582,71 +498,6 @@ export function AdultsView({ semanticEventLog }: AdultsViewProps) {
           </div>
         </div>
       )}
-
-      {/* RLS & Historical Safety Interactive Test */}
-      <div
-        style={{
-          backgroundColor: '#f8fafc',
-          border: '2px solid #e2e8f0',
-          borderRadius: 18,
-          padding: '16px',
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: 20 }}>🔐</span>
-          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1e293b' }}>
-            تست تعاملی قانون امنیت تاریخی (Historical Safety Rule):
-          </h4>
-        </div>
-        <p style={{ margin: '0 0 10px', fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>
-          بر اساس استاندارد فاز ۲، هیچ کاربری اجازه حذف شواهد و سوابق یادگیری (Evidence & Sessions) را ندارد. با کلیک روی دکمه زیر عملکرد این مهار امنیتی را بررسی کنید:
-        </p>
-
-        <button
-          type="button"
-          onClick={handleRlsHistoricalSafetyTest}
-          disabled={rlsTestStatus === 'TESTING'}
-          style={{
-            backgroundColor: '#dc2626',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: 12,
-            padding: '10px 16px',
-            fontSize: 12,
-            fontWeight: 800,
-            cursor: rlsTestStatus === 'TESTING' ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            width: '100%',
-            justifyContent: 'center',
-            boxShadow: '0 3px 0 #991b1b',
-            touchAction: 'manipulation',
-            pointerEvents: 'auto',
-          }}
-        >
-          <span>🧪</span>
-          <span>{rlsTestStatus === 'TESTING' ? 'در حال آزمون...' : 'تلاش برای حذف شواهد یادگیری (تست نقض RLS)'}</span>
-        </button>
-
-        {rlsTestDetail && (
-          <div
-            style={{
-              marginTop: 10,
-              padding: '10px 12px',
-              borderRadius: 12,
-              backgroundColor: rlsTestStatus === 'BLOCKED_SUCCESS' ? '#fef2f2' : '#f1f5f9',
-              border: `1px solid ${rlsTestStatus === 'BLOCKED_SUCCESS' ? '#fecaca' : '#cbd5e1'}`,
-              fontSize: 11,
-              lineHeight: 1.5,
-              color: rlsTestStatus === 'BLOCKED_SUCCESS' ? '#991b1b' : '#334155',
-            }}
-          >
-            {rlsTestDetail}
-          </div>
-        )}
-      </div>
 
       {/* Phase 3: Content Delivery & Offline Packages Console */}
       <div

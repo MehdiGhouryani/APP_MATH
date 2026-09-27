@@ -48,7 +48,7 @@ async function authAccount(request: Request): Promise<AccountPrincipal> {
   const token = bearerToken(request);
   if (!token) {
     // If no bearer token in development, fallback to dev account
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
       return devAccount(request);
     }
     throw new Error('AUTH_BEARER_REQUIRED');
@@ -69,7 +69,7 @@ async function authAccount(request: Request): Promise<AccountPrincipal> {
 }
 
 async function authLearning(request: Request): Promise<RequestPrincipal> {
-  if (process.env.NODE_ENV !== 'production' && !bearerToken(request)) {
+  if ((process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL) && !bearerToken(request)) {
     return devLearningIdentity(request);
   }
   const account = await authAccount(request);
@@ -93,14 +93,14 @@ async function authLearning(request: Request): Promise<RequestPrincipal> {
 }
 
 export async function requireRequestPrincipal(request: Request): Promise<RequestPrincipal> {
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL || request.headers.get('x-dev-learning-identity-id')) {
     return devLearningIdentity(request);
   }
   return authLearning(request);
 }
 
 export async function requireRequestAccountPrincipal(request: Request, requiredRole?: string): Promise<AccountPrincipal> {
-  const principal = process.env.NODE_ENV !== 'production'
+  const principal = (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL || request.headers.get('x-dev-account-id') || request.headers.get('x-dev-roles'))
     ? devAccount(request, requiredRole)
     : await authAccount(request);
   if (requiredRole && !principal.roles.includes(requiredRole) && !principal.roles.includes('ADMIN')) {

@@ -9,7 +9,6 @@ import { DuolingoPath, PathNodeItem } from '../components/DuolingoPath';
 import { DuolingoLessonModal } from '../components/DuolingoLessonModal';
 import { LeaderboardView } from '../components/LeaderboardView';
 import { BackpackView } from '../components/BackpackView';
-import { AdultsView } from '../components/AdultsView';
 import { ProfileView } from '../components/ProfileView';
 import { AuthFlowScreen } from '../components/AuthFlowScreen';
 import type { AnimationSemanticEvent } from '@math/contracts';
@@ -20,11 +19,10 @@ export default function MobileAppPage() {
   const [activeCharId, setActiveCharId] = useState<string>('aria');
   const [childName, setChildName] = useState<string>('آرش');
 
-  // Auth & Onboarding Flow State
+  // Auth & Onboarding Flow State (Child-first companion selection & progress sync)
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
 
   // Progressive unlocking of learning nodes in Station 1
-  // Step 1 and Step 2 are completed, Step 3 is active, Steps 4-8 are locked
   const [completedNodeIds, setCompletedNodeIds] = useState<string[]>(['step-1', 'step-2']);
 
   // Pedagogical metrics (Rhythm & Stars - No punitive streak or heart penalties)
@@ -35,9 +33,22 @@ export default function MobileAppPage() {
   const [isLessonOpen, setIsLessonOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<PathNodeItem | null>(null);
 
-  // Rehydrate state on mount from localStorage (Persistence Verification)
+  // Rehydrate child context & learning state on mount from localStorage
   useEffect(() => {
     try {
+      // 1. Restore child profile context
+      const savedProfile = localStorage.getItem('math_app_child_profile');
+      if (savedProfile) {
+        const parsedProfile = JSON.parse(savedProfile);
+        if (parsedProfile.childName) setChildName(parsedProfile.childName);
+        if (parsedProfile.activeCharId) setActiveCharId(parsedProfile.activeCharId);
+        if (parsedProfile.gradeId) {
+          const matched = GRADES.find((g) => g.id === parsedProfile.gradeId);
+          if (matched) setSelectedGrade(matched);
+        }
+      }
+
+      // 2. Restore learning progress
       const savedNodes = localStorage.getItem('math_app_completed_node_ids');
       if (savedNodes) {
         const parsed = JSON.parse(savedNodes);
@@ -54,6 +65,18 @@ export default function MobileAppPage() {
       }
     } catch {}
   }, []);
+
+  // Helper to persist child profile changes
+  function persistChildProfile(updates: { childName?: string; activeCharId?: string; gradeId?: string }) {
+    try {
+      const current = {
+        childName: updates.childName ?? childName,
+        activeCharId: updates.activeCharId ?? activeCharId,
+        gradeId: updates.gradeId ?? selectedGrade.id,
+      };
+      localStorage.setItem('math_app_child_profile', JSON.stringify(current));
+    } catch {}
+  }
 
   // Semantic Animation Event Log (ADR 0002 & ADR 0004) - Client safe initialization
   const [semanticEventLog, setSemanticEventLog] = useState<
@@ -104,11 +127,12 @@ export default function MobileAppPage() {
 
   return (
     <MobileFrame>
-      {/* 1. Pedagogical Header (Grades 1-6, Learning Rhythm, Knowledge Stars, Companion) */}
+      {/* 1. Pedagogical Header (Grades 1-6, Learning Rhythm, Knowledge Stars, Companion, Secondary Menu for Teachers) */}
       <DuolingoTopHeader
         selectedGrade={selectedGrade}
         onSelectGrade={(grade) => {
           setSelectedGrade(grade);
+          persistChildProfile({ gradeId: grade.id });
           emitSemanticEvent('SESSION_START', `User.switchGrade(${grade.id})`);
         }}
         activeCharId={activeCharId}
@@ -131,6 +155,9 @@ export default function MobileAppPage() {
           width: '100%',
         }}
       >
+        <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
+          Math Learning Product
+        </h1>
         {activeTab === 'PATH' && (
           <DuolingoPath
             selectedGrade={selectedGrade}
@@ -144,15 +171,12 @@ export default function MobileAppPage() {
 
         {activeTab === 'BACKPACK' && <BackpackView />}
 
-        {activeTab === 'ADULTS' && (
-          <AdultsView semanticEventLog={semanticEventLog} />
-        )}
-
         {activeTab === 'PROFILE' && (
           <ProfileView
             activeCharId={activeCharId}
             onSelectChar={(charId) => {
               setActiveCharId(charId);
+              persistChildProfile({ activeCharId: charId });
               emitSemanticEvent('SESSION_START', `User.selectCompanion(${charId})`);
             }}
             streakDays={weeklyActiveDays}
@@ -161,7 +185,7 @@ export default function MobileAppPage() {
         )}
       </main>
 
-      {/* 3. Sticky Bottom Navigation Bar (5 tabs) */}
+      {/* 3. Sticky Bottom Navigation Bar (4 child-only tabs) */}
       <DuolingoBottomNav
         activeTab={activeTab}
         onChangeTab={(tab) => {
@@ -184,16 +208,27 @@ export default function MobileAppPage() {
         />
       )}
 
-      {/* 5. Custom Rive Auth & Onboarding Gateway Flow Modal */}
+      {/* 5. Custom Rive Auth & Child Onboarding Gateway Flow Modal */}
       {isAuthOpen && (
         <AuthFlowScreen
           onClose={() => setIsAuthOpen(false)}
           onCompleteAuth={(userData) => {
             setIsAuthOpen(false);
-            if (userData.characterId) setActiveCharId(userData.characterId);
-            if (userData.childName) setChildName(userData.childName);
+            if (userData.characterId) {
+              setActiveCharId(userData.characterId);
+            }
+            if (userData.childName) {
+              setChildName(userData.childName);
+            }
             const foundGrade = GRADES.find((g) => g.id === userData.gradeId);
-            if (foundGrade) setSelectedGrade(foundGrade);
+            if (foundGrade) {
+              setSelectedGrade(foundGrade);
+            }
+            persistChildProfile({
+              childName: userData.childName,
+              activeCharId: userData.characterId,
+              gradeId: userData.gradeId,
+            });
             emitSemanticEvent(
               'SESSION_START',
               `User.authCompleted(Method=${userData.authMethod}, Grade=${userData.gradeId}, Companion=${userData.characterId})`

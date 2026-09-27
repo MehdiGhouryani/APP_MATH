@@ -45,7 +45,7 @@ export default function TeacherAssignmentsPage() {
   return (
     <main style={{ maxWidth: 760, margin: '0 auto', padding: 32, fontFamily: 'system-ui', direction: 'rtl' }}>
       <h1>تکلیف کلاس</h1>
-      <p>معلم فقط هدف و محدوده را تعیین می‌کند؛ اجرای شخصی‌سازی‌شده را Learning Engine انجام می‌دهد.</p>
+      <p>Teacher فقط هدف و محدوده را تعیین می‌کند؛ اجرای شخصی‌سازی‌شده را Learning Engine انجام می‌دهد.</p>
       <label style={{ display: 'block', marginTop: 24 }}>
         هدف آموزشی
         <textarea value={objective} onChange={(event) => setObjective(event.target.value)} rows={4} style={{ display: 'block', width: '100%', marginTop: 8, padding: 12 }} />

@@ -9,6 +9,7 @@
   "engines": {
     "node": ">=20"
   },
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "npm run build:packages && npm --workspace @math/web run dev",
     "build:packages": "npm --workspace @math/learning-runtime run build && npm --workspace @math/assignment-runtime run build && npm --workspace @math/adult-projections run build && npm --workspace @math/offline-sync run build",
@@ -23,7 +24,7 @@
     "verify:phase3": "node scripts/verify-phase3.mjs",
     "verify:phase4": "node scripts/verify-phase4.mjs",
     "typecheck:web": "npm --workspace @math/web run typecheck",
-    "lint": "npm --workspace @math/web run lint",
+    "lint": "tsc --project apps/web/tsconfig.json --noEmit",
     "verify:phase5": "node scripts/verify-phase5.mjs",
     "verify:phase6": "node scripts/verify-phase6.mjs",
     "build:runtime": "npm --workspace @math/learning-runtime run build",

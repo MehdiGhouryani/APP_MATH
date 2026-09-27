@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
+import { DESIGN_TOKENS } from '../lib/theme/tokens';
 
 export function LeaderboardView() {
   const [cheeredIndex, setCheeredIndex] = useState<number | null>(null);
@@ -23,21 +24,21 @@ export function LeaderboardView() {
   }
 
   return (
-    <div style={{ padding: '16px 20px 40px' }}>
+    <div style={{ padding: '16px 20px 40px', fontFamily: DESIGN_TOKENS.typography.fonts.body }}>
       {/* League Header */}
       <div
         style={{
-          backgroundColor: '#ff9600',
-          borderRadius: 24,
+          backgroundColor: DESIGN_TOKENS.colors.brand.secondary,
+          borderRadius: DESIGN_TOKENS.radius.lg,
           padding: '20px 20px',
-          color: '#ffffff',
+          color: DESIGN_TOKENS.colors.neutral.white,
           textAlign: 'center',
-          boxShadow: '0 6px 0 #cc7800',
+          boxShadow: `0 6px 0 ${DESIGN_TOKENS.colors.brand.secondaryDark}`,
           marginBottom: 24,
         }}
       >
         <div style={{ fontSize: 44, marginBottom: 4 }}>🏆</div>
-        <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 900 }}>لیگ الماس پایه اول</h2>
+        <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 900, fontFamily: DESIGN_TOKENS.typography.fonts.display }}>لیگ الماس (لیگ دانایی ریاضی)</h2>
         <p style={{ margin: 0, fontSize: 13, opacity: 0.9 }}>
           با حل تمرین‌های روزانه، امتیاز تجربه (XP) کسب کن و در لیگ بالا برو!
         </p>
@@ -47,7 +48,6 @@ export function LeaderboardView() {
             backgroundColor: 'rgba(0,0,0,0.15)',
             padding: '4px 12px',
             borderRadius: 999,
-            display: 'inline-block',
             fontSize: 12,
             fontWeight: 750,
           }}
@@ -67,10 +67,10 @@ export function LeaderboardView() {
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '12px 16px',
-              borderRadius: 18,
-              backgroundColor: item.isMe ? '#ddf4ff' : '#ffffff',
-              border: item.isMe ? '2px solid #84d8ff' : '2px solid #e5e5e5',
-              boxShadow: item.isMe ? '0 4px 0 #84d8ff' : '0 2px 0 #e5e5e5',
+              borderRadius: DESIGN_TOKENS.radius.md,
+              backgroundColor: item.isMe ? DESIGN_TOKENS.colors.brand.primaryLight : DESIGN_TOKENS.colors.neutral.white,
+              border: item.isMe ? `2px solid ${DESIGN_TOKENS.colors.brand.primary}` : `2px solid ${DESIGN_TOKENS.colors.neutral.border}`,
+              boxShadow: item.isMe ? `0 4px 0 ${DESIGN_TOKENS.colors.brand.primary}` : `0 2px 0 ${DESIGN_TOKENS.colors.neutral.border}`,
               cursor: item.isMe ? 'default' : 'pointer',
               transition: 'transform 0.15s ease',
             }}
@@ -86,11 +86,11 @@ export function LeaderboardView() {
                     item.rank === 1
                       ? '#ffd700'
                       : item.rank === 2
-                      ? '#e0e7ff'
+                      ? DESIGN_TOKENS.colors.brand.primaryLight
                       : item.rank === 3
                       ? '#fed7aa'
                       : '#f1f5f9',
-                  color: item.rank === 1 ? '#854d0e' : '#1e293b',
+                  color: item.rank === 1 ? '#854d0e' : DESIGN_TOKENS.colors.neutral.charcoal,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -104,10 +104,10 @@ export function LeaderboardView() {
               {/* Avatar & Name */}
               <span style={{ fontSize: 24 }}>{item.avatar}</span>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 14, color: '#3c3c3c' }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: DESIGN_TOKENS.colors.neutral.charcoal }}>
                   {item.name}
                 </div>
-                <div style={{ fontSize: 11, color: '#777', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ fontSize: 11, color: DESIGN_TOKENS.colors.neutral.slate, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span>🔥 {toPersianDigits(item.streak)} روز متوالی</span>
                   {cheeredIndex === idx && (
                     <span style={{ color: '#e11d48', fontWeight: 800, animation: 'bounceIn 0.3s ease' }}>
@@ -119,7 +119,7 @@ export function LeaderboardView() {
             </div>
 
             {/* XP Points */}
-            <div style={{ fontWeight: 900, fontSize: 15, color: '#1cb0f6' }}>
+            <div style={{ fontWeight: 900, fontSize: 15, color: DESIGN_TOKENS.colors.brand.primary, fontFamily: DESIGN_TOKENS.typography.fonts.math }}>
               {toPersianDigits(item.xp)} XP
             </div>
           </div>

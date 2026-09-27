@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { soundFx } from '../lib/sound';
+import { DESIGN_TOKENS } from '../lib/theme/tokens';
 
-export type MainTabType = 'PATH' | 'LEAGUES' | 'BACKPACK' | 'ADULTS' | 'PROFILE';
+export type MainTabType = 'PATH' | 'LEAGUES' | 'BACKPACK' | 'PROFILE';
 
 interface DuolingoBottomNavProps {
   activeTab: MainTabType;
@@ -15,7 +16,6 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
     { id: 'PATH', label: 'مسیر', icon: '🗺️' },
     { id: 'LEAGUES', label: 'لیگ‌ها', icon: '🏆', badge: 'جدید' },
     { id: 'BACKPACK', label: 'مهارت‌ها', icon: '🎒' },
-    { id: 'ADULTS', label: 'والدین/معلم', icon: '👨‍👩‍👧' },
     { id: 'PROFILE', label: 'پروفایل', icon: '👤' },
   ];
 
@@ -23,8 +23,8 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
     <nav
       style={{
         position: 'relative',
-        backgroundColor: '#ffffff',
-        borderTop: '2px solid #e5e5e5',
+        backgroundColor: DESIGN_TOKENS.colors.neutral.white,
+        borderTop: `2px solid ${DESIGN_TOKENS.colors.neutral.border}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
@@ -47,10 +47,10 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
               soundFx.playTap();
             }}
             style={{
-              background: isSelected ? '#ddf4ff' : 'transparent',
-              border: isSelected ? '2px solid #84d8ff' : '2px solid transparent',
-              borderRadius: '16px',
-              padding: '6px 10px',
+              background: isSelected ? DESIGN_TOKENS.colors.brand.primaryLight : 'transparent',
+              border: isSelected ? `2px solid ${DESIGN_TOKENS.colors.brand.primary}` : '2px solid transparent',
+              borderRadius: DESIGN_TOKENS.radius.sm,
+              padding: '6px 12px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -58,19 +58,20 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
               cursor: 'pointer',
               position: 'relative',
               transition: 'all 0.15s ease',
-              minWidth: 62,
+              minWidth: 68,
               touchAction: 'manipulation',
               userSelect: 'none',
               outline: 'none',
               pointerEvents: 'auto',
+              fontFamily: DESIGN_TOKENS.typography.fonts.body,
             }}
           >
             <span style={{ fontSize: 22 }}>{tab.icon}</span>
             <span
               style={{
                 fontSize: 11,
-                fontWeight: isSelected ? 800 : 600,
-                color: isSelected ? '#1cb0f6' : '#777777',
+                fontWeight: isSelected ? DESIGN_TOKENS.typography.weights.black : DESIGN_TOKENS.typography.weights.semibold,
+                color: isSelected ? DESIGN_TOKENS.colors.brand.primary : DESIGN_TOKENS.colors.neutral.slate,
               }}
             >
               {tab.label}
@@ -82,8 +83,8 @@ export function DuolingoBottomNav({ activeTab, onChangeTab }: DuolingoBottomNavP
                   position: 'absolute',
                   top: -2,
                   left: 4,
-                  backgroundColor: '#ff4b4b',
-                  color: '#ffffff',
+                  backgroundColor: DESIGN_TOKENS.colors.brand.secondary,
+                  color: DESIGN_TOKENS.colors.neutral.white,
                   fontSize: 8,
                   fontWeight: 800,
                   padding: '1px 4px',

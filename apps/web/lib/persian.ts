@@ -3,10 +3,18 @@
  */
 
 const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
 export function toPersianDigits(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return '';
   return String(value).replace(/\d/g, (match) => PERSIAN_DIGITS[Number(match)] ?? match);
+}
+
+export function toEnglishDigits(value: string | null | undefined): string {
+  if (!value) return '';
+  return String(value)
+    .replace(/[۰-۹]/g, (w) => String(PERSIAN_DIGITS.indexOf(w)))
+    .replace(/[٠-٩]/g, (w) => String(ARABIC_DIGITS.indexOf(w)));
 }
 
 export interface GradeMeta {

@@ -84,7 +84,7 @@ export function BackpackView() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ fontSize: 44 }}>🎒</div>
           <div>
-            <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 900 }}>کوله‌پشتی مهارت‌های من</h2>
+            <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 900 }}>کوله‌پشتی مهارت‌های ریاضی (دفترچه دستاوردهای دانایی)</h2>
             <p style={{ margin: 0, fontSize: 13, opacity: 0.9 }}>
               {toPersianDigits(64)} مهارت شناختی پایه اول — مدال‌ها و ابزارهای دست‌ورزی
             </p>

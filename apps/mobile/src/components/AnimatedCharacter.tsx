@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { RiveView, useRive, useRiveFile, Fit } from '@rive-app/react-native';
@@ -19,6 +19,24 @@ const LABELS: Record<CharacterVisualState, string> = {
   RECOVERY: 'با هم دوباره حلش می‌کنیم 💪',
 };
 
+function RiveAnimationPlayer({ source }: { source: string }) {
+  const { riveFile, error } = useRiveFile(source);
+  const { setHybridRef } = useRive();
+
+  if (error || !riveFile) {
+    return null;
+  }
+
+  return (
+    <RiveView
+      hybridRef={setHybridRef}
+      file={riveFile}
+      fit={Fit.Layout}
+      style={StyleSheet.absoluteFill}
+    />
+  );
+}
+
 export function AnimatedCharacter({ state, source, size = 220 }: AnimatedCharacterProps) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const pulse = useSharedValue(1);
@@ -34,9 +52,6 @@ export function AnimatedCharacter({ state, source, size = 220 }: AnimatedCharact
   const animatedWrapper = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
   }));
-  const riveSource = useMemo(() => source ?? null, [source]);
-  const { riveFile, error } = useRiveFile(riveSource ?? undefined);
-  const { riveViewRef, setHybridRef } = useRive();
 
   useEffect(() => {
     let mounted = true;
@@ -50,17 +65,12 @@ export function AnimatedCharacter({ state, source, size = 220 }: AnimatedCharact
     };
   }, []);
 
-  const showRive = Boolean(riveFile) && !reducedMotion && !error;
+  const hasSource = Boolean(source && typeof source === 'string' && source.trim().length > 0);
 
   return (
-    <Animated.View style={[styles.wrapper, { width: size, height: size }, animatedWrapper]}> 
-      {showRive && riveFile ? (
-        <RiveView
-          hybridRef={setHybridRef}
-          file={riveFile}
-          fit={Fit.Layout}
-          style={StyleSheet.absoluteFill}
-        />
+    <Animated.View style={[styles.wrapper, { width: size, height: size }, animatedWrapper]}>
+      {hasSource && !reducedMotion ? (
+        <RiveAnimationPlayer source={source!} />
       ) : (
         <View style={styles.fallback} accessibilityRole="image" accessibilityLabel="شخصیت آموزشی">
           <Text style={styles.face}>{state === 'CELEBRATE' ? '🌟' : state === 'ENCOURAGE' ? '🙂' : '😊'}</Text>

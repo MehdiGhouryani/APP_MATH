@@ -47,8 +47,13 @@ export default function ParentHome() {
 
   if (error) {
     return (
-      <main className="adult-shell">
-        <h1>پرتال والدین</h1>
+      <main className="adult-shell" dir="rtl">
+        <div className="adult-header">
+          <div>
+            <p className="eyebrow">گزارش روزانه والد <span className="badge">Parent Lite</span></p>
+            <h1>پرتال والدین</h1>
+          </div>
+        </div>
         <p style={{ color: '#dc2626' }}>{error}</p>
         <Link href="/" className="btn-back">بازگشت به خانه</Link>
       </main>
@@ -57,8 +62,13 @@ export default function ParentHome() {
 
   if (!data) {
     return (
-      <main className="adult-shell">
-        <h1>پرتال والدین</h1>
+      <main className="adult-shell" dir="rtl">
+        <div className="adult-header">
+          <div>
+            <p className="eyebrow">گزارش روزانه والد <span className="badge">Parent Lite</span></p>
+            <h1>پرتال والدین</h1>
+          </div>
+        </div>
         <p>در حال بارگذاری گزارش...</p>
       </main>
     );
@@ -68,7 +78,7 @@ export default function ParentHome() {
     <main className="adult-shell" dir="rtl">
       <div className="adult-header">
         <div>
-          <p className="eyebrow">گزارش روزانه والد (Parent Lite)</p>
+          <p className="eyebrow">گزارش روزانه والد <span className="badge">Parent Lite</span></p>
           <h1>امروز {data.child.displayName} چطور گذشت؟</h1>
         </div>
         <Link href="/" className="btn-back">← بازگشت به صفحه کودک</Link>
@@ -150,7 +160,7 @@ export default function ParentHome() {
       </section>
 
       <p className="muted" style={{ marginTop: 24 }}>
-        🛡️ پرتال والدین (Parent Lite) صرفاً جهت آگاهی، مشاهده و حمایت عاطفی است؛ وضعیت تسلط (Learning State) و مسیر یادگیری کودک را مستقیماً تغییر نمی‌دهد.
+        🛡️ این پرتال صرفاً جهت آگاهی، مشاهده و حمایت عاطفی است؛ وضعیت تسلط (Learning State) و مسیر یادگیری کودک را مستقیماً تغییر نمی‌دهد.
       </p>
     </main>
   );

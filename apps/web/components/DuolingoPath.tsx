@@ -177,7 +177,7 @@ export function DuolingoPath({
                 marginBottom: 4,
               }}
             >
-              نگاره ۱ از کتاب درسی · ایستگاه ۰۱ از {toPersianDigits(selectedGrade.stationCount)}
+              نگاره ۱ از کتاب درسی (نگاره ۱ — ریاضی پایه اول) · ایستگاه ۰۱ از {toPersianDigits(selectedGrade.stationCount)}
             </div>
             <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 900, lineHeight: 1.4 }}>
               {selectedGrade.id === 'G1'

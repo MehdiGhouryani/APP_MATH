@@ -182,7 +182,7 @@ export function AuthFlowScreen({
               speechText="آماده‌ای با هم ریاضی رو فتح کنیم؟"
             />
             <div>
-              <h2 className="text-2xl font-black text-white">ورود به ریاضی دانا</h2>
+              <h2 className="text-2xl font-black text-white">ورود به ماجراجویی ریاضی</h2>
               <div className="mt-1 inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
                 مناسب برای پایه‌های اول تا ششم دبستان
               </div>
