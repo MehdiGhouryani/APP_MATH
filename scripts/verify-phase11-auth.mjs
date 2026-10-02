@@ -46,7 +46,7 @@ const contentManager = read('apps/mobile/src/content/ContentManager.ts');
 assert.match(contentManager, /getAuthHeaders/);
 assert.match(contentManager, /__DEV__ && !authHeaders\.Authorization/);
 
-const doc = read('docs/PHASE_11_PRODUCTION_AUTH_BOUNDARY.md');
+const doc = read('docs/phases/PHASE_11_PRODUCTION_AUTH_BOUNDARY.md');
 assert.match(doc, /Production API requests require a Supabase Auth Bearer token/);
 assert.match(doc, /PostgreSQL/);
 

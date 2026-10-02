@@ -11,6 +11,10 @@ const CURRICULUM_VERSION = process.env.EXPO_PUBLIC_CURRICULUM_VERSION ?? 'g1-bui
 const SKILL_GRAPH_VERSION = process.env.EXPO_PUBLIC_SKILL_GRAPH_VERSION ?? 'g1-provisional-001';
 const INSTALLATION_ID = process.env.EXPO_PUBLIC_CLIENT_INSTALLATION_ID ?? 'dev-installation-01';
 const syncManager = createMobileSyncManager(BASE_URL, INSTALLATION_ID, DEV_LEARNING_ID);
+
+export function flushPendingSync(): Promise<{ processed: number; acked: number; retried: number; rejected: number }> {
+  return syncManager.flush();
+}
 const CONTENT_01 = '26000000-0000-4000-8000-000000000001';
 const CONTENT_02 = '26000000-0000-4000-8000-000000000002';
 const CONTENT_03 = '26000000-0000-4000-8000-000000000003';

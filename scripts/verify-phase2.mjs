@@ -56,7 +56,7 @@ for (const historical of ['revoke delete on public.evidence', 'revoke delete on 
   if (!allSql.toLowerCase().includes(historical)) errors.push(`Missing historical safety rule: ${historical}`);
 }
 
-if (!fs.existsSync(path.join(root, 'docs', 'ADR_0001_NO_UNITY_GAME_ARCHITECTURE.md'))) {
+if (!fs.existsSync(path.join(root, 'docs', 'adr', 'ADR_0001_NO_UNITY_GAME_ARCHITECTURE.md'))) {
   errors.push('Missing no-Unity architecture ADR');
 }
 

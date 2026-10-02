@@ -4,6 +4,7 @@ import {
   validateAndNormalizeTeacherApplication,
   TeacherApplicationValidationError,
 } from '@/lib/teacher-applications';
+import { requireRequestAccountPrincipal } from '@/lib/request-principal';
 
 export async function POST(request: Request) {
   try {
@@ -64,6 +65,11 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+  try {
+    await requireRequestAccountPrincipal(request, 'ADMIN');
+  } catch {
+    return NextResponse.json({ code: 'FORBIDDEN', message: 'ورود مدیر الزامی است.' }, { status: 403 });
+  }
   // Allow filtering by status if needed
   const { searchParams } = new URL(request.url);
   const statusParam = searchParams.get('status');

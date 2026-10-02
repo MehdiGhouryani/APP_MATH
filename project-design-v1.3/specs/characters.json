@@ -1,0 +1,545 @@
+{
+  "schemaVersion": "1.3.0",
+  "status": "SUPERSEDED: cast/art replaced by project-design-v2/specs/characters-v2.json (avatar section still valid)",
+  "canonicalArt": "layered-svg-2.5d-with-rive-target",
+  "brand": {
+    "productId": "shomara",
+    "mainId": "aria",
+    "mainDisplayNameFa": "آریا",
+    "mainAssetKey": "aria-dragon-v1",
+    "stableIds": true,
+    "presentationAliases": {
+      "hodi": "aria"
+    },
+    "aliasPolicy": "presentation-layer-only legacy skin lookup; never use for account, learning identity or history ingest; never rewrite persisted ids",
+    "artDirection": {
+      "style": "soft-2.5d",
+      "depthPlanes": [
+        "back",
+        "body",
+        "face-features",
+        "front-accessory"
+      ],
+      "lighting": "single soft key light upper-left; contact shadow 6-10 percent; one restrained highlight plane",
+      "avoid": [
+        "photorealism",
+        "hard 3d rendering",
+        "glossy gradients",
+        "busy texture",
+        "flat emoji-only final art",
+        "Godzilla/IP imitation"
+      ],
+      "smallSizeRule": "below 40dp use symbol or bust; below 64dp hide wing patch/badge"
+    }
+  },
+  "cast": [
+    {
+      "id": "aria",
+      "assetKey": "aria-dragon-v1",
+      "displayNameFa": "آریا",
+      "kind": "guide",
+      "tier": "main",
+      "species": "original-friendly-dragon",
+      "role": "trusted main guide",
+      "allowedScenes": [
+        "splash",
+        "home",
+        "lesson-intro",
+        "hint",
+        "recovery",
+        "outcome",
+        "profile-brand"
+      ],
+      "assessment": "silent-hidden",
+      "visualSignature": [
+        "rounded teal-blue body",
+        "short friendly horns/crest",
+        "compact wings",
+        "light belly",
+        "large readable eyes"
+      ],
+      "assetStatus": "SVG/procedural fallback exists; production Rive absent",
+      "supersededBy": "aria-dragon-v2"
+    },
+    {
+      "id": "qbo",
+      "assetKey": "qbo-robot-v1",
+      "displayNameFa": "کیوبو",
+      "kind": "guide",
+      "tier": "supporting",
+      "species": "robot",
+      "role": "build, group and decompose quantities",
+      "allowedScenes": [
+        "counting-intro",
+        "hint",
+        "recovery",
+        "outcome"
+      ],
+      "assessment": "silent-hidden",
+      "assetStatus": "SVG fallback exists; production Rive absent",
+      "supersededBy": "qbo-cubes-v2"
+    },
+    {
+      "id": "dana",
+      "assetKey": "dana-owl-v1",
+      "displayNameFa": "دانا",
+      "kind": "guide",
+      "tier": "supporting",
+      "species": "owl",
+      "role": "patterns, shape, space and symmetry",
+      "allowedScenes": [
+        "pattern-intro",
+        "shape-intro",
+        "hint",
+        "recovery",
+        "outcome"
+      ],
+      "assessment": "silent-hidden",
+      "assetStatus": "SVG fallback exists; production Rive absent",
+      "supersededBy": "dana-squirrel-v2"
+    },
+    {
+      "id": "jiko",
+      "assetKey": "jiko-fox-v1",
+      "displayNameFa": "جیکو",
+      "kind": "guide",
+      "tier": "supporting",
+      "species": "fox",
+      "role": "playful transfer and celebration",
+      "allowedScenes": [
+        "transfer-intro",
+        "station-pass",
+        "milestone",
+        "reward"
+      ],
+      "assessment": "silent-hidden",
+      "assetStatus": "SVG fallback exists; production Rive absent",
+      "supersededBy": "jiko-bird-v2"
+    }
+  ],
+  "avatar": {
+    "schemaVersion": 2,
+    "profileRole": "child-identity-cosmetic-not-guide",
+    "default": {
+      "baseCharacter": "human",
+      "skinId": 0,
+      "hairId": "curl",
+      "hairColorId": 0,
+      "facialHairId": "none",
+      "eyeId": "round",
+      "outfitId": "shirt",
+      "outfitColorId": 0,
+      "hatId": "none",
+      "accessoryId": "none",
+      "accentId": "none"
+    },
+    "baseCharacters": {
+      "human": {
+        "displayNameFa": "آدمک",
+        "parts": [
+          "skin",
+          "hair-back",
+          "body",
+          "neck",
+          "face",
+          "eyes",
+          "mouth",
+          "hair-front",
+          "facial-hair",
+          "hat",
+          "outfit",
+          "accessory",
+          "badge"
+        ],
+        "options": {
+          "skin": 6,
+          "hair": [
+            "crop",
+            "curl",
+            "bob",
+            "long",
+            "none"
+          ],
+          "facialHair": [
+            "none",
+            "moustache-soft",
+            "moustache-wide"
+          ],
+          "hat": [
+            "none",
+            "cap",
+            "bucket",
+            "sunhat",
+            "crown-paper"
+          ],
+          "eyes": [
+            "round",
+            "almond",
+            "dot"
+          ],
+          "outfit": [
+            "shirt",
+            "tunic",
+            "overalls"
+          ]
+        }
+      },
+      "dragon": {
+        "displayNameFa": "اژدهای کوچک",
+        "parts": [
+          "scale",
+          "body",
+          "belly",
+          "face",
+          "eyes",
+          "snout-mark",
+          "crest",
+          "horns",
+          "hat",
+          "outfit",
+          "accessory",
+          "badge"
+        ],
+        "options": {
+          "scale": [
+            "teal",
+            "saffron",
+            "plum",
+            "sky"
+          ],
+          "crest": [
+            "short",
+            "three-fin",
+            "soft-frill"
+          ],
+          "snoutMark": [
+            "none",
+            "soft-tuft",
+            "freckle-pair"
+          ],
+          "hat": [
+            "none",
+            "cap",
+            "bucket",
+            "sunhat",
+            "paper-crown"
+          ]
+        }
+      },
+      "bird": {
+        "displayNameFa": "پرندهٔ کوچک",
+        "parts": [
+          "feather",
+          "body",
+          "belly",
+          "face",
+          "eyes",
+          "beak",
+          "crest",
+          "hat",
+          "outfit",
+          "accessory",
+          "badge"
+        ],
+        "options": {
+          "feather": [
+            "saffron",
+            "coral",
+            "teal",
+            "plum"
+          ],
+          "crest": [
+            "none",
+            "three-feather",
+            "soft-crown"
+          ],
+          "beak": [
+            "short",
+            "rounded"
+          ],
+          "hat": [
+            "none",
+            "cap",
+            "bucket",
+            "sunhat",
+            "paper-crown"
+          ]
+        }
+      },
+      "robot": {
+        "displayNameFa": "ربات کوچک",
+        "parts": [
+          "back-panel",
+          "body",
+          "faceplate",
+          "eyes",
+          "mouth-display",
+          "antenna",
+          "hat",
+          "outfit",
+          "accessory",
+          "badge"
+        ],
+        "options": {
+          "shell": [
+            "plum",
+            "teal",
+            "saffron",
+            "coral"
+          ],
+          "antenna": [
+            "dot",
+            "ring",
+            "none"
+          ],
+          "displayFace": [
+            "round-eyes",
+            "dot-eyes",
+            "smile-line"
+          ],
+          "hat": [
+            "none",
+            "cap",
+            "bucket",
+            "sunhat",
+            "paper-crown"
+          ]
+        }
+      }
+    },
+    "sharedSlots": {
+      "hair-back": {
+        "z": 20,
+        "anchor": "head-back",
+        "occludes": [
+          "body"
+        ],
+        "safeArea": "outside-eyes"
+      },
+      "body": {
+        "z": 30,
+        "anchor": "torso",
+        "occludes": [
+          "neck",
+          "back-accessory"
+        ]
+      },
+      "neck": {
+        "z": 40,
+        "anchor": "neck",
+        "occludes": []
+      },
+      "face": {
+        "z": 50,
+        "anchor": "face",
+        "occludes": []
+      },
+      "eyes": {
+        "z": 60,
+        "anchor": "eye-line",
+        "occludes": []
+      },
+      "mouth": {
+        "z": 70,
+        "anchor": "mouth",
+        "occludes": []
+      },
+      "hair-front": {
+        "z": 80,
+        "anchor": "forehead",
+        "occludes": [
+          "face-edge"
+        ],
+        "mustNotCover": [
+          "eyes",
+          "mouth"
+        ]
+      },
+      "facial-hair": {
+        "z": 85,
+        "anchor": "mouth",
+        "allowedBases": [
+          "human"
+        ],
+        "mustNotCover": [
+          "nostrils",
+          "mouth-opening"
+        ]
+      },
+      "snout-mark": {
+        "z": 85,
+        "anchor": "snout",
+        "allowedBases": [
+          "dragon"
+        ],
+        "mustNotCover": [
+          "mouth-opening"
+        ]
+      },
+      "hat": {
+        "z": 100,
+        "anchor": "crown",
+        "mustNotCover": [
+          "eye-line",
+          "focus-ring"
+        ],
+        "compatibilityRequired": true
+      },
+      "outfit": {
+        "z": 35,
+        "anchor": "torso",
+        "occludes": [
+          "body-lower"
+        ],
+        "outsideCountedArea": true
+      },
+      "accessory": {
+        "z": 110,
+        "anchor": "side-or-chest",
+        "mustNotCover": [
+          "eyes",
+          "focus-ring",
+          "hit-target"
+        ]
+      },
+      "badge": {
+        "z": 120,
+        "anchor": "outside-face",
+        "outsideCountedArea": true
+      }
+    },
+    "compositingOrder": [
+      "back-hair-or-tail",
+      "back-panel",
+      "body-or-shell",
+      "outfit",
+      "neck",
+      "face-or-faceplate",
+      "eyes",
+      "mouth-or-display",
+      "front-hair-or-crest",
+      "facial-hair-or-snout-mark",
+      "hat",
+      "accessory",
+      "badge"
+    ],
+    "compatibilityRules": [
+      "baseCharacter selects anatomy; never swap anatomy by changing skin/hair only",
+      "facialHair is gender-independent and human-only; non-human bases use native face marks",
+      "hat option must declare crown/crest clearance and preserve eye-line and focus ring",
+      "glasses/accessory must preserve eye contrast and never cover both eyes",
+      "hair and hat are cosmetic; no body, skin, mobility or learning feature is locked",
+      "invalid enum or incompatible slot normalizes to that slot's none/default; never crash",
+      "migration from ChildAvatarV1 preserves all valid v1 fields and adds baseCharacter=human, facialHair=none, eyeId=round"
+    ],
+    "privacyAndPersistence": {
+      "noPhotoCameraUpload": true,
+      "learningTruthUntouched": true,
+      "revisionServerAssigned": true,
+      "clientOpIdIdempotent": true,
+      "latestValidServerRevisionWins": true,
+      "storageEnvelope": "{schemaVersion:2, revision, updatedAt, value:ChildAvatarV2}"
+    }
+  },
+  "placement": {
+    "priority": [
+      "assessment-silent",
+      "recovery",
+      "outcome",
+      "hint",
+      "explain",
+      "idle"
+    ],
+    "assessment": {
+      "renderGuide": false,
+      "renderAvatar": false,
+      "speech": false,
+      "audio": false,
+      "answerCue": false
+    },
+    "lesson": {
+      "maxGuideDp": 96,
+      "guideOutsideCountedArea": true,
+      "oneSpeakerAtATime": true,
+      "idleIsStatic": true,
+      "speechBubbleOptional": true
+    },
+    "homeIntro": {
+      "mainId": "aria",
+      "maxDp": 180,
+      "repeatIntro": false
+    },
+    "backpackAndProfile": {
+      "childAvatarIndependent": true,
+      "guideMascotNotUsedAsChildAvatar": true
+    },
+    "smallSize": {
+      "under40dp": "symbol-or-bust",
+      "under64dp": "hide-patch-and-badge",
+      "under72dp": "preserve-eye-and-silhouette-readability"
+    },
+    "rtl": {
+      "mirrorWholeBitmap": false,
+      "directionalAnchors": true,
+      "textAndPatchNeverMirrored": true
+    },
+    "fallback": {
+      "missingRiveUsesPackagedStaticSvg": true,
+      "assetFailureBlocksSubmit": false,
+      "reducedMotionUsesStaticState": true
+    }
+  },
+  "motion": {
+    "stateMachine": "Companion",
+    "artboard": "Character",
+    "states": [
+      "IDLE",
+      "THINK",
+      "ENCOURAGE",
+      "CORRECT",
+      "CELEBRATE",
+      "RECOVERY"
+    ],
+    "inputs": {
+      "lookX": [
+        -1,
+        1
+      ],
+      "lookY": [
+        -1,
+        1
+      ],
+      "reducedMotion": "boolean"
+    },
+    "rivAvailability": "not-delivered-in-v1.2; do-not-claim-runtime-support-until-assets-and-device-qa-exist"
+  },
+  "migration": {
+    "from": "ChildAvatarV1",
+    "to": "ChildAvatarV2",
+    "strategy": "additive",
+    "preserve": [
+      "progress",
+      "grade",
+      "learningIdentityId",
+      "valid skin/hair/hairColor/outfit/outfitColor/accessory"
+    ],
+    "defaults": {
+      "baseCharacter": "human",
+      "facialHairId": "none",
+      "eyeId": "round",
+      "hatId": "none",
+      "accentId": "none"
+    },
+    "invalidHandling": "normalize each slot independently; do not discard valid sibling slots"
+  },
+  "qaAcceptance": [
+    "every cast id remains aria/qbo/dana/jiko",
+    "aria renders as original friendly dragon with no third-party IP reference",
+    "all four base avatars render at 40dp, 72dp and 180dp",
+    "hat/hair/facial-hair combinations obey occlusion and eye/focus-ring rules",
+    "assessment has no guide/avatar/audio/answer cue",
+    "reduced-motion state is static but semantically equivalent",
+    "v1 profile migrates without changing learning truth",
+    "web and mobile renderer parity passes for all valid combinations"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "assignment": "Shomara design v1.3 comprehensive static screen audit",
+  "collection": {
+    "target": 24,
+    "unique_records": 24,
+    "source": "project-design-v1.2/specs/screens.json",
+    "ids": ["S01","S02","S03","S04","S05","S06","S07","S08","S09","S10","S11","S12","S13","S14","S15","S16","S17","S18","S19","S20","S21","S22","S23","S24"],
+    "status": "complete",
+    "deduplication": "source screen ID; no collisions",
+    "runtime_total": null,
+    "notes": "Static source evidence collected from specs/screens.json, docs/05-SCREENS.md, prototype, web routes/components, and native routes/components. No runtime behavior total claimed."
+  },
+  "processing": {
+    "target_ids": 24,
+    "analyzed_ids": 24,
+    "failed_or_skipped": [],
+    "status": "complete_for_static_audit",
+    "runtime_validation": "unknown_not_run",
+    "output_records": 24,
+    "issue_objects": 58,
+    "p0_screen_count": 14,
+    "p1_or_p2_only_or_mixed": 24
+  },
+  "outputs": {
+    "screens": "screens-v1.3.json",
+    "audit": "audit-fa.md",
+    "receipt": "receipt-coverage.json"
+  }
+}

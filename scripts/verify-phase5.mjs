@@ -13,11 +13,11 @@ const required = [
   'apps/web/app/api/v1/learning/sessions/route.ts',
   'apps/web/app/api/v1/learning/sessions/[sessionId]/encounters/route.ts',
   'apps/web/app/api/v1/learning/attempts/submit/route.ts',
-  'docs/PHASE_5_LEARNING_RUNTIME.md',
-  'docs/API_CONTRACT_PHASE_5.md',
-  'docs/ADR_0003_SERVER_AUTHORITATIVE_LEARNING_RUNTIME.md',
-  'docs/REVISION_NOTES_PHASE_5.md',
-  'docs/PACKAGE_MANIFEST_PHASE_5.json',
+  'docs/phases/PHASE_5_LEARNING_RUNTIME.md',
+  'docs/api/API_CONTRACT_PHASE_5.md',
+  'docs/adr/ADR_0003_SERVER_AUTHORITATIVE_LEARNING_RUNTIME.md',
+  'docs/history/REVISION_NOTES_PHASE_5.md',
+  'docs/history/PACKAGE_MANIFEST_PHASE_5.json',
 ];
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`Missing: ${file}`);

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from '../src/ui/AppText';
+import { S } from '../src/ui/strings.fa';
 
 type AssignmentItem = {
   assignment: { id: string; sharedObjective: string; dueAt: string | null; status: string };
@@ -21,14 +23,14 @@ export default function AssignmentsScreen() {
         return response.json() as Promise<AssignmentItem[]>;
       })
       .then(setItems)
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'assignment fetch failed'));
+      .catch(() => setError(S.assignments.loadFailed));
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>تکلیف‌های من</Text>
+      <Text style={styles.title}>{S.assignments.title}</Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      {items.length === 0 && !error && <Text style={styles.empty}>فعلاً تکلیف فعالی نداری.</Text>}
+      {items.length === 0 && !error && <Text style={styles.empty}>{S.assignments.empty}</Text>}
       {items.map(({ assignment, instance }) => (
         <View key={instance.id} style={styles.card}>
           <Text style={styles.cardTitle}>{assignment.sharedObjective}</Text>

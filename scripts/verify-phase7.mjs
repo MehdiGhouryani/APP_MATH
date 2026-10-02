@@ -13,8 +13,8 @@ const required = [
   'apps/web/app/api/v1/learning-identities/[learningIdentityId]/assignments/route.ts',
   'apps/web/app/teacher/assignments/page.tsx',
   'apps/mobile/app/assignments.tsx',
-  'docs/PHASE_7_TEACHER_ASSIGNMENT_SLICE.md',
-  'docs/API_CONTRACT_PHASE_7.md',
+  'docs/phases/PHASE_7_TEACHER_ASSIGNMENT_SLICE.md',
+  'docs/api/API_CONTRACT_PHASE_7.md',
 ];
 for (const rel of required) {
   if (!fs.existsSync(path.join(root, rel))) throw new Error(`Missing ${rel}`);

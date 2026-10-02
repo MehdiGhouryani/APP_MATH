@@ -40,7 +40,7 @@ function devAccount(request: Request, defaultRole = 'PARENT'): AccountPrincipal 
   const customRoles = request.headers.get('x-dev-roles');
   const roles = customRoles
     ? customRoles.split(',').map((x) => x.trim()).filter(Boolean)
-    : ['PARENT', 'TEACHER', 'ADMIN', 'CHILD'];
+    : [defaultRole];
   return { mode: 'DEV_ONLY', accountId, authUserId: accountId, roles };
 }
 
@@ -48,7 +48,7 @@ async function authAccount(request: Request): Promise<AccountPrincipal> {
   const token = bearerToken(request);
   if (!token) {
     // If no bearer token in development, fallback to dev account
-    if (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    if (process.env.NODE_ENV !== 'production') {
       return devAccount(request);
     }
     throw new Error('AUTH_BEARER_REQUIRED');
@@ -69,7 +69,7 @@ async function authAccount(request: Request): Promise<AccountPrincipal> {
 }
 
 async function authLearning(request: Request): Promise<RequestPrincipal> {
-  if ((process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL) && !bearerToken(request)) {
+  if (process.env.NODE_ENV !== 'production' && !bearerToken(request)) {
     return devLearningIdentity(request);
   }
   const account = await authAccount(request);
@@ -93,14 +93,16 @@ async function authLearning(request: Request): Promise<RequestPrincipal> {
 }
 
 export async function requireRequestPrincipal(request: Request): Promise<RequestPrincipal> {
-  if (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL || request.headers.get('x-dev-learning-identity-id')) {
+  // Development identity injection must never be reachable in production, even
+  // when a client supplies x-dev-* headers or Supabase configuration is absent.
+  if (process.env.NODE_ENV !== 'production') {
     return devLearningIdentity(request);
   }
   return authLearning(request);
 }
 
 export async function requireRequestAccountPrincipal(request: Request, requiredRole?: string): Promise<AccountPrincipal> {
-  const principal = (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_SUPABASE_URL || request.headers.get('x-dev-account-id') || request.headers.get('x-dev-roles'))
+  const principal = (process.env.NODE_ENV !== 'production')
     ? devAccount(request, requiredRole)
     : await authAccount(request);
   if (requiredRole && !principal.roles.includes(requiredRole) && !principal.roles.includes('ADMIN')) {
@@ -115,8 +117,7 @@ export function assertBodyIdentityMatches(principal: RequestPrincipal, bodyLearn
 }
 
 export function assertPathAccountMatches(principal: AccountPrincipal, accountId: string): void {
-  // Allow matched dev account or admin override in dev
-  if (accountId !== principal.accountId && !principal.roles.includes('ADMIN') && process.env.NODE_ENV === 'production') {
+  if (accountId !== principal.accountId && !principal.roles.includes('ADMIN')) {
     throw new Error('ACCOUNT_CONTEXT_MISMATCH');
   }
 }

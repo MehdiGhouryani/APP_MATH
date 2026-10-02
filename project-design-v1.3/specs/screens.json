@@ -1,0 +1,724 @@
+[
+  {
+    "id": "S01",
+    "route": "/welcome",
+    "title": "خوش‌آمد",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "وب: AuthFlowScreen درون مودال با SPLASH؛ native: onboarding WELCOME. هر دو پیام برند/راهنما دارند.",
+    "purpose": "خوش‌آمد",
+    "entry_exit": "ورود سرد به onboarding/auth؛ بعد از شروع به جایابی/گیت می‌رود. کاربر بازگشتی باید مستقیم S07 باشد.",
+    "primary_cta": "شروع / بزن بریم",
+    "required_states": "first-run، returning، reduce-motion، loading brand، network-independent welcome",
+    "child_parent_gates": "هیچ داده کودک پیش از adult consent ذخیره نشود؛ خروج در وب از مودال مجاز است، native back در گام اول از اپ خارج می‌شود.",
+    "accessibility_rtl": "RTL روی html و native force شده است. CTA باید حداقل ۵۶dp، focus واضح، متن ۲۰px کودک؛ animation با reduce-motion خاموش.",
+    "issues": [
+      {
+        "severity": "P1 + P2",
+        "finding": "Start باید S02 باشد ولی native مستقیماً Q1 placement را باز می‌کند (P1؛ apps/mobile/app/onboarding.tsx:13-19,86-104). وب SPLASH زمان‌دار ۲٫۲ ثانیه است و CTA ندارد (P2؛ apps/web/components/AuthFlowScreen.tsx:54-63,155-182).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:8,54-63,155-182; apps/web/app/page.tsx:43-60; apps/mobile/app/onboarding.tsx:13-19,86-97; apps/mobile/app/_layout.tsx:17-35"
+      }
+    ],
+    "proposed_corrected_flow": "Welcome → Start → S02 auth (وب) یا مسیر واحد onboarding قراردادی؛ returning → S07؛ حالت کم‌حرکت بدون انیمیشن و با CTA فوری.",
+    "mobile_parity": "وب و native هر دو وجود دارند اما جریان یکسان نیست؛ mobile missing S02 auth and uses placement before consent.",
+    "evidence": "apps/web/components/AuthFlowScreen.tsx:8,54-63,155-182; apps/web/app/page.tsx:43-60; apps/mobile/app/onboarding.tsx:13-19,86-97; apps/mobile/app/_layout.tsx:17-35"
+  },
+  {
+    "id": "S02",
+    "route": "/auth",
+    "title": "ورود خانواده",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "وب AuthFlow gateway شماره، Google و guest دارد؛ phone is only local state. Native route/component معادل ندارد.",
+    "purpose": "ورود خانواده",
+    "entry_exit": "S01 start → auth; OTP→S03؛ Google موفق→S04 طبق قرارداد، اما فعلاً setup را باز می‌کند.",
+    "primary_cta": "ارسال کد / ورود با Google",
+    "required_states": "offline، invalid phone، provider/SDK failure، loading، guest policy، consent/privacy",
+    "child_parent_gates": "ParentGate قبل از data collection در وب؛ guest باید adult consent و محدودیت واضح داشته باشد؛ خرید/حساب parent-only.",
+    "accessibility_rtl": "phone و کد LTR با برچسب؛ خطای inline و قابل screen-reader؛ دکمه‌های وب فعلی aria-label ندارند و برخی ۳۲px‌اند.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "Google/OTP هیچ provider/API ندارند و guest fake completion است (apps/web/components/AuthFlowScreen.tsx:110-131,259-309).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:110-135,228-235,259-319,353-370; apps/mobile/app/onboarding.tsx:53-60,126-145"
+      },
+      {
+        "severity": "P1",
+        "finding": "قرارداد S02→S03/S04 نیست؛ Google/guest مستقیم learner setup می‌روند (همان:123-135).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:110-135,228-235,259-319,353-370; apps/mobile/app/onboarding.tsx:53-60,126-145"
+      },
+      {
+        "severity": "P1",
+        "finding": "شماره حداقل length است نه country-code validation (همان:353-370).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:110-135,228-235,259-319,353-370; apps/mobile/app/onboarding.tsx:53-60,126-145"
+      }
+    ],
+    "proposed_corrected_flow": "S01→S02؛ احراز adult واقعی و privacy consent؛ mobile OTP با country selector → S03؛ provider success→S04؛ خطا state حفظ input و retry.",
+    "mobile_parity": "Missing mobile parity: native onboarding has no phone/Google auth or S02 route; stores profile locally after gate (apps/mobile/app/onboarding.tsx:53-60).",
+    "evidence": "apps/web/components/AuthFlowScreen.tsx:110-135,228-235,259-319,353-370; apps/mobile/app/onboarding.tsx:53-60,126-145"
+  },
+  {
+    "id": "S03",
+    "route": "/auth/code",
+    "title": "کد ورود",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "وب OTP local: input maxLength=6, timer 60; verify accepts >=4 and directly setup. No actual delivery/resend handler.",
+    "purpose": "کد ورود",
+    "entry_exit": "S02 submit code → S03; edit phone/back; success→S04 or returning S07.",
+    "primary_cta": "تأیید و ورود",
+    "required_states": "wrong/expired، rate-limit، delivery failure، resend countdown، offline، keyboard LTR",
+    "child_parent_gates": "adult auth state; never expose full phone.",
+    "accessibility_rtl": "OTP input dir=ltr، one-time-code semantics، focus and error announcement.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "no server verification or expiry/rate-limit (apps/web/components/AuthFlowScreen.tsx:110-121,323-400).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:65-71,110-121,323-400"
+      },
+      {
+        "severity": "P1",
+        "finding": "six-digit spec conflicts with `otpCode.length < 4` (همان:117-120,375-389).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:65-71,110-121,323-400"
+      },
+      {
+        "severity": "P2",
+        "finding": "resend label is not an active resend; only resets to phone screen (همان:391-398).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:65-71,110-121,323-400"
+      }
+    ],
+    "proposed_corrected_flow": "Mask number; exactly six numeric digits; verify server; failure-specific copy; resend disabled until timer zero; success route by existing profile.",
+    "mobile_parity": "Missing native S03 entirely.",
+    "evidence": "apps/web/components/AuthFlowScreen.tsx:65-71,110-121,323-400"
+  },
+  {
+    "id": "S04",
+    "route": "/grade",
+    "title": "انتخاب پایه",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "وب grade grid in AuthFlow; GRADES map includes active/inactive and user can change top-bar grade later. Native hardcodes G1 at save.",
+    "purpose": "انتخاب پایه",
+    "entry_exit": "S03 success → grade; first choice→S05; existing profile→S07; future grade only explain, not start.",
+    "primary_cta": "ادامه / انتخاب پایه",
+    "required_states": "initial، switching، existing progress، unavailable content، loading/error manifest",
+    "child_parent_gates": "adult gate already passed; changing grade must warn about preserving progress and cannot expose unpublished route.",
+    "accessibility_rtl": "RTL grid buttons have aria-pressed; add group label, selected state not color-only, focus order right-to-left.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "native does not implement six-grade selection; `gradeId: G1` hardcoded (apps/mobile/app/onboarding.tsx:53-60).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:185-225; apps/web/components/ChildTopBar.tsx:62-181; apps/mobile/app/onboarding.tsx:53-60"
+      },
+      {
+        "severity": "P1",
+        "finding": "web grade step is inside auth modal, not `/grade`; no deep-link/back route (apps/web/components/AuthFlowScreen.tsx:185-225).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:185-225; apps/web/components/ChildTopBar.tsx:62-181; apps/mobile/app/onboarding.tsx:53-60"
+      },
+      {
+        "severity": "P2",
+        "finding": "web inactive grades disabled but no detail/release announcement beyond generic text.",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:185-225; apps/web/components/ChildTopBar.tsx:62-181; apps/mobile/app/onboarding.tsx:53-60"
+      }
+    ],
+    "proposed_corrected_flow": "Load availability from manifest; select G1→S05; select future grade→explain coming soon; existing child→S07 with confirmation only if changing grade.",
+    "mobile_parity": "Partial native: only G1, no grade UI.",
+    "evidence": "apps/web/components/AuthFlowScreen.tsx:185-225; apps/web/components/ChildTopBar.tsx:62-181; apps/mobile/app/onboarding.tsx:53-60"
+  },
+  {
+    "id": "S05",
+    "route": "/child",
+    "title": "پروفایل کودک",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "وب learner setup has name input only and defaults آرش; native asks name only. No ChildAvatar renderer in onboarding.",
+    "purpose": "پروفایل کودک",
+    "entry_exit": "S04 → profile; existing profile bypasses; save→S06.",
+    "primary_cta": "بساز / شروع ماجراجویی",
+    "required_states": "name list/alias validation، save failure، existing profile، offline local save",
+    "child_parent_gates": "adult consent before any child data; alias only, no real name/age; input max length and no sensitive fields.",
+    "accessibility_rtl": "Native input has accessibilityLabel and maxLength 20; web label is visual only. Avatar required in design but absent both.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "missing initial avatar selection and unified ChildAvatar renderer (web apps/web/components/AuthFlowScreen.tsx:406-435; native apps/mobile/app/onboarding.tsx:137-145).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:38-40,406-435; apps/web/app/page.tsx:80-89; apps/mobile/app/onboarding.tsx:137-145"
+      },
+      {
+        "severity": "P1",
+        "finding": "web default `آرش` can become real identity without explicit alias guidance (web:39,415-423).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:38-40,406-435; apps/web/app/page.tsx:80-89; apps/mobile/app/onboarding.tsx:137-145"
+      },
+      {
+        "severity": "P1",
+        "finding": "save is localStorage callback, not durable account profile (web apps/web/app/page.tsx:80-89).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:38-40,406-435; apps/web/app/page.tsx:80-89; apps/mobile/app/onboarding.tsx:137-145"
+      }
+    ],
+    "proposed_corrected_flow": "adult pass→alias + generated avatar preview→save transaction; on failure retain fields and retry; continue→S06; existing child→S07.",
+    "mobile_parity": "Partial; native name/save exists, avatar absent.",
+    "evidence": "apps/web/components/AuthFlowScreen.tsx:38-40,406-435; apps/web/app/page.tsx:80-89; apps/mobile/app/onboarding.tsx:137-145"
+  },
+  {
+    "id": "S06",
+    "route": "/start-check",
+    "title": "جایابی",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "وب/native implement only two diagnostic questions (count/pattern); no explicit skip. Native placement is before parent gate, contrary docs.",
+    "purpose": "جایابی",
+    "entry_exit": "S05→intro/questions; finish or skip→S07; returning must not repeat.",
+    "primary_cta": "پایان/رد کردن",
+    "required_states": "intro، stop، helped، no evidence، suggested start، offline save",
+    "child_parent_gates": "No guide in independent assessment; parent gate before profile/data; label result as suggestion, not score.",
+    "accessibility_rtl": "Native buttons have roles; no live region for progress; ensure no mascot cue during question and announce question index.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "only two items and no skip action in both implementations (web apps/web/components/PlacementFlow.tsx:20-35,109-165; native apps/mobile/app/onboarding.tsx:99-124).",
+        "evidence": "apps/web/components/PlacementFlow.tsx:20-35,80-165; apps/web/app/page.tsx:303-318; apps/mobile/app/onboarding.tsx:99-134"
+      },
+      {
+        "severity": "P0",
+        "finding": "native asks placement before parent consent (apps/mobile/app/onboarding.tsx:13-19,99-134).",
+        "evidence": "apps/web/components/PlacementFlow.tsx:20-35,80-165; apps/web/app/page.tsx:303-318; apps/mobile/app/onboarding.tsx:99-134"
+      },
+      {
+        "severity": "P1",
+        "finding": "web all-correct seeds four completed nodes locally (apps/web/app/page.tsx:303-318), not server placement outcome.",
+        "evidence": "apps/web/components/PlacementFlow.tsx:20-35,80-165; apps/web/app/page.tsx:303-318; apps/mobile/app/onboarding.tsx:99-134"
+      }
+    ],
+    "proposed_corrected_flow": "S05→consent→intro→optional skip or 2+ evidence items→suggested start; persist only after adult-approved profile; no reward/mastery from placement.",
+    "mobile_parity": "Native exists but order and skip differ; web has local fast-track.",
+    "evidence": "apps/web/components/PlacementFlow.tsx:20-35,80-165; apps/web/app/page.tsx:303-318; apps/mobile/app/onboarding.tsx:99-134"
+  },
+  {
+    "id": "S07",
+    "route": "/path",
+    "title": "مسیر",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web main shell renders Duolingo-like zigzag path with 8 nodes and 3 tabs PATH/BACKPACK/PROFILE; native renders 5 stations and same 3 tabs. Node click opens lesson directly.",
+    "purpose": "مسیر",
+    "entry_exit": "S06→path; node→S09; unit title should→S08; returning profile→path.",
+    "primary_cta": "continue active node",
+    "required_states": "offline ready، not downloaded، prereq lock، completion، sync pending",
+    "child_parent_gates": "No parent gate for child path; adult access via gated menu; locked node must expose prerequisite relationship and not just tooltip.",
+    "accessibility_rtl": "RTL DOM/read order; path must be keyboard navigable, not rely on fixed SVG coordinates; web node buttons have no aria labels. Current native has accessibility labels.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "five-tab contract is not implemented; web/native expose only three tabs (web apps/web/components/ChildBottomNav.tsx:7-18; native apps/mobile/app/(tabs)/_layout.tsx:8-35).",
+        "evidence": "apps/web/app/page.tsx:197-259; apps/web/components/DuolingoPath.tsx:128-173,255-294,392-442; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35; apps/mobile/app/(tabs)/index.tsx:60-88"
+      },
+      {
+        "severity": "P1",
+        "finding": "web fixed SVG coordinates may misalign with responsive path (web apps/web/components/DuolingoPath.tsx:266-294).",
+        "evidence": "apps/web/app/page.tsx:197-259; apps/web/components/DuolingoPath.tsx:128-173,255-294,392-442; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35; apps/mobile/app/(tabs)/index.tsx:60-88"
+      },
+      {
+        "severity": "P1",
+        "finding": "sync indicator is hardcoded green and periodic sync failure only console.warn (web apps/web/components/ChildTopBar.tsx:209-220; apps/web/app/page.tsx:110-146).",
+        "evidence": "apps/web/app/page.tsx:197-259; apps/web/components/DuolingoPath.tsx:128-173,255-294,392-442; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35; apps/mobile/app/(tabs)/index.tsx:60-88"
+      },
+      {
+        "severity": "P2",
+        "finding": "no visible download/not-downloaded state.",
+        "evidence": "apps/web/app/page.tsx:197-259; apps/web/components/DuolingoPath.tsx:128-173,255-294,392-442; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35; apps/mobile/app/(tabs)/index.tsx:60-88"
+      }
+    ],
+    "proposed_corrected_flow": "Recommend 4 primary child tabs: مسیر, تمرین, کمد/گنجینه, پروفایل. Keep skills as section of تمرین, not fifth tab. Path header→unit list S08; active node→S09; lock card names prerequisite; pending sync badge truthful.",
+    "mobile_parity": "Native parity partial: path and 3 tabs exist; practice/wardrobe and required offline states missing.",
+    "evidence": "apps/web/app/page.tsx:197-259; apps/web/components/DuolingoPath.tsx:128-173,255-294,392-442; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35; apps/mobile/app/(tabs)/index.tsx:60-88"
+  },
+  {
+    "id": "S08",
+    "route": "/unit/:id",
+    "title": "واحد",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No web/native unit-detail route/component; path header visually contains unit concept but node tap bypasses unit.",
+    "purpose": "واحد",
+    "entry_exit": "S07 title/selected unit→unit; start/continue→S09; jump→S13.",
+    "primary_cta": "شروع/ادامه",
+    "required_states": "locked، completed، manifest download، manifest error",
+    "child_parent_gates": "Child can see unlocked content; skip/jump requires evidence and no adult gate unless paid content.",
+    "accessibility_rtl": "Heading hierarchy and four node labels; preserve focus on return; status not color-only.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "screen and route are absent; `handleNodeSelect` opens lesson modal directly (apps/web/app/page.tsx:172-177) and native home routes station directly (apps/mobile/app/(tabs)/index.tsx:50-57).",
+        "evidence": "apps/web/app/page.tsx:172-177,230-237; apps/mobile/app/(tabs)/index.tsx:50-57"
+      },
+      {
+        "severity": "P1",
+        "finding": "no manifest/error/download UI in either route.",
+        "evidence": "apps/web/app/page.tsx:172-177,230-237; apps/mobile/app/(tabs)/index.tsx:50-57"
+      }
+    ],
+    "proposed_corrected_flow": "Path unit card→title/objective/audio→4 nodes with status→start/continue; manifest fetch skeleton/error; jump action→S13.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "apps/web/app/page.tsx:172-177,230-237; apps/mobile/app/(tabs)/index.tsx:50-57"
+  },
+  {
+    "id": "S09",
+    "route": "/station/:id/start",
+    "title": "شروع ایستگاه",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web has no start screen; node opens DuolingoLessonModal. Native station auto-starts immediately, with ENTRY preparing/retry state.",
+    "purpose": "شروع ایستگاه",
+    "entry_exit": "S08 start/replay→S10; back→S07; saved session→resume.",
+    "primary_cta": "شروع",
+    "required_states": "replay، incomplete package، saved session، loading/error",
+    "child_parent_gates": "No parent gate; preserve checkpoint on back.",
+    "accessibility_rtl": "Close button 44px web/native, but native has exit confirmation and web closes immediately; announce loading state.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "missing dedicated concept/time/audio start screen; direct modal bypasses S09 (web apps/web/app/page.tsx:172-177).",
+        "evidence": "apps/web/app/page.tsx:172-177; apps/web/components/DuolingoLessonModal.tsx:78-101,266-291; apps/mobile/src/station/StationFlow.tsx:283-323,415-419"
+      },
+      {
+        "severity": "P1",
+        "finding": "native auto-start explicitly says no extra start screen (apps/mobile/src/station/StationFlow.tsx:316-323), contrary template.",
+        "evidence": "apps/web/app/page.tsx:172-177; apps/web/components/DuolingoLessonModal.tsx:78-101,266-291; apps/mobile/src/station/StationFlow.tsx:283-323,415-419"
+      },
+      {
+        "severity": "P2",
+        "finding": "web backend init failure silently falls back (web apps/web/components/DuolingoLessonModal.tsx:78-101).",
+        "evidence": "apps/web/app/page.tsx:172-177; apps/web/components/DuolingoLessonModal.tsx:78-101,266-291; apps/mobile/src/station/StationFlow.tsx:283-323,415-419"
+      }
+    ],
+    "proposed_corrected_flow": "S09 shows concept, scene, duration, replay/resume, package status, audio play; CTA starts S10; exit returns path; saved session resume is explicit.",
+    "mobile_parity": "Native has ENTRY loading/retry and resume logic but not S09 visual; web missing.",
+    "evidence": "apps/web/app/page.tsx:172-177; apps/web/components/DuolingoLessonModal.tsx:78-101,266-291; apps/mobile/src/station/StationFlow.tsx:283-323,415-419"
+  },
+  {
+    "id": "S10",
+    "route": "/station/:id/learn",
+    "title": "درس",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web modal supports several exercise types, local fallback, correctness drawer; native StationFlow has LEARN/GUIDED etc and remote/local runtime.",
+    "purpose": "درس",
+    "entry_exit": "S09→learn; finish→S11; close with checkpoint.",
+    "primary_cta": "بررسی کن / ادامه",
+    "required_states": "correct، staged help، wrong, drag/tap, resume، audio fallback، submit/loading",
+    "child_parent_gates": "Approved encounter metadata chooses speaker; assessment suppresses mascot; child-safe no punitive score.",
+    "accessibility_rtl": "Web close aria-label and 44px; native progressbar/roles. Web interactive scene uses emoji/buttons, no explicit audio/hint state.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "web completion can be granted twice: server station pass then `handleContinue` calls onCompleteNode again (web apps/web/components/DuolingoLessonModal.tsx:148-157,201-209).",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:78-101,135-195,201-235,237-375,919-939; apps/mobile/src/station/StationFlow.tsx:105-166,330-369,421-430"
+      },
+      {
+        "severity": "P1",
+        "finding": "no actual audio/hint control despite template (web:348-374,919-939).",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:78-101,135-195,201-235,237-375,919-939; apps/mobile/src/station/StationFlow.tsx:105-166,330-369,421-430"
+      },
+      {
+        "severity": "P1",
+        "finding": "web fallback local correctness when backend fails risks presenting mastery as verified (web:169-195).",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:78-101,135-195,201-235,237-375,919-939; apps/mobile/src/station/StationFlow.tsx:105-166,330-369,421-430"
+      },
+      {
+        "severity": "P2",
+        "finding": "desktop fixed modal absolute, no focus trap/aria dialog.",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:78-101,135-195,201-235,237-375,919-939; apps/mobile/src/station/StationFlow.tsx:105-166,330-369,421-430"
+      }
+    ],
+    "proposed_corrected_flow": "S10 server-authoritative encounter; one guide from approved metadata; hint ladder and audio fallback; loading disables submit; offline answer queued and marked pending; exit confirmation saves checkpoint; independent check no companion.",
+    "mobile_parity": "Native substantially richer state machine and checkpoint (apps/mobile/src/station/StationFlow.tsx:330-369,421-430), but no explicit audio and no web parity.",
+    "evidence": "apps/web/components/DuolingoLessonModal.tsx:78-101,135-195,201-235,237-375,919-939; apps/mobile/src/station/StationFlow.tsx:105-166,330-369,421-430"
+  },
+  {
+    "id": "S11",
+    "route": "/station/:id/game",
+    "title": "بازی پایانی",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web treats all node types as one lesson modal and no 3-round story/difficulty model. Native has GAME_PATTERN/GAME_COUNT transitions and local content but UI is generic.",
+    "purpose": "بازی پایانی",
+    "entry_exit": "S10 finish→game; complete→S12; saved game→resume.",
+    "primary_cta": "پایان بازی",
+    "required_states": "guide-needed، rest، saved continuation، fresh variant، no forced timer",
+    "child_parent_gates": "No punitive timer; game rewards separate from mastery; Jiko contextual speaker.",
+    "accessibility_rtl": "Progress and rounds announced; avoid emoji-only meaning; touch targets ≥56dp.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "web has no separate 3-round/difficulty game state (web apps/web/components/DuolingoLessonModal.tsx:29-41,324-375).",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:29-41,324-375; apps/mobile/src/station/StationFlow.tsx:132-161,421-430"
+      },
+      {
+        "severity": "P1",
+        "finding": "native game stages exist but transition is content-id-specific and not a distinct product route (apps/mobile/src/station/StationFlow.tsx:132-161,421-430).",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:29-41,324-375; apps/mobile/src/station/StationFlow.tsx:132-161,421-430"
+      },
+      {
+        "severity": "P2",
+        "finding": "no round count/time disclosure.",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:29-41,324-375; apps/mobile/src/station/StationFlow.tsx:132-161,421-430"
+      }
+    ],
+    "proposed_corrected_flow": "S11 story intro→3 optional-paced rounds→rest/retry→finish; Jiko only; variant selected by skill/difficulty; no countdown; result to S12.",
+    "mobile_parity": "Partial native stages; web missing separate game contract.",
+    "evidence": "apps/web/components/DuolingoLessonModal.tsx:29-41,324-375; apps/mobile/src/station/StationFlow.tsx:132-161,421-430"
+  },
+  {
+    "id": "S12",
+    "route": "/station/:id/result",
+    "title": "نتیجه",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web FINISHED panel has stars, 100% mastery and continue/repeat; native RESULT then COMPLETE, server pass, repeat/home.",
+    "purpose": "نتیجه",
+    "entry_exit": "S11→result; continue→path; retry→S09.",
+    "primary_cta": "ادامه مسیر / بازی دوباره",
+    "required_states": "helped vs independent، duplicate reward، pending verification، retry",
+    "child_parent_gates": "Mastery/result must come from runtime; pending never shown as certain; rewards non-duplicating.",
+    "accessibility_rtl": "Web result has strong visual but no live region; native buttons roles; use semantic text for stars.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "web result hardcodes +3 and 100% and invokes completion locally (web apps/web/components/DuolingoLessonModal.tsx:780-825).",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:780-825; apps/mobile/src/station/StationFlow.tsx:371-379,434-447"
+      },
+      {
+        "severity": "P1",
+        "finding": "web no separate helped/independent distinction in copy.",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:780-825; apps/mobile/src/station/StationFlow.tsx:371-379,434-447"
+      },
+      {
+        "severity": "P1",
+        "finding": "native syncPending returns message without result transition (apps/mobile/src/station/StationFlow.tsx:125-128,189-193), needs explicit pending state.",
+        "evidence": "apps/web/components/DuolingoLessonModal.tsx:780-825; apps/mobile/src/station/StationFlow.tsx:371-379,434-447"
+      }
+    ],
+    "proposed_corrected_flow": "Show evidence-based learning summary, independent/helped label, reward only on verified pass, pending banner, replay S09, continue path.",
+    "mobile_parity": "Native has result/complete and syncPending but reward/accessory parity absent.",
+    "evidence": "apps/web/components/DuolingoLessonModal.tsx:780-825; apps/mobile/src/station/StationFlow.tsx:371-379,434-447"
+  },
+  {
+    "id": "S13",
+    "route": "/unit/:id/jump",
+    "title": "پرش",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No jump route/modal. Web locked nodes only show transient “complete previous” tooltip; native disabled locked stations.",
+    "purpose": "پرش",
+    "entry_exit": "S08 jump→challenge; cancel→S07.",
+    "primary_cta": "پیشنهاد بازکردن",
+    "required_states": "success، insufficient evidence، offline temporary result، error",
+    "child_parent_gates": "Independent assessment: no guide; no mastery unlock until authoritative verification.",
+    "accessibility_rtl": "Explain prerequisite in text; question navigation and result announcement; no color-only lock.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "no S13 implementation; web locked click only sets 2s notice (web apps/web/components/DuolingoPath.tsx:165-171,351-370); native disables locked Pressable (apps/mobile/app/(tabs)/index.tsx:63-73).",
+        "evidence": "apps/web/components/DuolingoPath.tsx:165-171,351-370; apps/mobile/app/(tabs)/index.tsx:63-73"
+      }
+    ],
+    "proposed_corrected_flow": "Explain jump and skill prerequisite→multi-format check→temporary/offline result→server decision→unlock or return path; no purchase CTA.",
+    "mobile_parity": "Missing native and web parity.",
+    "evidence": "apps/web/components/DuolingoPath.tsx:165-171,351-370; apps/mobile/app/(tabs)/index.tsx:63-73"
+  },
+  {
+    "id": "S14",
+    "route": "/games",
+    "title": "بازی‌ها",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No games hub. Web Backpack has tools/badges tabs but no playable game listing; native no games tab.",
+    "purpose": "بازی‌ها",
+    "entry_exit": "4-tab Practice/Path secondary games→S11 replay.",
+    "primary_cta": "بازی / replay",
+    "required_states": "zero learned games، skill lock، download، offline",
+    "child_parent_gates": "No adult gate; learned skill prerequisite visible.",
+    "accessibility_rtl": "Cards need labels/status, empty-state CTA to path, download size.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "missing route and game catalog. Backpack tools are static divs, not games (apps/web/components/BackpackView.tsx:60-65,430-477).",
+        "evidence": "apps/web/components/BackpackView.tsx:60-65,430-477; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35"
+      },
+      {
+        "severity": "P1",
+        "finding": "3-tab nav omits games (web ChildBottomNav.tsx:7-18; native tabs layout:8-35).",
+        "evidence": "apps/web/components/BackpackView.tsx:60-65,430-477; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35"
+      }
+    ],
+    "proposed_corrected_flow": "Practice→Games list filtered by learned skills; empty state “اول یک ایستگاه…”→S07; game card→S11 replay; download/offline state explicit.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "apps/web/components/BackpackView.tsx:60-65,430-477; apps/web/components/ChildBottomNav.tsx:7-18; apps/mobile/app/(tabs)/_layout.tsx:8-35"
+  },
+  {
+    "id": "S15",
+    "route": "/skills",
+    "title": "مهارت‌ها",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web Backpack is closest: 3 real skills, filters ALL/MASTERED/REVIEW, plus badges/tools; native skills has 3 static cards and binary done/learning.",
+    "purpose": "مهارت‌ها",
+    "entry_exit": "Practice→skills; skill→S16.",
+    "primary_cta": "مشاهده مهارت",
+    "required_states": "not started، building، learned/mastered، confidence decay review",
+    "child_parent_gates": "Child-facing “می‌توانم”; status from runtime, not client-only completion.",
+    "accessibility_rtl": "Web skill cards are divs, not buttons, so no S16 navigation; native cards also noninteractive.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "no 5 visual families and no interactive S16 transition (web BackpackView.tsx:17-21,294-365; native skills.tsx:20-33).",
+        "evidence": "apps/web/components/BackpackView.tsx:17-21,39-74,294-365; apps/mobile/app/(tabs)/skills.tsx:16-33"
+      },
+      {
+        "severity": "P1",
+        "finding": "web filter REVIEW is always zero because status never assigned REVIEW (web:39-46,67-74).",
+        "evidence": "apps/web/components/BackpackView.tsx:17-21,39-74,294-365; apps/mobile/app/(tabs)/skills.tsx:16-33"
+      },
+      {
+        "severity": "P1",
+        "finding": "native binary state uses station pass for every skill (native:16-30).",
+        "evidence": "apps/web/components/BackpackView.tsx:17-21,39-74,294-365; apps/mobile/app/(tabs)/skills.tsx:16-33"
+      }
+    ],
+    "proposed_corrected_flow": "Practice hub→five families→“می‌توانم” card with 3-state status; click→S16; review suggestion from confidence decay; empty CTA.",
+    "mobile_parity": "Partial mobile card exists; lacks interactions, 5 families, review states.",
+    "evidence": "apps/web/components/BackpackView.tsx:17-21,39-74,294-365; apps/mobile/app/(tabs)/skills.tsx:16-33"
+  },
+  {
+    "id": "S16",
+    "route": "/skills/:id",
+    "title": "مفهوم",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No skill-detail route. Web skill rows and native cards do not navigate.",
+    "purpose": "مفهوم",
+    "entry_exit": "S15 concept→detail; “روی مسیر”→S07 node.",
+    "primary_cta": "روی مسیر پیدایش کن",
+    "required_states": "no example، locked، helped evidence، review suggested",
+    "child_parent_gates": "No parent gate; link must resolve to exact path node and retain status.",
+    "accessibility_rtl": "Use heading/description/audio button with accessible name; progress and evidence textual.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "no route or component; current skill rows/cards are noninteractive (web apps/web/components/BackpackView.tsx:294-365; native apps/mobile/app/(tabs)/skills.tsx:24-31).",
+        "evidence": "apps/web/components/BackpackView.tsx:294-365; apps/mobile/app/(tabs)/skills.tsx:24-31"
+      }
+    ],
+    "proposed_corrected_flow": "Detail→visual example/play→status/evidence→review CTA→exact S07 node; no invented mastery.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "apps/web/components/BackpackView.tsx:294-365; apps/mobile/app/(tabs)/skills.tsx:24-31"
+  },
+  {
+    "id": "S17",
+    "route": "/treasure",
+    "title": "گنجینه",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web Backpack badges/tools is closest; no treasure garden or economy. Native profile only character friends; no wardrobe/treasure.",
+    "purpose": "گنجینه",
+    "entry_exit": "4-tab wardrobe/treasure→item S18.",
+    "primary_cta": "انتخاب آیتم",
+    "required_states": "empty first target، newly earned، all complete، offline",
+    "child_parent_gates": "No money/prices; reward ownership verified, no duplicate economy.",
+    "accessibility_rtl": "Grid cards with item name/obtained/locked text, not emoji alone; keyboard activation.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "no `/treasure`; Backpack badge grid is static and b6 hardcoded locked (web BackpackView.tsx:51-58,370-427).",
+        "evidence": "apps/web/components/BackpackView.tsx:51-58,370-427; apps/mobile/app/(tabs)/profile.tsx:21-30"
+      },
+      {
+        "severity": "P1",
+        "finding": "native no reward collection (apps/mobile/app/(tabs)/profile.tsx:21-30).",
+        "evidence": "apps/web/components/BackpackView.tsx:51-58,370-427; apps/mobile/app/(tabs)/profile.tsx:21-30"
+      },
+      {
+        "severity": "P2",
+        "finding": "no empty state target.",
+        "evidence": "apps/web/components/BackpackView.tsx:51-58,370-427; apps/mobile/app/(tabs)/profile.tsx:21-30"
+      }
+    ],
+    "proposed_corrected_flow": "Wardrobe tab→small collection/garden→first target→item detail; all complete/empty states; no paid price.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "apps/web/components/BackpackView.tsx:51-58,370-427; apps/mobile/app/(tabs)/profile.tsx:21-30"
+  },
+  {
+    "id": "S18",
+    "route": "/treasure/:id",
+    "title": "جایزه",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No item detail/use route. Profile has no avatar item application; web avatar is companion emoji not child avatar.",
+    "purpose": "جایزه",
+    "entry_exit": "S17 item→detail; use→S17 or S20.",
+    "primary_cta": "پوشیدن/استفاده",
+    "required_states": "locked reason، usable، used، sync",
+    "child_parent_gates": "Only earned items usable; child presentation no payment; adult confirmation only if account/payment linkage.",
+    "accessibility_rtl": "Preview alt/label, selected state, focus; unsaved/apply confirmation.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "no item detail or use action anywhere. Profile renders active companion emoji and links teacher gate only (web ProfileView.tsx:43-59,96-143).",
+        "evidence": "apps/web/components/ProfileView.tsx:43-59,96-143; apps/mobile/app/(tabs)/profile.tsx:15-34"
+      }
+    ],
+    "proposed_corrected_flow": "Item detail→how earned→preview→use/apply→sync receipt; if locked show skill prerequisite and path link.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "apps/web/components/ProfileView.tsx:43-59,96-143; apps/mobile/app/(tabs)/profile.tsx:15-34"
+  },
+  {
+    "id": "S19",
+    "route": "/me",
+    "title": "من",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web ProfileView shows child name, grade, streak/gems and teacher portal; it renders companion avatar, not ChildAvatar, and has no settings/report links. Native profile shows Aria/friends, parent route, dev links.",
+    "purpose": "من",
+    "entry_exit": "4-tab profile→S20 avatar, S21 settings, S22 report.",
+    "primary_cta": "تغییر ظاهر / تنظیمات / گزارش خانواده",
+    "required_states": "new user، offline، zero achievements، session issue",
+    "child_parent_gates": "Adult reports/account behind ParentGate and auth; child profile alias only.",
+    "accessibility_rtl": "ChildAvatar shared renderer requirement unmet web/native; parent entry must be clearly labeled and gated.",
+    "issues": [
+      {
+        "severity": "P1",
+        "finding": "no S20/S21/S22 links from web profile and wrong avatar source (web ProfileView.tsx:25-27,43-65,96-143).",
+        "evidence": "apps/web/components/ProfileView.tsx:25-27,43-65,96-143; apps/web/app/page.tsx:35,241-248; apps/mobile/app/(tabs)/profile.tsx:15-46"
+      },
+      {
+        "severity": "P1",
+        "finding": "streak language contradicts calm no-punishment spec and is always 0 in web page (web app/page.tsx:35,241-248; ProfileView:78-79).",
+        "evidence": "apps/web/components/ProfileView.tsx:25-27,43-65,96-143; apps/web/app/page.tsx:35,241-248; apps/mobile/app/(tabs)/profile.tsx:15-46"
+      },
+      {
+        "severity": "P1",
+        "finding": "native profile exposes only parent and dev links; no avatar/settings/report (native profile.tsx:21-46).",
+        "evidence": "apps/web/components/ProfileView.tsx:25-27,43-65,96-143; apps/web/app/page.tsx:35,241-248; apps/mobile/app/(tabs)/profile.tsx:15-46"
+      }
+    ],
+    "proposed_corrected_flow": "Profile→ChildAvatar + alias + achievements; four actionable rows; zero state and offline session banner; family report/account each gated.",
+    "mobile_parity": "Partial profile parity but wrong content/navigation; avatar/settings/report missing.",
+    "evidence": "apps/web/components/ProfileView.tsx:25-27,43-65,96-143; apps/web/app/page.tsx:35,241-248; apps/mobile/app/(tabs)/profile.tsx:15-46"
+  },
+  {
+    "id": "S20",
+    "route": "/avatar",
+    "title": "آواتار",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No route/workshop. Web AuthFlow has no avatar choice; Profile uses companion. Native has CharacterAvatar only and no editing.",
+    "purpose": "آواتار",
+    "entry_exit": "S19→avatar; save→S19; cancel leaves prior appearance.",
+    "primary_cta": "ذخیره",
+    "required_states": "locked item، prior selection، unsaved changes، save failure، accessibility",
+    "child_parent_gates": "ChildAvatar same renderer S05/S19/S20; local revision can sync later; no real personal data.",
+    "accessibility_rtl": "Categories keyboard/RTL; live preview announced; unsaved modal has save/discard/continue editing; color options with text labels.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "entirely absent; no renderer or route matches template (web AuthFlowScreen.tsx:406-435; native profile.tsx:15-18).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:406-435; apps/web/components/ProfileView.tsx:43-59; apps/mobile/app/(tabs)/profile.tsx:15-18"
+      },
+      {
+        "severity": "P1",
+        "finding": "canonical native CharacterAvatar is companion catalog, not editable child avatar (apps/mobile/src/components/CharacterAvatar.tsx, referenced by profile).",
+        "evidence": "apps/web/components/AuthFlowScreen.tsx:406-435; apps/web/components/ProfileView.tsx:43-59; apps/mobile/app/(tabs)/profile.tsx:15-18"
+      }
+    ],
+    "proposed_corrected_flow": "S19→workshop categories hair/skin/clothes/item→live ChildAvatar→save revision; offline local revision + pending sync; cancel preserves old.",
+    "mobile_parity": "Missing native and web parity.",
+    "evidence": "apps/web/components/AuthFlowScreen.tsx:406-435; apps/web/components/ProfileView.tsx:43-59; apps/mobile/app/(tabs)/profile.tsx:15-18"
+  },
+  {
+    "id": "S21",
+    "route": "/settings",
+    "title": "تنظیمات",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No child settings route. Web top-bar gear opens teacher menu, not settings; native has no settings screen.",
+    "purpose": "تنظیمات",
+    "entry_exit": "S19→settings; account→S24; back→S19.",
+    "primary_cta": "ذخیره تنظیمات",
+    "required_states": "permission denied، system settings، package download/size، error",
+    "child_parent_gates": "Adult account controls gated; audio/motion safe child controls available.",
+    "accessibility_rtl": "Native system permission result announced; switch labels; RTL order and 56dp controls.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "route absent. Web gear menu only teacher portal and ParentGate (web ChildTopBar.tsx:281-380); native profile only parent/dev links (native profile.tsx:32-46).",
+        "evidence": "apps/web/components/ChildTopBar.tsx:281-380; apps/mobile/app/(tabs)/profile.tsx:32-46"
+      }
+    ],
+    "proposed_corrected_flow": "Settings→audio/theme/reduce motion/reminders/downloads→account S24; errors retain value; download status separate from skill lock.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "apps/web/components/ChildTopBar.tsx:281-380; apps/mobile/app/(tabs)/profile.tsx:32-46"
+  },
+  {
+    "id": "S22",
+    "route": "/family/report",
+    "title": "گزارش خانواده",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "Web `/parent` fetches today projection and displays activity/skills/next step/assignments; not S22 route and no ParentGate in page. Native `/parent` is local summary behind ParentGate with deletion, no report charts/date/share.",
+    "purpose": "گزارش خانواده",
+    "entry_exit": "S19 report→adult confirmation→report; back→S19; subscription→S23.",
+    "primary_cta": "مشاهده گزارش / اشتراک",
+    "required_states": "no data guidance، temporary offline، date range، sync status، no comparison",
+    "child_parent_gates": "ParentGate is UX boundary, server authorization still required; no child-facing data leakage.",
+    "accessibility_rtl": "Adult text 16px, tables/cards labeled; report status should be announced and no comparative ranking.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "web parent page uses hardcoded dev account and fetch without visible ParentGate (web apps/web/app/parent/page.tsx:7,34-45).",
+        "evidence": "apps/web/app/parent/page.tsx:7,34-75,87-164; apps/mobile/app/parent.tsx:12-71"
+      },
+      {
+        "severity": "P1",
+        "finding": "native parent is not report contract; only one station summary and delete, no sync/date/share (native apps/mobile/app/parent.tsx:41-71).",
+        "evidence": "apps/web/app/parent/page.tsx:7,34-75,87-164; apps/mobile/app/parent.tsx:12-71"
+      },
+      {
+        "severity": "P1",
+        "finding": "web has loading/error but no offline/empty branch beyond fetch error (web parent:48-75).",
+        "evidence": "apps/web/app/parent/page.tsx:7,34-75,87-164; apps/mobile/app/parent.tsx:12-71"
+      }
+    ],
+    "proposed_corrected_flow": "Gate→report period selector→activity/strength/needs-practice/out-of-app tip/sync status→S23 subscription; zero-data guide; offline cached + “موقت”.",
+    "mobile_parity": "Partial, divergent reports; no share/subscription parity.",
+    "evidence": "apps/web/app/parent/page.tsx:7,34-75,87-164; apps/mobile/app/parent.tsx:12-71"
+  },
+  {
+    "id": "S23",
+    "route": "/family/subscription",
+    "title": "اشتراک",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No subscription/payment UI or route. Web parent report has no purchase link.",
+    "purpose": "اشتراک",
+    "entry_exit": "S22→adult confirmation→subscription; purchase/restore/back→S22.",
+    "primary_cta": "خرید رسمی / restore",
+    "required_states": "pending، active، expired، canceled-until-period-end، restore/failure",
+    "child_parent_gates": "adult confirmation + real store/provider; never expose payment to child; exact price/renewal/cancel.",
+    "accessibility_rtl": "Price/renewal text explicit; errors recoverable; avoid dark patterns; RTL labels.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "no payment/subscription implementation; prototype explicitly excludes payment/API (spec prototypeScope) and web parent has no subscription action (apps/web/app/parent/page.tsx:77-164).",
+        "evidence": "project-design-v1.2/specs/screens.json:S23 prototypeScope; apps/web/app/parent/page.tsx:77-164; apps/mobile/app/_layout.tsx:33-40"
+      }
+    ],
+    "proposed_corrected_flow": "Adult gate→plans with real locale price→store purchase→pending receipt→active/expired/cancelled; restore; provider failure leaves state unchanged.",
+    "mobile_parity": "Missing native parity.",
+    "evidence": "project-design-v1.2/specs/screens.json:S23 prototypeScope; apps/web/app/parent/page.tsx:77-164; apps/mobile/app/_layout.tsx:33-40"
+  },
+  {
+    "id": "S24",
+    "route": "/family/account",
+    "title": "حساب",
+    "source_template": "project-design-v1.2/specs/screens.json + docs/05-SCREENS.md",
+    "observed_current": "No account screen. Web profile teacher gate routes `/teacher`; native parent only supports delete local data, no export/privacy/terms/logout.",
+    "purpose": "حساب",
+    "entry_exit": "S21 account→adult re-auth→account; sensitive actions re-auth; back→S21.",
+    "primary_cta": "خروج/حذف/دریافت داده",
+    "required_states": "auth expired، delete re-confirm، export pending، offline",
+    "child_parent_gates": "Owner confirmation and server authorization, privacy/terms, masked owner identity; deletion irreversible warning.",
+    "accessibility_rtl": "Destructive controls clearly separated; focus/announcement for modal; Persian RTL and LTR email/IDs.",
+    "issues": [
+      {
+        "severity": "P0",
+        "finding": "account/export/logout/terms absent (web ProfileView.tsx:96-143; native parent.tsx:12-35,55-71).",
+        "evidence": "apps/web/components/ProfileView.tsx:96-143; apps/mobile/app/parent.tsx:12-71; apps/mobile/src/components/ParentGate.tsx:6-9"
+      },
+      {
+        "severity": "P1",
+        "finding": "ParentGate documented as UX boundary not authorization and placeholder legal copy (apps/mobile/src/components/ParentGate.tsx:6-9), so cannot serve account auth.",
+        "evidence": "apps/web/components/ProfileView.tsx:96-143; apps/mobile/app/parent.tsx:12-71; apps/mobile/src/components/ParentGate.tsx:6-9"
+      }
+    ],
+    "proposed_corrected_flow": "Adult re-auth→masked account→privacy/terms/export queue/logout/delete 2-step→success/offline pending; support link; return S21.",
+    "mobile_parity": "Missing native/web parity except local delete.",
+    "evidence": "apps/web/components/ProfileView.tsx:96-143; apps/mobile/app/parent.tsx:12-71; apps/mobile/src/components/ParentGate.tsx:6-9"
+  }
+]

@@ -6,8 +6,8 @@ const root = new URL('..', import.meta.url).pathname;
 const errors = [];
 const required = [
   'supabase/migrations/0022_content_delivery.sql',
-  'docs/PHASE_3_CONTENT_DELIVERY.md',
-  'docs/API_CONTRACT_PHASE_3.md',
+  'docs/phases/PHASE_3_CONTENT_DELIVERY.md',
+  'docs/api/API_CONTRACT_PHASE_3.md',
   'packages/content-delivery/src/index.ts',
   'apps/mobile/src/content/ContentManager.ts',
   'apps/web/app/api/v1/content/manifest/route.ts',
@@ -29,7 +29,7 @@ const mobilePkg = JSON.parse(fs.readFileSync(path.join(root, 'apps/mobile/packag
 if (!mobilePkg.dependencies['expo-file-system']) errors.push('expo-file-system dependency missing');
 if (!mobilePkg.dependencies['expo-crypto']) errors.push('expo-crypto dependency missing');
 for (const forbidden of ['Unity','Unreal','Godot']) {
-  const all = fs.readFileSync(path.join(root,'docs/PHASE_3_CONTENT_DELIVERY.md'),'utf8') + fs.readFileSync(path.join(root,'packages/content-delivery/src/index.ts'),'utf8');
+  const all = fs.readFileSync(path.join(root,'docs/phases/PHASE_3_CONTENT_DELIVERY.md'),'utf8') + fs.readFileSync(path.join(root,'packages/content-delivery/src/index.ts'),'utf8');
   if (all.includes(forbidden) && forbidden !== 'Unity') errors.push(`Forbidden engine mention ${forbidden}`);
 }
 if (errors.length) {

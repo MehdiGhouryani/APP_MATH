@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireRequestPrincipal } from '@/lib/request-principal';
 
 export async function DELETE(
   _request: Request,
@@ -20,12 +21,17 @@ export async function DELETE(
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   ctx: { params: Promise<{ sessionId: string }> }
 ) {
-  const { sessionId } = await ctx.params;
-  return NextResponse.json({
-    id: sessionId,
-    status: 'ACTIVE',
-  });
+  try {
+    await requireRequestPrincipal(request);
+    const { sessionId } = await ctx.params;
+    return NextResponse.json(
+      { code: 'SESSION_STATUS_UNAVAILABLE', id: sessionId, message: 'وضعیت جلسه از مخزن معتبر هنوز در دسترس نیست.' },
+      { status: 503 }
+    );
+  } catch {
+    return NextResponse.json({ code: 'UNAUTHORIZED', message: 'ورود الزامی است.' }, { status: 401 });
+  }
 }

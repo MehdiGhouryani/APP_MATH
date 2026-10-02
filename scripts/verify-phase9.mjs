@@ -11,10 +11,10 @@ const required=[
  'apps/mobile/src/performance/runtimeBudget.ts',
  'apps/web/app/api/v1/sync/batch/route.ts',
  'supabase/migrations/0027_offline_sync_receipts.sql',
- 'docs/PHASE_9_OFFLINE_SYNC_PERFORMANCE.md',
- 'docs/API_CONTRACT_PHASE_9.md',
- 'docs/REVISION_NOTES_PHASE_9.md',
- 'docs/SNAPSHOT_MANIFEST_PHASE_9.json'
+ 'docs/phases/PHASE_9_OFFLINE_SYNC_PERFORMANCE.md',
+ 'docs/api/API_CONTRACT_PHASE_9.md',
+ 'docs/history/REVISION_NOTES_PHASE_9.md',
+ 'docs/history/SNAPSHOT_MANIFEST_PHASE_9.json'
 ];
 for(const rel of required) if(!fs.existsSync(path.join(root,rel))) throw new Error(`Missing ${rel}`);
 const manager=fs.readFileSync(path.join(root,'packages/offline-sync/src/manager.ts'),'utf8');

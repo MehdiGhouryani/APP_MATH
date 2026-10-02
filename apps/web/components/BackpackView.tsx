@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
 
@@ -11,30 +11,49 @@ interface SkillItem {
   stars: number;
 }
 
-export function BackpackView() {
+// Skills actually exercised by the Station-1 path steps. Codes/titles come from
+// supabase/migrations/0035_grade1_staging_seed.sql; step→skill links mirror
+// NODE_CANONICAL_MAPPINGS in lib/learning-api-client.ts.
+const ST01_SKILLS: Array<{ code: string; title: string; steps: string[]; masteryStep?: string }> = [
+  { code: 'G1-SK001', title: 'شمارش اشیاء تا ۵ با ترتیب پایدار', steps: ['step-1', 'step-3', 'step-5', 'step-7'], masteryStep: 'step-7' },
+  { code: 'G1-SK003', title: 'درک کاردینالیته و اینکه عدد آخر بیانگر کل کمیت است', steps: ['step-4'] },
+  { code: 'G1-SK009', title: 'تشخیص الگوی تکرارشونده تصویری', steps: ['step-2', 'step-6'] },
+];
+
+const BADGE_STEPS: Record<string, string> = { b1: 'step-2', b2: 'step-4', b3: 'step-5', b4: 'step-6', b5: 'step-8' };
+
+interface BackpackViewProps {
+  /** Path steps the learner has actually completed (client projection; server remains authoritative). */
+  completedNodeIds?: string[];
+}
+
+export function BackpackView({ completedNodeIds = [] }: BackpackViewProps) {
   const [filter, setFilter] = useState<'ALL' | 'MASTERED' | 'REVIEW'>('ALL');
   const [activeTab, setActiveTab] = useState<'SKILLS' | 'BADGES' | 'TOOLS'>('SKILLS');
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewAnswer, setReviewAnswer] = useState<number | null>(null);
   const [reviewEvaluated, setReviewEvaluated] = useState<'UNCHECKED' | 'CORRECT' | 'WRONG'>('UNCHECKED');
 
-  const [skills, setSkills] = useState<SkillItem[]>([
-    { code: 'G1-SK01', title: 'شمارش ترتیبی اشیاء تا ۵', status: 'MASTERED', stars: 3 },
-    { code: 'G1-SK02', title: 'تناوب و کشف الگوهای دوتایی (AB)', status: 'MASTERED', stars: 3 },
-    { code: 'G1-SK03', title: 'شمارش دو‌تادوتا و دنباله افزایشی', status: 'REVIEW', stars: 1 },
-    { code: 'G1-SK04', title: 'مقایسه دسته‌ها (بیشتر و کمتر)', status: 'BUILDING', stars: 2 },
-    { code: 'G1-SK05', title: 'تناظر یک‌به‌یک اشیاء', status: 'BUILDING', stars: 1 },
-    { code: 'G1-SK06', title: 'شناخت و نام‌گذاری اشکال هندسی پایه', status: 'LOCKED', stars: 0 },
-    { code: 'G1-SK07', title: 'حل جدول شگفت‌انگیز ۲×۲ بدون تکرار', status: 'MASTERED', stars: 3 },
-    { code: 'G1-SK08', title: 'قرینه‌یابی و خط تقارن در شکل‌های شطرنجی', status: 'MASTERED', stars: 3 },
-  ]);
+  // Derived from real path progress — no fabricated mastery. Only a completed
+  // MASTERY_CHECK step yields MASTERED; anything else touched is BUILDING.
+  const skills: SkillItem[] = useMemo(
+    () =>
+      ST01_SKILLS.map((sk) => {
+        const done = sk.steps.filter((id) => completedNodeIds.includes(id)).length;
+        const mastered = sk.masteryStep ? completedNodeIds.includes(sk.masteryStep) : false;
+        const status: SkillItem['status'] = mastered ? 'MASTERED' : done > 0 ? 'BUILDING' : 'LOCKED';
+        const stars = mastered ? 3 : Math.min(2, done);
+        return { code: sk.code, title: sk.title, status, stars };
+      }),
+    [completedNodeIds]
+  );
 
   const badges = [
-    { id: 'b1', name: 'شکارچی الگوها', icon: '🎨', desc: 'تکمیل بدون اشتباه زنجیره رنگی', unlocked: true },
-    { id: 'b2', name: 'استاد چوب‌خط', icon: '✏️', desc: 'ترسیم بسته‌های ۵تایی منظم', unlocked: true },
-    { id: 'b3', name: 'نگهبان تقارن', icon: '🪞', desc: 'رنگ‌آمیزی دقیق بازتاب آینه‌ای', unlocked: true },
-    { id: 'b4', name: 'ترازودار عادل', icon: '⚖️', desc: 'تشخیص سریع دسته‌های بزرگتر', unlocked: true },
-    { id: 'b5', name: 'کلیددار گنجینه', icon: '🔑', desc: 'فتح ایستگاه ۰۱ و دریافت صندوق', unlocked: true },
+    { id: 'b1', name: 'شکارچی الگوها', icon: '🎨', desc: 'تکمیل بدون اشتباه زنجیره رنگی', unlocked: completedNodeIds.includes(BADGE_STEPS.b1) },
+    { id: 'b2', name: 'استاد چوب‌خط', icon: '✏️', desc: 'ترسیم بسته‌های ۵تایی منظم', unlocked: completedNodeIds.includes(BADGE_STEPS.b2) },
+    { id: 'b3', name: 'نگهبان تقارن', icon: '🪞', desc: 'رنگ‌آمیزی دقیق بازتاب آینه‌ای', unlocked: completedNodeIds.includes(BADGE_STEPS.b3) },
+    { id: 'b4', name: 'ترازودار عادل', icon: '⚖️', desc: 'تشخیص سریع دسته‌های بزرگتر', unlocked: completedNodeIds.includes(BADGE_STEPS.b4) },
+    { id: 'b5', name: 'کلیددار گنجینه', icon: '🔑', desc: 'فتح ایستگاه ۰۱ و دریافت صندوق', unlocked: completedNodeIds.includes(BADGE_STEPS.b5) },
     { id: 'b6', name: 'قهرمان شگفت‌انگیز', icon: '🧩', desc: 'حل بدون کمک جدول سودوکو', unlocked: false },
   ];
 
@@ -58,10 +77,8 @@ export function BackpackView() {
     const isCorrect = reviewAnswer === 8;
     if (isCorrect) {
       soundFx.playSuccess();
+      // Mastery is server-authoritative; the UI must not upgrade it locally.
       setReviewEvaluated('CORRECT');
-      setSkills((prev) =>
-        prev.map((sk) => (sk.code === 'G1-SK03' ? { ...sk, status: 'MASTERED', stars: 3 } : sk))
-      );
     } else {
       soundFx.playTryAgain();
       setReviewEvaluated('WRONG');

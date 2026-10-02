@@ -1,0 +1,13 @@
+{
+  "version": "1.3",
+  "guideStateSVGs": 24,
+  "volumeStudies": 3,
+  "avatarSamples": 8,
+  "productionRiveFiles": 0,
+  "rigReady": false,
+  "turnaroundFinal": false,
+  "soundRecorded": false,
+  "launcherDeviceTest": false,
+  "assetsKind": "original hand-authored procedural SVG design studies and static fallback",
+  "fontLicense": "Google Fonts optional in prototype; production font bundling/license required"
+}

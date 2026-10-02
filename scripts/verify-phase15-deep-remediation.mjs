@@ -33,7 +33,10 @@ must(station.includes("setStationPassAchieved(true)"), 'Station Pass achievement
 must(station.includes("target.id === 'G1-ST01-E10'") && station.includes("else if (stationPassAchieved) await beginEncounter(getLocalContent('transfer'), 'TRANSFER')") && station.includes("else await beginFreshCheckEncounter(getLocalContent('checkB'), 'CHECK_B')"), 'E10 only reaches Transfer after Station Pass; otherwise it returns to an independent Check');
 must(station.includes("target.id === 'G1-ST01-E11'") && station.includes("beginFreshCheckEncounter(getLocalContent('mastery'), 'MASTERY_CHECK')"), 'E11 flows to the final Mastery Check');
 must(station.includes("content.id === 'G1-ST01-E11' ? <OptionRow"), 'E11 uses the option interaction rather than CountGame');
-must(station.includes('این پایانِ تجربهٔ آموزشی است؛ نتیجهٔ نهایی مهارت و مسترشدن، فقط توسط Learning Engine ثبت و تفسیر می‌شود.'), 'Completion UI no longer fabricates a reward or equates completion with mastery');
+// Phase-2 (2026-09-29): the child-facing copy no longer exposes system jargon ("Learning Engine").
+// The guard's intent is kept: a reward is shown ONLY when Station Pass was actually earned, and the
+// UI never claims mastery.
+must(station.includes('stationPassAchieved ? S.complete.subPassed : S.complete.subNotPassed') && !station.includes('مسترشدن') && !station.includes('Learning Engine'), 'Completion UI shows a reward only when Station Pass was actually achieved and never claims mastery or exposes system jargon');
 
 must(stationFlow.includes("if (__DEV__) {") && stationFlow.includes("throw new Error('REMOTE_RUNTIME_UNAVAILABLE')"), 'Mobile remote-session fallback is development-only');
 must(content.includes('supabaseRestSelect') && content.includes('dbManifest') && content.includes('dbPackage') && content.includes('can_access_content_package'), 'Production Content Delivery uses the Supabase REST repository and entitlement boundary');

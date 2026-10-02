@@ -1,0 +1,14 @@
+﻿priority,owner_role,title_fa,scope_fa,evidence,acceptance_fa
+P0,Backend,مرز حساب امن,signed/server session؛ منع dev token در production؛ نقش و مالکیت کودک,teacher-auth.ts:164-245,تست cookie جعلی، expiry، role isolation
+P0,Learning,نتیجه و unlock معتبر,حذف نتیجهٔ hardcode؛ outcome معتبر سرور؛ pending مستقل,DuolingoLessonModal.tsx:780-825,اولین تلاش/تکرار/آفلاین نتیجهٔ صحیح بدهد
+P1,Mobile,save outcome,مصرف نتیجهٔ ذخیره؛ retry و وضعیت فارسی,AppStateContext.tsx:41-45,kill و low-storage داده را خاموش گم نکند
+P1,Mobile,صف آفلاین,write سریال/اتمیک؛ reconnect/foreground flush؛ idempotency,FileSyncQueueStore.ts:16-45,هم‌زمانی enqueue/flush و restart
+P1,Mobile/Web,ورود مشترک,consent/auth قبل پروفایل؛ پایه واقعی؛ جایابی اختیاری,S01-S06,دو platform سفر یکسان
+P1,Mobile/Web,چهار تب و شروع درس,مسیر/تمرین/کمد/من؛ start CTA؛ checkpoint/resume,S07-S09,قفل/precondition/download/pending جدا
+P1,Art,مدل و rig واقعی,model sheet/turnaround/occlusion؛ چهار .riv و fallback,characters contract,کودک، سایز کوچک، reduced motion، device
+P1,Mobile/Web,آواتار production,schema adapter؛ migration additive؛ inventory و revision,S05/S19/S20,save/cancel/reload/offline/conflict
+P1,DevOps,toolchain SDK57,Node22.13+؛ expo package/version validation,root/package.json + Expo docs,install/check/build واقعی
+P1,Content,گراف و بازی انتقال,contentId درست؛ تمرین فاصله‌دار؛ S11 موتور مستقل,S10/S11/S14-S16,موضوع و سطح کارت با درس یکسان
+P2,Brand,آیکون deployment,adaptive/mask/monochrome؛ نام/حقوق و آزمون تشخیص,brand assets,Android/iOS launcher
+P2,QA,دسترس‌پذیری فارسی,RTL، TalkBack/VoiceOver، 200% text، contrast و focus,تمام صفحات,موبایل حداقل و کودک
+P2,Adults,خرید و حساب,اطلاعات مبلغ/شرایط/restore؛ re-auth حساس؛ export/delete,S22-S24,سرور/store واقعی؛ بدون فشار کودک

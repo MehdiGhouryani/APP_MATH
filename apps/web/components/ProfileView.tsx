@@ -1,24 +1,30 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CHARACTERS, toPersianDigits } from '../lib/persian';
 import { DESIGN_TOKENS } from '../lib/theme/tokens';
+import { CompanionBust } from './DuolingoPath';
+import { ParentGate } from './ParentGate';
 
 interface ProfileViewProps {
   activeCharId: string;
-  onSelectChar?: (charId: string) => void;
+  childName: string;
+  gradeTitle: string;
   streakDays?: number;
   gemsCount?: number;
 }
 
 export function ProfileView({
   activeCharId,
-  onSelectChar,
-  streakDays = 3,
-  gemsCount = 120,
+  childName,
+  gradeTitle,
+  streakDays = 0,
+  gemsCount = 0,
 }: ProfileViewProps) {
   const activeChar = CHARACTERS[activeCharId] ?? CHARACTERS['aria']!;
+  const router = useRouter();
+  const [gateOpen, setGateOpen] = useState(false);
 
   return (
     <div style={{ padding: '16px 20px 40px', fontFamily: DESIGN_TOKENS.typography.fonts.body }}>
@@ -49,20 +55,14 @@ export function ProfileView({
             boxShadow: `0 8px 20px ${activeChar.themeColor}30`,
           }}
         >
-          {activeChar.id === 'aria'
-            ? '🐲'
-            : activeChar.id === 'qbo'
-            ? '🤖'
-            : activeChar.id === 'jiko'
-            ? '🐦'
-            : '🐿️'}
+          <CompanionBust characterId={activeChar.id} size={72} />
         </div>
 
         <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 900, color: DESIGN_TOKENS.colors.neutral.charcoal, fontFamily: DESIGN_TOKENS.typography.fonts.display }}>
-          سارا رضایی
+          {childName}
         </h2>
         <p style={{ margin: '0 0 16px', fontSize: 13, color: DESIGN_TOKENS.colors.neutral.slate }}>
-          دانش‌آموز پایه اول دبستان · کلاس ۱A
+          دانش‌آموز {gradeTitle}
         </p>
 
         <div style={{ display: 'flex', gap: 12 }}>
@@ -106,9 +106,13 @@ export function ProfileView({
           🔒 پرتال همکاران و معلمان:
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Link
-            href="/teacher"
+          <button
+            type="button"
+            onClick={() => setGateOpen(true)}
             style={{
+              width: '100%',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -124,9 +128,20 @@ export function ProfileView({
           >
             <span>👩‍🏫 پرتال معلمان (Teacher Lite)</span>
             <span>←</span>
-          </Link>
+          </button>
         </div>
       </div>
+
+      {gateOpen && (
+        <ParentGate
+          purpose="پرتال معلمان مخصوص بزرگسالان است. برای ورود، پاسخ سؤال را بنویسید."
+          onPass={() => {
+            setGateOpen(false);
+            router.push('/teacher');
+          }}
+          onCancel={() => setGateOpen(false)}
+        />
+      )}
     </div>
   );
 }

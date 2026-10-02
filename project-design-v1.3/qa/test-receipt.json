@@ -1,0 +1,22 @@
+{
+ "date":"2026-10-02",
+ "scope":"Shomara v1.3 React design prototype and small avatar core, not the original app",
+ "passed":11,
+ "failed":0,
+ "runner":"Playwright via artifact test",
+ "scenarios":[
+  "render بدون خطای مرورگر یا شبکه",
+  "دسترسی به هر ۲۴ قالب با گیت نمایشی بزرگسال",
+  "ذخیره، reload، لغو و خروج با تغییر ذخیره‌نشدهٔ آواتار",
+  "بازگشت کارگاه ورود به S05، نه پروفایل نهایی",
+  "درصد اولین تلاش محاسبه‌شده با پاسخ غلط و retry",
+  "سنجش بدون mascot و correctness feedback و بدون unlock",
+  "شروع آفلاین دریافت‌نشده مسدود؛ پایان cached بدون unlock",
+  "عرض ۳۲۰ بدون overflow افقی و بازیابی حالت خطا",
+  "normalization گزینه‌ها، migration محدود، storage failure و نتیجهٔ هسته",
+  "حفظ آیتم منتخب از کمد به جزئیات و پیش‌نویس",
+  "حذف ناوبری تب‌ها در درس و خروج آگاهانه با dialog"
+ ],
+ "notTested":["original app build/tests","native devices","real Rive rig","real auth/backend/payment","real offline sync","child usability","trademark/licensing review"],
+ "staticCoverage":{"collected":24,"processed":24,"skipped":0,"uxIssueRecords":58}
+}

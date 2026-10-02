@@ -26,10 +26,10 @@ export async function GET(request: Request) {
 
     const saved = syncStore.get(id);
     if (!saved) {
-      // Default initial states matching the UI defaults
+      // New learner: no seeded demo progress.
       return NextResponse.json({
-        completedNodeIds: ['step-1', 'step-2'],
-        learningStars: 120,
+        completedNodeIds: [],
+        learningStars: 0,
       });
     }
 
@@ -55,8 +55,14 @@ export async function POST(request: Request) {
       learningStars?: number;
     };
 
-    const clientNodes = body.completedNodeIds || [];
-    const clientStars = typeof body.learningStars === 'number' ? body.learningStars : 0;
+    // Validate/sanitize client input before merging into the store.
+    const clientNodes = Array.isArray(body.completedNodeIds)
+      ? Array.from(new Set(body.completedNodeIds.filter((n): n is string => typeof n === 'string' && /^step-\d{1,2}$/.test(n))))
+      : [];
+    const clientStars =
+      typeof body.learningStars === 'number' && Number.isFinite(body.learningStars) && body.learningStars >= 0
+        ? Math.floor(body.learningStars)
+        : 0;
 
     const existing = syncStore.get(id);
 
@@ -69,9 +75,9 @@ export async function POST(request: Request) {
       // Merge: Take the maximum star count across devices to ensure stars are not downgraded
       mergedStars = Math.max(existing.learningStars, clientStars);
     } else {
-      // If no existing record, ensure defaults are at least included
-      mergedNodes = Array.from(new Set(['step-1', 'step-2', ...clientNodes]));
-      mergedStars = Math.max(120, clientStars);
+      // First sync for this identity: store exactly what the client reported (no injected defaults).
+      mergedNodes = clientNodes;
+      mergedStars = clientStars;
     }
 
     syncStore.set(id, {

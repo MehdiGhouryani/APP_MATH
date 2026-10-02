@@ -10,9 +10,9 @@ const required = [
   'apps/mobile/src/components/AnimatedCharacter.tsx',
   'apps/mobile/src/components/SemanticAnimationDemo.tsx',
   'apps/mobile/app/animation.tsx',
-  'docs/PHASE_4_ANIMATION_RUNTIME.md',
-  'docs/ADR_0002_SEMANTIC_ANIMATION_EVENTS.md',
-  'docs/REVISION_NOTES_PHASE_4.md',
+  'docs/phases/PHASE_4_ANIMATION_RUNTIME.md',
+  'docs/adr/ADR_0002_SEMANTIC_ANIMATION_EVENTS.md',
+  'docs/history/REVISION_NOTES_PHASE_4.md',
 ];
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`Missing: ${file}`);

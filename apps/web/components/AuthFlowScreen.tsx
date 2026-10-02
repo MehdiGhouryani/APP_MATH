@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RiveCompanionMascot, MascotState } from './RiveCompanionMascot';
 import { GRADES, GradeMeta, CHARACTERS } from '../lib/persian';
+import { ParentGate } from './ParentGate';
 
-export type AuthFlowStep = 'SPLASH' | 'GATEWAY' | 'MOBILE_OTP' | 'LEARNER_SETUP' | 'SYNC_LOADING';
+export type AuthFlowStep = 'SPLASH' | 'GRADE_SELECT' | 'PARENT_GATE' | 'GATEWAY' | 'MOBILE_OTP' | 'LEARNER_SETUP' | 'SYNC_LOADING';
 
 interface AuthFlowScreenProps {
   onCompleteAuth: (userData: {
@@ -31,7 +32,10 @@ export function AuthFlowScreen({
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(60);
   const [selectedGrade, setSelectedGrade] = useState<GradeMeta>(GRADES[0]!);
-  const [selectedCharId, setSelectedCharId] = useState<string>('aria');
+  // Aria is the single, fixed brand/main character (Duolingo's "Duo" model — SoT feedback
+  // 2026-09-28): the learner does not pick a companion. Qbo/Jiko/Jiko/Dana only ever
+  // appear contextually inside specific exercises (see DuolingoPath companionId).
+  const selectedCharId = 'aria';
   const [childName, setChildName] = useState('آرش');
   const [authMethod, setAuthMethod] = useState<'MOBILE' | 'GOOGLE' | 'GUEST'>('GUEST');
 
@@ -51,7 +55,8 @@ export function AuthFlowScreen({
   useEffect(() => {
     if (step === 'SPLASH') {
       const splashTimer = setTimeout(() => {
-        setStep('GATEWAY');
+        // First Run order (SoT §0.1): Splash -> Grade -> Parent Gate -> Profile.
+        setStep('GRADE_SELECT');
       }, 2200);
       return () => clearTimeout(splashTimer);
     }
@@ -65,33 +70,42 @@ export function AuthFlowScreen({
     }
   }, [otpSent, otpTimer]);
 
-  // Sync Loading Progress Animation
-  useEffect(() => {
-    if (step === 'SYNC_LOADING') {
-      const progressInterval = setInterval(() => {
-        setSyncProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(progressInterval);
-            setTimeout(() => {
-              onCompleteAuth({
-                phoneNumber,
-                authMethod,
-                gradeId: selectedGrade.id,
-                characterId: selectedCharId,
-                childName,
-              });
-            }, 600);
-            return 100;
-          }
-          const next = prev + 18;
-          setSyncMessageIndex(Math.min(Math.floor((next / 100) * syncMessages.length), syncMessages.length - 1));
-          return next;
-        });
-      }, 400);
+  // Keep the latest callback/form values in a ref so the progress timer is not
+  // torn down and recreated whenever the parent re-renders with a new inline callback.
+  const completionRef = useRef({ onCompleteAuth, phoneNumber, authMethod, selectedGrade, selectedCharId, childName });
+  completionRef.current = { onCompleteAuth, phoneNumber, authMethod, selectedGrade, selectedCharId, childName };
+  const completedRef = useRef(false);
 
-      return () => clearInterval(progressInterval);
-    }
-  }, [step, selectedGrade, selectedCharId, childName, phoneNumber, authMethod, onCompleteAuth, syncMessages.length]);
+  // Sync Loading Progress Animation (pure state updates only — no side effects in the updater)
+  useEffect(() => {
+    if (step !== 'SYNC_LOADING') return;
+    const progressInterval = setInterval(() => {
+      setSyncProgress((prev) => Math.min(prev + 18, 100));
+    }, 400);
+    return () => clearInterval(progressInterval);
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== 'SYNC_LOADING') return;
+    setSyncMessageIndex(Math.min(Math.floor((syncProgress / 100) * syncMessages.length), syncMessages.length - 1));
+    if (syncProgress < 100 || completedRef.current) return;
+    // Latch so the completion callback fires exactly once (also under React StrictMode).
+    completedRef.current = true;
+    const doneTimer = setTimeout(() => {
+      const c = completionRef.current;
+      c.onCompleteAuth({
+        phoneNumber: c.phoneNumber,
+        authMethod: c.authMethod,
+        gradeId: c.selectedGrade.id,
+        characterId: c.selectedCharId,
+        childName: c.childName.trim(),
+      });
+    }, 600);
+    return () => {
+      clearTimeout(doneTimer);
+      completedRef.current = false;
+    };
+  }, [step, syncProgress, syncMessages.length]);
 
   // Handlers
   const handleSendOtp = () => {
@@ -166,6 +180,59 @@ export function AuthFlowScreen({
             <span className="text-xs text-slate-400">در حال آماده‌سازی محیط یادگیری...</span>
           </div>
         </div>
+      )}
+
+      {/* STEP 1.2: GRADE SELECTION (SoT §0.1 / DEC-001 — before consent) */}
+      {step === 'GRADE_SELECT' && (
+        <div className="flex-1 w-full max-w-md flex flex-col justify-between py-4 z-10 animate-fade-in overflow-y-auto hide-scrollbar">
+          <div className="space-y-4">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-black text-white">در چه پایه‌ای هستی؟</h2>
+              <p className="text-xs text-slate-300">فعلاً پایه اول آماده است؛ بقیه‌ی پایه‌ها به‌زودی می‌آیند.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {GRADES.map((g) => {
+                const isSelected = selectedGrade.id === g.id;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    disabled={!g.active}
+                    onClick={() => setSelectedGrade(g)}
+                    aria-pressed={isSelected}
+                    className={`p-4 rounded-2xl text-right border-2 transition-all ${
+                      !g.active
+                        ? 'bg-slate-900/40 border-slate-800 text-slate-600 cursor-not-allowed'
+                        : isSelected
+                        ? 'bg-emerald-950/60 border-emerald-400 text-white shadow-md'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="font-extrabold text-sm">{g.title}</div>
+                    <div className="text-[10px] mt-1">{g.active ? g.subtitle : 'به‌زودی'}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStep('PARENT_GATE')}
+            className="w-full mt-4 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-base shadow-lg active:scale-98 transition-all"
+          >
+            ادامه ➔
+          </button>
+        </div>
+      )}
+
+      {/* STEP 1.5: PARENT GATE / CONSENT (before any data collection) */}
+      {step === 'PARENT_GATE' && (
+        <ParentGate
+          requireConsent
+          purpose="قبل از ساخت پروفایل کودک، یک بزرگسال باید این مرحله را تأیید کند."
+          onPass={() => setStep('GATEWAY')}
+          onCancel={() => setStep('GRADE_SELECT')}
+        />
       )}
 
       {/* STEP 2: MAIN AUTH GATEWAY */}
@@ -268,7 +335,7 @@ export function AuthFlowScreen({
 
             <div className="flex flex-col items-center text-center space-y-2">
               <RiveCompanionMascot
-                characterId="qbo"
+                characterId="aria"
                 state={otpSent ? 'excited' : 'thinking'}
                 size={140}
                 interactive={true}
@@ -342,7 +409,7 @@ export function AuthFlowScreen({
           <div className="space-y-5">
             <div className="text-center space-y-1">
               <h2 className="text-xl font-black text-white">تنظیم پروفایل ریاضی‌دان کوچک</h2>
-              <p className="text-xs text-slate-300">پایه تحصیلی و همراه دوست‌داشتنی را انتخاب کنید:</p>
+              <p className="text-xs text-slate-300">نام و همراه دوست‌داشتنی را انتخاب کنید:</p>
             </div>
 
             {/* 1. Name Input */}
@@ -356,63 +423,12 @@ export function AuthFlowScreen({
               />
             </div>
 
-            {/* 2. Companion Character Picker */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-300">انتخاب همراه داستانی:</label>
-              <div className="grid grid-cols-4 gap-2">
-                {Object.values(CHARACTERS).map((char) => {
-                  const isSelected = selectedCharId === char.id;
-                  return (
-                    <button
-                      key={char.id}
-                      onClick={() => setSelectedCharId(char.id)}
-                      className={`p-2 rounded-2xl flex flex-col items-center border-2 transition-all ${
-                        isSelected
-                          ? 'bg-slate-800 border-emerald-400 scale-105 shadow-md'
-                          : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <RiveCompanionMascot
-                        characterId={char.id}
-                        state={isSelected ? 'excited' : 'idle'}
-                        size={60}
-                        interactive={false}
-                      />
-                      <span className="text-[11px] font-bold text-slate-200 mt-1">{char.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 3. Grade Selection */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-300">انتخاب پایه تحصیلی:</label>
-              <div className="grid grid-cols-2 gap-2">
-                {GRADES.map((g) => {
-                  const isSelected = selectedGrade.id === g.id;
-                  return (
-                    <button
-                      key={g.id}
-                      onClick={() => setSelectedGrade(g)}
-                      className={`p-3 rounded-xl text-right border transition-all ${
-                        isSelected
-                          ? 'bg-emerald-950/60 border-emerald-400 text-white shadow-md'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="font-extrabold text-xs text-emerald-300">{g.title}</div>
-                      <div className="text-[10px] text-slate-400 truncate">{g.subtitle}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
 
           <button
             onClick={handleFinishSetup}
-            className="w-full mt-4 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-base shadow-lg active:scale-98 transition-all"
+            disabled={childName.trim().length === 0}
+            className="w-full mt-4 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white font-black text-base shadow-lg active:scale-98 transition-all"
           >
             ورود به مسیر یادگیری ➔
           </button>

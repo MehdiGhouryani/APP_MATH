@@ -7,8 +7,8 @@ const required = [
   'apps/mobile/src/station/StationFlow.tsx',
   'apps/mobile/src/station/runtimeApi.ts',
   'content/dev-packs/g1-st01-v1/content.json',
-  'docs/PHASE_6_STATION_01_CHILD_EXPERIENCE.md',
-  'docs/API_CONTRACT_PHASE_6.md',
+  'docs/phases/PHASE_6_STATION_01_CHILD_EXPERIENCE.md',
+  'docs/api/API_CONTRACT_PHASE_6.md',
 ];
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`MISSING:${file}`);

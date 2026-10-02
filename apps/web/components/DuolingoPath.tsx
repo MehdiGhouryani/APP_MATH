@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CHARACTERS, toPersianDigits, GradeMeta } from '../lib/persian';
 import { soundFx } from '../lib/sound';
+import { CharacterArt } from './CharacterArt';
 
 export interface PathNodeItem {
   id: string;
@@ -14,7 +15,11 @@ export interface PathNodeItem {
   stars: number;
   offset: number; // -38 (left), 0 (center), +38 (right)
   icon: string;
-  textbookMascot?: string; // 🐊 🦁 🐒 🐸
+  // Which of the four canonical product characters (aria/qbo/jiko/dana) is
+  // associated with this step, per SoT v1.2 §14.3 Character Usage Map.
+  // Replaces the previous ad-hoc zoo-animal "textbookMascot" badges, which
+  // were a fifth, uncanonical mascot set unrelated to CHARACTERS in lib/persian.ts.
+  companionId?: keyof typeof CHARACTERS;
 }
 
 interface DuolingoPathProps {
@@ -33,7 +38,7 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'COUNT',
     offset: 0,
     icon: '🍊',
-    textbookMascot: '🐊', // تمساح بشمار و بگو
+    companionId: 'aria', // Guide/intro — SoT §14.3 "Learn" role
   },
   {
     id: 'step-2',
@@ -43,7 +48,7 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'PATTERN',
     offset: 38,
     icon: '🎨',
-    textbookMascot: '🐒', // میمون الگویابی
+    companionId: 'dana', // Pattern/Discovery — SoT §14.3 "Pattern/Spatial" role
   },
   {
     id: 'step-3',
@@ -53,7 +58,7 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'WONDER_GRID',
     offset: -38,
     icon: '🧩',
-    textbookMascot: '🐸', // قورباغه با ابزار کار کن
+    companionId: 'dana', // Spatial/logic grid — same Explorer role as step-2
   },
   {
     id: 'step-4',
@@ -63,7 +68,7 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'TALLY',
     offset: 0,
     icon: '✏️',
-    textbookMascot: '🦁', // شیر بشمار و بنویس
+    companionId: 'qbo', // Counting strategy/tool — SoT §14.3 "Math Assistant" role
   },
   {
     id: 'step-5',
@@ -73,7 +78,7 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'SYMMETRY',
     offset: 38,
     icon: '🪞',
-    textbookMascot: '🐸',
+    companionId: 'dana', // Symmetry is spatial/pattern — Explorer role
   },
   {
     id: 'step-6',
@@ -83,7 +88,7 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'SCALE',
     offset: -38,
     icon: '⚖️',
-    textbookMascot: '🦁',
+    companionId: 'qbo', // Comparison/strategy — Math Assistant role
   },
   {
     id: 'step-7',
@@ -102,8 +107,14 @@ const RAW_NODES: Omit<PathNodeItem, 'status' | 'stars'>[] = [
     type: 'CHEST',
     offset: 0,
     icon: '🎁',
+    companionId: 'jiko', // Reward/celebration — SoT §14.3 "Reward" role
   },
 ];
+
+/** v2: real cast art (bust) instead of emoji. Use everywhere a small companion avatar is shown. */
+export function CompanionBust({ characterId, size }: { characterId: string; size: number }) {
+  return <CharacterArt id={characterId} bust size={size} reducedMotion />;
+}
 
 export function DuolingoPath({
   selectedGrade,
@@ -395,10 +406,11 @@ export function DuolingoPath({
                 {isChest && <span style={{ fontSize: 32 }}>🎁</span>}
                 {isLocked && !isChest && <span style={{ fontSize: 26 }}>🔒</span>}
 
-                {/* Small textbook mascot badge on bottom-left */}
-                {node.textbookMascot && (
+                {/* Small companion badge showing which of the four canonical
+                    characters (aria/qbo/jiko/dana) this step belongs to. */}
+                {node.companionId && (
                   <div
-                    title="نماد فعالیت کتاب درسی"
+                    title={CHARACTERS[node.companionId]?.name ?? ''}
                     style={{
                       position: 'absolute',
                       bottom: -2,
@@ -415,7 +427,7 @@ export function DuolingoPath({
                       boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
                     }}
                   >
-                    {node.textbookMascot}
+                    <CompanionBust characterId={node.companionId} size={22} />
                   </div>
                 )}
               </button>
@@ -492,13 +504,7 @@ export function DuolingoPath({
                       boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
                     }}
                   >
-                    {activeChar.id === 'aria'
-                      ? '🐲'
-                      : activeChar.id === 'qbo'
-                      ? '🤖'
-                      : activeChar.id === 'jiko'
-                      ? '🐦'
-                      : '🐿️'}
+                    <CompanionBust characterId={activeChar.id} size={46} />
                   </div>
                 </div>
               )}

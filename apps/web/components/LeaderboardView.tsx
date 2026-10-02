@@ -5,6 +5,10 @@ import { toPersianDigits } from '../lib/persian';
 import { soundFx } from '../lib/sound';
 import { DESIGN_TOKENS } from '../lib/theme/tokens';
 
+// DEPRECATED (2026-09-27): No longer mounted in apps/web/app/page.tsx.
+// SoT v1.2 §4 mandates removing the League/leaderboard surface from the
+// child experience for V1. Kept in the repo only as reference/history;
+// do not re-wire without an explicit new product decision in the Decision Log.
 export function LeaderboardView() {
   const [cheeredIndex, setCheeredIndex] = useState<number | null>(null);
 

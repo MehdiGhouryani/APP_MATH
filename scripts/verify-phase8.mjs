@@ -22,9 +22,9 @@ const required=[
  'apps/web/app/api/v1/teacher/students/[learningIdentityId]/observations/route.ts',
  'supabase/migrations/0025_teacher_observations.sql',
  'supabase/migrations/0026_phase8_projection_views.sql',
- 'docs/PHASE_8_PARENT_TEACHER_LITE.md',
- 'docs/API_CONTRACT_PHASE_8.md',
- 'docs/REVISION_NOTES_PHASE_8.md'
+ 'docs/phases/PHASE_8_PARENT_TEACHER_LITE.md',
+ 'docs/api/API_CONTRACT_PHASE_8.md',
+ 'docs/history/REVISION_NOTES_PHASE_8.md'
 ];
 for(const rel of required) if(!fs.existsSync(path.join(root,rel))) throw new Error(`Missing ${rel}`);
 const obs=fs.readFileSync(path.join(root,'supabase/migrations/0025_teacher_observations.sql'),'utf8');

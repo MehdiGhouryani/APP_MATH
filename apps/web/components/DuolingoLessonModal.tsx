@@ -11,12 +11,12 @@ import { InteractiveCompanion } from './InteractiveCompanion';
 import type { PathNodeItem } from './DuolingoPath';
 import type { AnimationSemanticEvent } from '@math/contracts';
 import {
-  NODE_CANONICAL_MAPPINGS,
   type SessionResponse,
   type EncounterResponse,
   type SubmitAttemptResponse,
 } from '../lib/learning-api-client';
 import { learningService } from '../lib/learningService';
+import { lessonGuideFor } from '../lib/characterScenes';
 
 interface DuolingoLessonModalProps {
   onClose: () => void;
@@ -36,6 +36,9 @@ export function DuolingoLessonModal({
   onCompleteNode,
 }: DuolingoLessonModalProps) {
   const activeChar = CHARACTERS[activeCharId] ?? CHARACTERS['aria']!;
+  // allowedScenes (characters-v2.json): Jiko only for rewards, Qbo for counting, Dana for pattern/shape; none on CHECK
+  const guideId = lessonGuideFor(activeChar.id, activeNode.type);
+  const guideChar = guideId ? CHARACTERS[guideId] ?? activeChar : null;
 
   const [evaluation, setEvaluation] = useState<EvaluationState>(
     activeNode.type === 'CHEST' ? 'FINISHED' : 'UNCHECKED'
@@ -44,9 +47,11 @@ export function DuolingoLessonModal({
   // Server Integration State
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [encounter, setEncounter] = useState<EncounterResponse | null>(null);
-  const [attemptKey, setAttemptKey] = useState<string>('');
+  const [attemptNumber, setAttemptNumber] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [lastServerResult, setLastServerResult] = useState<SubmitAttemptResponse | null>(null);
+  const [serverStationPassed, setServerStationPassed] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [currentEvent, setCurrentEvent] = useState<AnimationSemanticEvent>('SESSION_START');
 
   // Exercise states
@@ -87,10 +92,10 @@ export function DuolingoLessonModal({
         if (!isMounted) return;
         setSession(newSession);
         setEncounter(newEncounter);
-        setAttemptKey(`attempt-${newSession.id}-${newEncounter.id}-1`);
+        setAttemptNumber(1);
         onEmitSemanticEvent('SESSION_START', `Session=${newSession.id}, Encounter=${newEncounter.id}`);
       } catch (err) {
-        console.warn('[DuolingoLessonModal] Backend encounter init fallback via learningService', err);
+        setSubmitMessage('ارتباط با سرور برقرار نشد. پاسخ بدون تأیید سرور ثبت نمی‌شود.');
       }
     }
 
@@ -111,88 +116,65 @@ export function DuolingoLessonModal({
 
   async function handleCheck() {
     setIsSubmitting(true);
-    let userAnswerPayload: unknown = 1;
+    setSubmitMessage(null);
+    let userAnswerPayload: unknown = null;
 
     if (activeNode.type === 'COUNT') {
-      userAnswerPayload = selectedCountNum === 5 ? 1 : 0;
+      userAnswerPayload = selectedCountNum;
     } else if (activeNode.type === 'PATTERN') {
-      userAnswerPayload = selectedPatternColor === 'blue' ? 1 : 0;
+      userAnswerPayload = selectedPatternColor;
     } else if (activeNode.type === 'WONDER_GRID') {
-      userAnswerPayload = isGridSolved ? 1 : 0;
+      userAnswerPayload = isGridSolved;
     } else if (activeNode.type === 'TALLY') {
-      userAnswerPayload = tallyCount === 5 ? 1 : 0;
+      userAnswerPayload = tallyCount;
     } else if (activeNode.type === 'SYMMETRY') {
-      userAnswerPayload = isSymmetrySolved ? 2 : 0;
+      userAnswerPayload = isSymmetrySolved;
     } else if (activeNode.type === 'SCALE') {
-      userAnswerPayload = isScaleSolved ? 0 : 1;
+      userAnswerPayload = isScaleSolved;
     } else if (activeNode.type === 'CHECK') {
-      userAnswerPayload = selectedSeqNum === 8 ? 1 : 0;
+      userAnswerPayload = selectedSeqNum;
     }
 
-    const mapping = NODE_CANONICAL_MAPPINGS[activeNode.id];
-    const isCorrectLocally = userAnswerPayload === (mapping?.expectedIndex ?? 1);
-
     try {
-      if (session && encounter) {
-        const idempotencyKey = attemptKey || `attempt-${session.id}-${encounter.id}-1`;
-        const result = await learningService.submitAttempt({
-          sessionId: session.id,
-          encounterId: encounter.id,
-          userAnswer: userAnswerPayload,
-          customIdempotencyKey: idempotencyKey,
-        });
-
-        setLastServerResult(result);
-        const isServerCorrect = Boolean(result.attempt?.evaluation?.correct || result.semanticEvent === 'ANSWER_CORRECT');
-
-        if (isServerCorrect) {
-          soundFx.playSuccess();
-          setCurrentEvent('ANSWER_CORRECT');
-          onEmitSemanticEvent('ANSWER_CORRECT', `ServerScore=${result.attempt?.evaluation?.score ?? 1.0}`);
-          setEvaluation('CORRECT');
-          if (result.stationPass) {
-            setCurrentEvent('STATION_PASS');
-            onEmitSemanticEvent('STATION_PASS', `StationPassGranted(Station=G1-ST01)`);
-            onCompleteNode(activeNode.id);
-          }
-        } else {
-          soundFx.playTryAgain();
-          if (result.decision?.selectedStep === 'RECOVERY') {
-            setCurrentEvent('RECOVERY');
-            onEmitSemanticEvent('RECOVERY', `LearningRuntime.triggerRecovery(Step=${result.decision.selectedStep})`);
-          } else {
-            setCurrentEvent('ANSWER_WRONG');
-            onEmitSemanticEvent('ANSWER_WRONG', `LearningRuntime.evalTryAgain`);
-          }
-          setEvaluation('WRONG');
-        }
-      } else {
-        // Fallback for isolated offline preview
-        if (isCorrectLocally) {
-          soundFx.playSuccess();
-          setCurrentEvent('ANSWER_CORRECT');
-          onEmitSemanticEvent('ANSWER_CORRECT', 'EvaluationSuccess');
-          setEvaluation('CORRECT');
-        } else {
-          soundFx.playTryAgain();
-          setCurrentEvent('ANSWER_WRONG');
-          onEmitSemanticEvent('ANSWER_WRONG', 'EvaluationTryAgain');
-          setEvaluation('WRONG');
-        }
+      if (!session || !encounter) {
+        setSubmitMessage('پاسخ هنوز به سرور نرسیده است. اتصال را بررسی کن.');
+        return;
       }
-    } catch (err) {
-      console.warn('[DuolingoLessonModal] Submit attempt error, using resilient evaluation', err);
-      if (isCorrectLocally) {
+      const idempotencyKey = `attempt-${session.id}-${encounter.id}-${attemptNumber}`;
+      const result = await learningService.submitAttempt({
+        sessionId: session.id,
+        encounterId: encounter.id,
+        userAnswer: userAnswerPayload,
+        customIdempotencyKey: idempotencyKey,
+      });
+
+      setAttemptNumber((value) => value + 1);
+      setLastServerResult(result);
+      setServerStationPassed(Boolean(result.stationPass));
+      const isServerCorrect = Boolean(result.attempt?.evaluation?.correct || result.semanticEvent === 'ANSWER_CORRECT');
+
+      if (isServerCorrect) {
         soundFx.playSuccess();
         setCurrentEvent('ANSWER_CORRECT');
-        onEmitSemanticEvent('ANSWER_CORRECT', 'EvaluationSuccess(Resilient)');
+        onEmitSemanticEvent('ANSWER_CORRECT', `ServerScore=${result.attempt?.evaluation?.score ?? 0}`);
         setEvaluation('CORRECT');
+        if (result.stationPass) {
+          setCurrentEvent('STATION_PASS');
+          onEmitSemanticEvent('STATION_PASS', 'StationPassGrantedByServer');
+        }
       } else {
         soundFx.playTryAgain();
-        setCurrentEvent('ANSWER_WRONG');
-        onEmitSemanticEvent('ANSWER_WRONG', 'EvaluationTryAgain(Resilient)');
+        if (result.decision?.selectedStep === 'RECOVERY') {
+          setCurrentEvent('RECOVERY');
+          onEmitSemanticEvent('RECOVERY', `LearningRuntime.triggerRecovery(Step=${result.decision.selectedStep})`);
+        } else {
+          setCurrentEvent('ANSWER_WRONG');
+          onEmitSemanticEvent('ANSWER_WRONG', 'LearningRuntime.evalTryAgain');
+        }
         setEvaluation('WRONG');
       }
+    } catch (err) {
+      setSubmitMessage('پاسخ به سرور نرسید. بعد از اتصال دوباره تلاش کن.');
     } finally {
       setIsSubmitting(false);
     }
@@ -200,12 +182,15 @@ export function DuolingoLessonModal({
 
   function handleContinue() {
     soundFx.playTap();
-    if (evaluation === 'CORRECT') {
+    if (evaluation === 'CORRECT' && serverStationPassed) {
       setEvaluation('FINISHED');
       soundFx.playLevelPass();
       setCurrentEvent('STATION_PASS');
       onCompleteNode(activeNode.id);
       onEmitSemanticEvent('STATION_PASS', `Runtime.passNode(${activeNode.id})`);
+    } else if (evaluation === 'CORRECT') {
+      setEvaluation('UNCHECKED');
+      setCurrentEvent('SESSION_START');
     } else {
       setEvaluation('UNCHECKED');
       setCurrentEvent('SESSION_START');
@@ -220,7 +205,6 @@ export function DuolingoLessonModal({
   }
 
   function handleOptionSelect(exerciseType: string, choiceValue: unknown, onSelect: () => void) {
-    console.log(`[DuolingoLessonModal] Choice selected -> Exercise: ${exerciseType}, Value:`, choiceValue);
     soundFx.playBubblePop();
     onSelect();
   }
@@ -336,7 +320,8 @@ export function DuolingoLessonModal({
             touchAction: 'pan-y',
           }}
         >
-          {/* Companion Mascot with Semantic Animation */}
+          {/* Companion Mascot with Semantic Animation. Character bible v2 §5: no guide on assessment (CHECK); guide picked per allowedScenes */}
+          {guideChar && (
           <div
             style={{
               display: 'flex',
@@ -346,33 +331,34 @@ export function DuolingoLessonModal({
             }}
           >
             <InteractiveCompanion
-              characterId={activeChar.id}
+              characterId={guideChar.id}
               semanticEvent={currentEvent}
               size="sm"
               showBubble={true}
               customMessage={
                 evaluation === 'CORRECT'
-                  ? activeChar.reactions.correct
+                  ? guideChar.reactions.correct
                   : evaluation === 'WRONG'
                   ? currentEvent === 'RECOVERY'
-                    ? activeChar.reactions.recovery
-                    : activeChar.reactions.wrong
+                    ? guideChar.reactions.recovery
+                    : guideChar.reactions.wrong
                   : activeNode.type === 'COUNT'
-                  ? '🐊 تمساح مهربان می‌گوید: پرتقال‌ها را لمس کن و بشمار؛ چند تا در سبد هست؟'
+                  ? 'پرتقال‌ها را لمس کن و بشمار؛ چند تا در سبد هست؟'
                   : activeNode.type === 'PATTERN'
-                  ? '🐒 میمون الگویاب می‌پرسد: قطار رنگ‌ها را ببین! جای علامت سؤال کدام رنگ می‌آید؟'
+                  ? 'قطار رنگ‌ها را ببین! جای علامت سؤال کدام رنگ می‌آید؟'
                   : activeNode.type === 'WONDER_GRID'
-                  ? '🐸 قورباغه با ابزار کار می‌کند: جدول شگفت‌انگیز را بدون رنگ تکراری در هر سطر و ستون کامل کن!'
+                  ? 'جدول شگفت‌انگیز را بدون رنگ تکراری در هر سطر و ستون کامل کن!'
                   : activeNode.type === 'TALLY'
-                  ? '🦁 شیر باهوش می‌گوید: به تعداد پرتقال‌ها چوب‌خط بکش! خط پنجم کج کشیده می‌شود.'
+                  ? 'به تعداد پرتقال‌ها چوب‌خط بکش! خط پنجم کج کشیده می‌شود.'
                   : activeNode.type === 'SYMMETRY'
-                  ? '🐸 قورباغه راهنما: نیمه سمت راست فرش را قرینه سمت چپ رنگ‌آمیزی کن!'
+                  ? 'نیمه سمت راست فرش را قرینه سمت چپ رنگ‌آمیزی کن!'
                   : activeNode.type === 'SCALE'
-                  ? '🦁 شیر تحلیل‌گر: دو دسته میوه را مقایسه کن و علامت درست را بگذار!'
-                  : '🛡️ سنجش مستقل: عدد بعدی دنباله ۲، ۴، ۶ چیست؟'
+                  ? 'دو دسته میوه را مقایسه کن و علامت درست را بگذار!'
+                  : 'سنجش مستقل: عدد بعدی دنباله ۲، ۴، ۶ چیست؟'
               }
             />
           </div>
+          )}
 
           {/* 1. COUNT EXERCISE */}
           {activeNode.type === 'COUNT' && (
@@ -794,7 +780,9 @@ export function DuolingoLessonModal({
               }}
             >
               <div style={{ fontSize: 11, color: '#b45309', fontWeight: 800 }}>ستاره‌های دانایی</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#d97706' }}>+۳ ⭐</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#d97706' }}>
+                +{toPersianDigits(String(lastServerResult?.attempt?.evaluation?.score ?? 0))} ⭐
+              </div>
             </div>
             <div
               style={{
@@ -807,7 +795,12 @@ export function DuolingoLessonModal({
               }}
             >
               <div style={{ fontSize: 11, color: '#3730a3', fontWeight: 800 }}>تثبیت مهارت</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#3b52d4' }}>۱۰۰٪</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#3b52d4' }}>
+                {toPersianDigits(String(Math.round(
+                  ((lastServerResult?.attempt?.evaluation?.score ?? 0) /
+                    Math.max(lastServerResult?.attempt?.evaluation?.maxScore ?? 1, 1)) * 100
+                )))}٪
+              </div>
             </div>
           </div>
 
@@ -852,6 +845,22 @@ export function DuolingoLessonModal({
             pointerEvents: 'auto',
           }}
         >
+          {submitMessage && (
+            <div
+              role="status"
+              style={{
+                marginBottom: 12,
+                padding: '10px 12px',
+                borderRadius: 12,
+                backgroundColor: '#fff7ed',
+                color: '#9a3412',
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              {submitMessage}
+            </div>
+          )}
           {evaluation === 'CORRECT' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
               <div

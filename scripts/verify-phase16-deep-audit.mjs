@@ -13,4 +13,4 @@ run(process.execPath, ['scripts/verify-migrations-static.mjs']);
 run(process.execPath, ['scripts/verify-phase15-deep-remediation.mjs']);
 run(process.execPath, ['scripts/runtime-tests.mjs']);
 run(process.execPath, ['scripts/verify-production-readiness-static.mjs'], 0);
-console.log('[PASS] Phase 16 deep audit verification; Production readiness is FULLY PASSED.');
+console.log('[PASS] Phase 16 deep audit verification; static checks passed. Pilot readiness still requires the blocked runtime/device gates in P00/P04/P17.');

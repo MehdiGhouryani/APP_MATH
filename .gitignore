@@ -11,3 +11,7 @@ coverage/
 .DS_Store
 android/
 ios/
+*.tsbuildinfo
+test-results/
+playwright-report/
+.vercel/

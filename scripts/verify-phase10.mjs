@@ -7,11 +7,11 @@ const required = [
   'e2e/web/critical-path.spec.ts',
   'e2e/web/api-critical-path.spec.ts',
   'scripts/performance/phase10-performance.mjs',
-  'docs/PHASE_10_E2E_PERFORMANCE_PILOT.md',
-  'docs/API_CONTRACT_PHASE_10.md',
-  'docs/PILOT_RUNBOOK_PHASE_10.md',
-  'docs/REVISION_NOTES_PHASE_10.md',
-  'docs/SNAPSHOT_MANIFEST_PHASE_10.json',
+  'docs/phases/PHASE_10_E2E_PERFORMANCE_PILOT.md',
+  'docs/api/API_CONTRACT_PHASE_10.md',
+  'docs/phases/PILOT_RUNBOOK_PHASE_10.md',
+  'docs/history/REVISION_NOTES_PHASE_10.md',
+  'docs/history/SNAPSHOT_MANIFEST_PHASE_10.json',
 ];
 for (const rel of required) {
   if (!fs.existsSync(path.join(root, rel))) throw new Error(`Missing ${rel}`);
@@ -29,7 +29,7 @@ const perf = fs.readFileSync(path.join(root, 'scripts/performance/phase10-perfor
 for (const marker of ['FRAME_BUDGET_MS', 'MAX_SYNC_BATCH', 'CACHE_BUDGET_BYTES', 'PHASE10_SYNTHETIC_PERFORMANCE_PASS']) {
   if (!perf.includes(marker)) throw new Error(`Performance marker missing: ${marker}`);
 }
-const docs = fs.readFileSync(path.join(root, 'docs/PHASE_10_E2E_PERFORMANCE_PILOT.md'), 'utf8');
+const docs = fs.readFileSync(path.join(root, 'docs/phases/PHASE_10_E2E_PERFORMANCE_PILOT.md'), 'utf8');
 for (const marker of ['60 FPS', '16.67 ms', 'low-end Android', 'Pilot', 'No Unity']) {
   if (!docs.includes(marker)) throw new Error(`Phase 10 documentation marker missing: ${marker}`);
 }

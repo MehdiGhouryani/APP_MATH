@@ -1,18 +1,26 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { AnimatedCharacter } from '../components/AnimatedCharacter';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Alert, BackHandler, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Text } from '../ui/AppText';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CharacterSays } from '../components/CharacterAvatar';
+import { CHARACTERS, speakerForContent, type CharacterId } from '../characters/characters';
 import { makeAnimationEvent, useAnimationController } from '../animation';
 import { createEncounter, getLocalContent, getRecoveryContent, getRecheckContent, shouldUseRemoteRuntime, startStationSession, submitAttempt } from './runtimeApi';
+import { useAppState } from '../state/AppStateContext';
+import { RESUMABLE_STAGES, getResume, shouldFastTrack, type ResumableStage } from '../state/appStateCore';
+import { MACRO_LABELS, macroFilled, macroLabel } from './macro';
+import { S } from '../ui/strings.fa';
+import { toFa } from '../ui/digits';
 import type { AnswerPayload, StationContent, StationStage, SubmitOutcome } from './types';
 
-const stageProgress: Record<StationStage, number> = {
-  ENTRY: 0.05, LEARN: 0.18, GUIDED: 0.32, GAME_PATTERN: 0.48, GAME_COUNT: 0.60,
-  INDEPENDENT: 0.48, REVIEW: 0.56, TRANSFER: 0.62, CHECK_A: 0.68, CHECK_B: 0.76, MASTERY_CHECK: 0.88, RESULT: 0.82, RECOVERY: 0.86, RECHECK: 0.93, COMPLETE: 1,
-};
-
 export function StationFlow({ stationId }: { stationId: string }) {
-  const { state, dispatch } = useAnimationController();
+  const { dispatch } = useAnimationController();
+  const app = useAppState();
+  const router = useRouter();
   const [stage, setStage] = useState<StationStage>('ENTRY');
+  const [lessonStage, setLessonStage] = useState<StationStage | null>(null);
+  const [activeSkillId, setActiveSkillId] = useState<string | undefined>(undefined);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [encounterId, setEncounterId] = useState<string | null>(null);
   const [sequence, setSequence] = useState(1);
@@ -24,11 +32,19 @@ export function StationFlow({ stationId }: { stationId: string }) {
   const [localPassedChecks, setLocalPassedChecks] = useState(0);
   const [stationPassAchieved, setStationPassAchieved] = useState(false);
 
+  // Consume the placement fast-track the first time the station really starts
+  // (stage leaves ENTRY). Done here, not in start(), so a failed network call at
+  // the very first encounter does not burn the fast-track.
+  const { startStation } = app;
+  useEffect(() => {
+    if (stage !== 'ENTRY') startStation(stationId);
+  }, [stage, stationId, startStation]);
+
   useEffect(() => {
     dispatch(makeAnimationEvent('SESSION_START', { stationId }));
   }, [dispatch, stationId]);
 
-  const progress = stageProgress[stage];
+  const filled = macroFilled(stage, lessonStage);
   const content = useMemo(() => {
     if (stage === 'LEARN') return getLocalContent('learn');
     if (stage === 'GUIDED') return getLocalContent('guided');
@@ -61,10 +77,10 @@ export function StationFlow({ stationId }: { stationId: string }) {
         setMode('LOCAL');
         const localId = `local-session-${Date.now()}`;
         setSessionId(localId);
-        setMessage('حالت تمرین آفلاینِ نمایشی فعال شد. این حالت فقط برای توسعه است.');
+        // DEV-only fallback; intentionally silent for children.
         return localId;
       }
-      setMessage('سرور آموزشی در دسترس نیست؛ برای جلوگیری از ثبت محلیِ Learning Truth، تمرین متوقف شد.');
+      setMessage(S.lesson.startFailed);
       throw new Error('REMOTE_RUNTIME_UNAVAILABLE');
     }
   }
@@ -78,6 +94,7 @@ export function StationFlow({ stationId }: { stationId: string }) {
         setEncounterId(created.encounter.id);
       }
       setSequence((value) => value + 1);
+      setActiveSkillId(nextContent.skillId);
       setStage(nextStage);
       dispatch(makeAnimationEvent(nextStage === 'LEARN' ? 'EXPLAIN' : 'HINT_OPENED', { sessionId: session, stationId }));
     } finally {
@@ -93,20 +110,14 @@ export function StationFlow({ stationId }: { stationId: string }) {
       if (mode === 'REMOTE' && encounterId) {
         outcome = await submitAttempt({ sessionId: session, encounterId, content: target, answer: { answerIndex, answerPayload: answerIndex }, attemptNumber });
       } else {
-        const correct = target.expected === answerIndex;
-        outcome = {
-          correct,
-          score: correct ? 1 : 0,
-          maxScore: 1,
-          semanticEvent: correct ? 'ANSWER_CORRECT' : 'ANSWER_WRONG',
-          stationPass: false,
-          selectedStep: correct ? 'CONTINUE' : (target.learningRole === 'MASTERY_CHECK' ? 'RECOVERY' : 'CONTINUE'),
-          learningState: correct ? 'BUILDING' : 'NEEDS_REVIEW',
-        };
+        // LOCAL is only a dev/startup fallback. There is no server encounter to
+        // attach an idempotent attempt to, so never claim that it was queued.
+        setMessage(S.lesson.submitFailed);
+        return;
       }
       setLastOutcome(outcome);
       if (outcome.syncPending) {
-        setMessage('نتیجه در دستگاه نگه‌داری شد؛ بعد از اتصال دوباره همگام می‌شود. برای ادامه، همین تمرین را دوباره با اتصال ارسال کن.');
+        setMessage(S.lesson.checkQueued);
         return;
       }
       setAttemptNumber((value) => value + 1);
@@ -118,13 +129,12 @@ export function StationFlow({ stationId }: { stationId: string }) {
       else if (target.id === 'G1-ST01-E06') await beginEncounter(getLocalContent('checkA'), 'CHECK_A');
       else if (target.id === 'G1-ST01-E07') {
         if (outcome.correct || outcome.selectedStep === 'RECHECK') {
-          if (mode === 'LOCAL') setLocalPassedChecks((value) => value + 1);
           await beginFreshCheckEncounter(getLocalContent('checkB'), 'CHECK_B');
         } else {
           await beginEncounter(getRecoveryContent(outcome.decisionTargetSkillId ?? target.skillId), 'RECOVERY');
         }
       } else if (target.id === 'G1-ST01-E08') {
-        const passed = mode === 'LOCAL' ? outcome.stationPass : outcome.stationPass;
+        const passed = outcome.stationPass;
         if (passed) {
           setStationPassAchieved(true);
           setLastOutcome({ ...outcome, stationPass: true, selectedStep: 'STATION_PASS', semanticEvent: 'STATION_PASS' });
@@ -143,7 +153,7 @@ export function StationFlow({ stationId }: { stationId: string }) {
         await beginFreshCheckEncounter(getLocalContent('mastery'), 'MASTERY_CHECK');
       } else setStage('RESULT');
     } catch {
-      setMessage('نتیجه این تمرین ثبت نشد. دوباره امتحان کن.');
+      setMessage(S.lesson.submitFailed);
     } finally {
       setBusy(false);
     }
@@ -157,21 +167,13 @@ export function StationFlow({ stationId }: { stationId: string }) {
       if (mode === 'REMOTE' && encounterId) {
         outcome = await submitAttempt({ sessionId: session, encounterId, content: target, answers, attemptNumber });
       } else {
-        const expected = target.questions?.map((question) => question.expected) ?? [];
-        const correctCount = answers.reduce((count, answer, index) => count + (Object.is(answer.answerPayload, expected[index]) ? 1 : 0), 0);
-        const qualifying = expected.length === 5 && correctCount >= 4;
-        const isStationGate = target.id === 'G1-ST01-E07' || target.id === 'G1-ST01-E08';
-        const nextPassedChecks = isStationGate ? localPassedChecks + (qualifying ? 1 : 0) : localPassedChecks;
-        if (isStationGate && qualifying) setLocalPassedChecks(nextPassedChecks);
-        outcome = {
-          correct: qualifying, score: correctCount, maxScore: expected.length || 5, semanticEvent: qualifying ? 'ANSWER_CORRECT' : 'ANSWER_WRONG',
-          stationPass: isStationGate && nextPassedChecks >= 2, selectedStep: isStationGate && nextPassedChecks >= 2 ? 'STATION_PASS' : (qualifying ? 'CONTINUE' : 'RECOVERY'),
-          learningState: qualifying ? 'BUILDING' : 'NEEDS_REVIEW',
-        };
+        // A local fallback cannot produce an authoritative Check result.
+        setMessage(S.lesson.submitFailed);
+        return;
       }
       setLastOutcome(outcome);
       if (outcome.syncPending) {
-        setMessage('این بررسی آفلاین در صف همگام‌سازی قرار گرفت و هنوز نتیجهٔ نهایی سرور نیست.');
+        setMessage(S.lesson.checkQueued);
         return;
       }
       setAttemptNumber((value) => value + 1);
@@ -212,7 +214,7 @@ export function StationFlow({ stationId }: { stationId: string }) {
         setStage('RESULT');
       }
     } catch {
-      setMessage('این بررسی ثبت نشد. نتیجه در این دستگاه نگه داشته می‌شود تا دوباره تلاش کنیم.');
+      setMessage(S.lesson.submitFailed);
     } finally {
       setBusy(false);
     }
@@ -234,6 +236,7 @@ export function StationFlow({ stationId }: { stationId: string }) {
         const created = await createEncounter(freshSessionId!, nextContent, 1);
         setEncounterId(created.encounter.id);
       }
+      setActiveSkillId(nextContent.skillId);
       setStage(nextStage);
       dispatch(makeAnimationEvent('EXPLAIN', { sessionId: freshSessionId ?? undefined, stationId }));
     } finally {
@@ -241,7 +244,28 @@ export function StationFlow({ stationId }: { stationId: string }) {
     }
   }
 
-  function start() {
+  function contentForResume(stage: ResumableStage, skillId?: string): StationContent {
+    switch (stage) {
+      case 'LEARN': return getLocalContent('learn');
+      case 'GUIDED': return getLocalContent('guided');
+      case 'GAME_PATTERN': return getLocalContent('pattern');
+      case 'GAME_COUNT': return getLocalContent('count');
+      case 'INDEPENDENT': return getLocalContent('independent');
+      case 'REVIEW': return getLocalContent('review');
+      case 'TRANSFER': return getLocalContent('transfer');
+      case 'CHECK_A': return getLocalContent('checkA');
+      case 'CHECK_B': return getLocalContent('checkB');
+      case 'MASTERY_CHECK': return getLocalContent('mastery');
+      case 'RECOVERY': return getRecoveryContent(skillId ?? getLocalContent('recovery').skillId);
+      case 'RECHECK': return getRecheckContent(skillId ?? getLocalContent('recheck').skillId);
+    }
+  }
+
+  /**
+   * Begin (or resume) the station. `fresh` ignores any saved resume point
+   * ("دوباره بازی کنیم"). Never throws: failure leaves the friendly retry screen.
+   */
+  async function start(fresh: boolean) {
     setLocalPassedChecks(0);
     setStationPassAchieved(false);
     setLastOutcome(null);
@@ -250,14 +274,93 @@ export function StationFlow({ stationId }: { stationId: string }) {
     setSequence(1);
     setEncounterId(null);
     setSessionId(null);
-    void beginEncounter(getLocalContent('learn'), 'LEARN');
+    setLessonStage(null);
+    try {
+      const resume = fresh ? null : getResume(app.state, stationId);
+      if (resume) {
+        // Child closed the app mid-station: continue at the same stage, keeping any
+        // check already passed (a pass earned earlier must not be lost).
+        setLocalPassedChecks(resume.checks);
+        setStationPassAchieved(resume.passAchieved);
+        const target = contentForResume(resume.stage, resume.skillId);
+        if (resume.stage === 'CHECK_A' || resume.stage === 'CHECK_B' || resume.stage === 'MASTERY_CHECK' || resume.stage === 'RECHECK') await beginFreshCheckEncounter(target, resume.stage);
+        else await beginEncounter(target, resume.stage);
+        return;
+      }
+      // Placement fast-track (SoT S06-S08) is ONE-SHOT: it only applies until this
+      // station is first started (see the effect above), so review/retry always
+      // teaches from the beginning again.
+      if (!fresh && app.state && shouldFastTrack(app.state, stationId)) await beginEncounter(getLocalContent('independent'), 'INDEPENDENT');
+      else await beginEncounter(getLocalContent('learn'), 'LEARN');
+    } catch {
+      setMessage((m) => m || S.lesson.startFailed);
+      setStage('ENTRY');
+    }
   }
+
+  // Open the lesson straight away (no extra "start" screen): first tap on Home = first exercise.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current) return;
+    autoStarted.current = true;
+    void start(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Remember the last lesson stage for the macro bar and RESULT screen.
+  useEffect(() => {
+    if ((RESUMABLE_STAGES as readonly string[]).includes(stage)) setLessonStage(stage);
+  }, [stage]);
+
+  // Persist the resume point whenever the child reaches a resumable stage; clear it
+  // when the journey is finished (and record the station pass if it was earned).
+  const { saveResume, passStation } = app;
+  useEffect(() => {
+    if ((RESUMABLE_STAGES as readonly string[]).includes(stage)) {
+      saveResume(stationId, {
+        stage: stage as ResumableStage,
+        checks: Math.min(2, localPassedChecks),
+        passAchieved: stationPassAchieved,
+        ...(stage === 'RECOVERY' || stage === 'RECHECK' ? (activeSkillId ? { skillId: activeSkillId } : {}) : {}),
+      });
+    } else if (stage === 'COMPLETE') {
+      if (stationPassAchieved) passStation(stationId);
+      else saveResume(stationId, null);
+    }
+  }, [stage, stationId, localPassedChecks, stationPassAchieved, activeSkillId, saveResume, passStation]);
+
+  // Leaving a lesson is a deliberate act: ✕ and the Android back button both ask first.
+  function confirmExit() {
+    Alert.alert(S.lesson.exitTitle, S.lesson.exitBody, [
+      { text: S.lesson.exitStay, style: 'cancel' },
+      { text: S.lesson.exitLeave, style: 'destructive', onPress: leave },
+    ]);
+  }
+  function leave() {
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  }
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (stage === 'COMPLETE' || stage === 'ENTRY') {
+        leave();
+        return true;
+      }
+      confirmExit();
+      return true;
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
 
   function continueFromResult() {
     if (lastOutcome?.syncPending) return;
     if (lastOutcome?.selectedStep === 'RECOVERY') void beginEncounter(getRecoveryContent(lastOutcome.decisionTargetSkillId), 'RECOVERY');
     else if (lastOutcome?.selectedStep === 'RECHECK') void beginFreshCheckEncounter(getRecheckContent(lastOutcome.decisionTargetSkillId), 'RECHECK');
-    else if (lastOutcome?.stationPass) setStage('COMPLETE');
+    else if (lastOutcome?.stationPass) {
+      app.passStation(stationId);
+      setStage('COMPLETE');
+    }
     else void beginEncounter(getLocalContent('pattern'), 'GAME_PATTERN');
   }
 
@@ -265,19 +368,38 @@ export function StationFlow({ stationId }: { stationId: string }) {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.topRow}>
-          <View style={styles.badge}><Text style={styles.badgeText}>ایستگاه ۱</Text></View>
-          <Text style={styles.progressText}>{Math.round(progress * 100)}٪</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={S.lesson.exitA11y} style={styles.exit} onPress={stage === 'COMPLETE' ? leave : confirmExit}>
+            <Text style={styles.exitText}>✕</Text>
+          </Pressable>
+          <View style={styles.macroBar} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: MACRO_LABELS.length, now: filled }}>
+            {MACRO_LABELS.map((label, index) => (
+              <View key={label} style={[styles.segment, index < filled && styles.segmentOn]} />
+            ))}
+          </View>
         </View>
-        <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${progress * 100}%` }]} /></View>
+        <Text style={styles.macroLabel}>{macroLabel(stage, lessonStage)}</Text>
 
-        <AnimatedCharacter state={state} size={150} />
-        {message ? <View style={styles.notice}><Text style={styles.noticeText}>{message}</Text></View> : null}
+        {(() => {
+          // One speaker per screen (SoT §14.2). Main = Aria; supporting = Qbo/Dana/Jiko inside
+          // their own exercises; NO character during assessments (SoT §10.5).
+          let speaker: { id: CharacterId; text: string } | null = null;
+          if (stage === 'ENTRY') speaker = { id: 'aria', text: message ? CHARACTERS.aria.lines.wrong : CHARACTERS.aria.lines.greet };
+          else if (stage === 'RESULT') {
+            speaker = lastOutcome?.correct
+              ? { id: 'jiko', text: CHARACTERS.jiko.lines.correct }
+              : { id: 'aria', text: CHARACTERS.aria.lines.wrong };
+          } else if (stage === 'COMPLETE') speaker = { id: 'jiko', text: CHARACTERS.jiko.lines.done };
+          else if (content) {
+            const id = speakerForContent(content.id);
+            if (id) speaker = { id, text: content.id === 'G1-ST01-E01' ? CHARACTERS[id].lines.greet : CHARACTERS[id].lines.hint };
+          }
+          return speaker ? <CharacterSays id={speaker.id} text={speaker.text} /> : null;
+        })()}
+        {message && stage !== 'ENTRY' ? <View style={styles.notice}><Text style={styles.noticeText}>{message}</Text></View> : null}
 
         {stage === 'ENTRY' && (
-          <Card title="ماجراجویی شمارش و الگو" subtitle="چند تمرین کوتاه داریم؛ هر کدام یک بازی کوچولو است.">
-            <Text style={styles.story}>امروز قرار است به دوست کوچولومان کمک کنیم ستاره‌ها را بشمارد و مسیر الگو را پیدا کند. 🌟</Text>
-            <PrimaryButton label={busy ? 'در حال آماده‌سازی…' : 'شروع کنیم 🚀'} onPress={start} disabled={busy} />
-            <Text style={styles.footnote}>{mode === 'REMOTE' ? 'نتیجه‌ها از Learning Runtime سرور ثبت می‌شوند.' : 'حالت محلی برای پیش‌نمایش فعال است.'}</Text>
+          <Card title={message ? 'یک لحظه…' : S.lesson.preparing} subtitle={message || 'درس را برایت آماده می‌کنم.'}>
+            {message ? <PrimaryButton label={S.lesson.retry} onPress={() => void start(false)} /> : <Text style={styles.story}>🌟</Text>}
           </Card>
         )}
 
@@ -290,23 +412,22 @@ export function StationFlow({ stationId }: { stationId: string }) {
             {content.id === 'G1-ST01-E04' || content.id === 'G1-ST01-E05' ? <CountGame count={content.visualCount ?? 3} options={content.options ?? []} onPick={(index) => void answerContent(content, index)} /> : null}
             {content.id === 'G1-ST01-E11' ? <OptionRow options={content.options ?? ["قرمز، آبی، قرمز، آبی", "قرمز، قرمز، آبی، آبی", "آبی، قرمز، آبی، قرمز"]} onPick={(index) => void answerContent(content, index)} /> : null}
             {content.id === 'G1-ST01-E09' ? (content.skillId === 'G1-SK009' || content.skillId === 'G1-SK011' ? <PatternGame onPick={(index) => void answerContent(content, index)} /> : <RecoveryGame onPick={(index) => void answerContent(content, index)} />) : null}
-            {content.id === 'G1-ST01-E01' ? <PrimaryButton label="بزن بریم تمرین" onPress={() => void beginEncounter(getLocalContent('guided'), 'GUIDED')} disabled={busy} /> : null}
+            {content.id === 'G1-ST01-E01' ? <PrimaryButton label={S.lesson.letsGo} onPress={() => void beginEncounter(getLocalContent('guided'), 'GUIDED')} disabled={busy} /> : null}
           </Card>
         )}
 
         {stage === 'RESULT' && (
-          <Card title={lastOutcome?.correct ? 'آفرین! ✨' : 'اشکالی نداره 💛'} subtitle={lastOutcome?.correct ? 'یک قدم جلو رفتی.' : 'اشتباه هم بخشی از یادگیریه.'}>
+          <Card title={lastOutcome?.correct ? S.result.okTitle : S.result.retryTitle} subtitle={lastOutcome?.correct ? S.result.okSub : S.result.retrySub}>
             <Text style={styles.resultBig}>{lastOutcome?.correct ? '✓' : '↺'}</Text>
-            <Text style={styles.resultText}>وضعیت مهارت: {lastOutcome?.learningState ?? 'UNKNOWN'}</Text>
-            <PrimaryButton label={lastOutcome?.selectedStep === 'RECOVERY' ? 'بریم یک راه ساده‌تر' : 'ادامه بده'} onPress={continueFromResult} />
+            <PrimaryButton label={lastOutcome?.selectedStep === 'RECOVERY' ? S.lesson.easierWay : S.lesson.next} onPress={continueFromResult} />
           </Card>
         )}
 
         {stage === 'COMPLETE' && (
-          <Card title="مسیر تمرین کامل شد! 🎉" subtitle={stationPassAchieved ? 'گیت پیشرفت ایستگاه هم با دو بررسی مستقل ثبت شده است.' : 'تمرین، بازی، بررسی و انتقال را کامل کردی.'}>
-            <Text style={styles.story}>این پایانِ تجربهٔ آموزشی است؛ نتیجهٔ نهایی مهارت و مسترشدن، فقط توسط Learning Engine ثبت و تفسیر می‌شود.</Text>
-            {stationPassAchieved ? <Text style={styles.resultText}>وضعیت ایستگاه: Station Pass ثبت شده ✓</Text> : <Text style={styles.resultText}>وضعیت ایستگاه: Pass ثبت نشده</Text>}
-            <PrimaryButton label="دوباره از مسیر لذت ببر" onPress={() => setStage('ENTRY')} />
+          <Card title={S.complete.title} subtitle={stationPassAchieved ? S.complete.subPassed : S.complete.subNotPassed}>
+            <Text style={styles.story}>{stationPassAchieved ? '⭐' : '🌈'}</Text>
+            <PrimaryButton label={S.complete.again} onPress={() => void start(true)} />
+            <PrimaryButton label={S.complete.backHome} onPress={leave} secondary />
           </Card>
         )}
       </ScrollView>
@@ -317,8 +438,8 @@ export function StationFlow({ stationId }: { stationId: string }) {
 function Card({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return <View style={styles.card}><Text style={styles.title}>{title}</Text><Text style={styles.subtitle}>{subtitle}</Text><View style={styles.body}>{children}</View></View>;
 }
-function PrimaryButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
-  return <Pressable disabled={disabled} onPress={onPress} style={[styles.primary, disabled && styles.disabled]}><Text style={styles.primaryText}>{label}</Text></Pressable>;
+function PrimaryButton({ label, onPress, disabled, secondary }: { label: string; onPress: () => void; disabled?: boolean; secondary?: boolean }) {
+  return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={[styles.primary, secondary && styles.secondary, disabled && styles.disabled]}><Text style={[styles.primaryText, secondary && styles.secondaryText]}>{label}</Text></Pressable>;
 }
 function LearnScene() {
   return <View style={styles.scene}><Text style={styles.stars}>⭐ ⭐ ⭐</Text><Text style={styles.sceneText}>۱... ۲... ۳ — آخرین عدد یعنی سه تا.</Text></View>;
@@ -339,13 +460,13 @@ function CheckQuiz({ questions, onSubmit, disabled }: { questions: Array<{ promp
     <View style={{ gap: 16 }}>
       {questions.map((question, questionIndex) => (
         <View key={`${question.prompt}-${questionIndex}`} style={styles.checkCard}>
-          <Text style={styles.checkIndex}>چالش {questionIndex + 1} از {questions.length}</Text>
+          <Text style={styles.checkIndex}>{S.lesson.questionOf(toFa(questionIndex + 1), toFa(questions.length))}</Text>
           {question.visualCount ? <Text style={styles.objectField}>{Array.from({ length: question.visualCount }, (_, i) => <Text key={i} style={styles.object}>⭐</Text>)}</Text> : null}
           <Text style={styles.checkPrompt}>{question.prompt}</Text>
           <OptionRow options={question.options} onPick={(index) => setAnswers((prev) => prev.map((value, i) => i === questionIndex ? index : value))} />
         </View>
       ))}
-      <PrimaryButton label={disabled ? 'در حال ثبت…' : 'پایان بررسی'} onPress={() => onSubmit(answers.map((answerIndex, index) => ({ answerIndex: answerIndex as number, answerPayload: answerIndex })))} disabled={disabled || !ready} />
+      <PrimaryButton label={disabled ? S.lesson.saving : S.lesson.done} onPress={() => onSubmit(answers.map((answerIndex, index) => ({ answerIndex: answerIndex as number, answerPayload: answerIndex })))} disabled={disabled || !ready} />
     </View>
   );
 }
@@ -357,12 +478,13 @@ function RecoveryGame({ onPick }: { onPick: (index: number) => void }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF9F1' },
   container: { padding: 18, paddingBottom: 40 },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  badge: { backgroundColor: '#F0E4FF', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
-  badgeText: { fontWeight: '800', color: '#5A3D7A' },
-  progressText: { fontWeight: '800', color: '#775F43' },
-  progressTrack: { height: 10, borderRadius: 999, backgroundColor: '#EADFD3', overflow: 'hidden', marginTop: 10, marginBottom: 8 },
-  progressFill: { height: '100%', backgroundColor: '#7F67A8', borderRadius: 999 },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  exit: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  exitText: { fontSize: 22, fontWeight: '900', color: '#64748B' },
+  macroBar: { flex: 1, flexDirection: 'row', gap: 6 },
+  segment: { flex: 1, height: 12, borderRadius: 6, backgroundColor: '#EADFD3' },
+  segmentOn: { backgroundColor: '#7F67A8' },
+  macroLabel: { textAlign: 'center', fontWeight: '800', color: '#775F43', marginTop: 6, marginBottom: 6, fontSize: 14 },
   notice: { backgroundColor: '#FFF2CF', padding: 10, borderRadius: 14, marginBottom: 12 },
   noticeText: { textAlign: 'center', color: '#695020', fontSize: 12 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 26, padding: 20, marginTop: 6, shadowColor: '#8D735B', shadowOpacity: 0.10, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 },
@@ -370,7 +492,9 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: 8, fontSize: 16, lineHeight: 23, color: '#5C5044', textAlign: 'center' },
   body: { marginTop: 20 },
   story: { fontSize: 17, lineHeight: 27, color: '#44372B', textAlign: 'center' },
-  primary: { backgroundColor: '#6E59A8', borderRadius: 18, paddingVertical: 15, marginTop: 18, alignItems: 'center' },
+  primary: { backgroundColor: '#6E59A8', borderRadius: 18, minHeight: 56, paddingVertical: 15, marginTop: 18, alignItems: 'center', justifyContent: 'center' },
+  secondary: { backgroundColor: '#EEF2FF' },
+  secondaryText: { color: '#4F46E5' },
   disabled: { opacity: 0.5 },
   primaryText: { color: 'white', fontSize: 17, fontWeight: '900' },
   footnote: { marginTop: 12, color: '#8A7F73', textAlign: 'center', fontSize: 11 },
@@ -378,7 +502,7 @@ const styles = StyleSheet.create({
   stars: { fontSize: 40, letterSpacing: 5 },
   sceneText: { marginTop: 12, textAlign: 'center', fontSize: 16, color: '#4C4034', lineHeight: 24 },
   options: { gap: 12 },
-  option: { backgroundColor: '#F8F2E9', borderWidth: 1, borderColor: '#E5D8C7', borderRadius: 18, paddingVertical: 15, alignItems: 'center' },
+  option: { backgroundColor: '#F8F2E9', borderWidth: 1, borderColor: '#E5D8C7', borderRadius: 18, minHeight: 64, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
   optionText: { fontSize: 28, fontWeight: '800' },
   pattern: { textAlign: 'center', fontSize: 38, marginBottom: 18 },
   objectField: { minHeight: 90, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, backgroundColor: '#FCF7EF', borderRadius: 18, marginBottom: 16 },

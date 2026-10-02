@@ -19,6 +19,7 @@
     "dev:mobile": "npm --workspace @math/mobile run start",
     "build:web": "npm --workspace @math/web run build",
     "typecheck": "npm run typecheck:contracts && npm run typecheck:web",
+    "typecheck:all": "npm run typecheck:contracts && npm run typecheck:web && npm --workspace @math/mobile run typecheck && npm --workspace @math/assignment-runtime run typecheck && npm --workspace @math/adult-projections run typecheck && npm --workspace @math/offline-sync run typecheck",
     "typecheck:contracts": "npm --workspace @math/contracts run typecheck",
     "test:unit": "vitest run",
     "verify:phase3": "node scripts/verify-phase3.mjs",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "typescript": "^5.9.2",
+    "vite": "^7.3.6",
     "vitest": "^5.0.2"
   },
   "dependencies": {

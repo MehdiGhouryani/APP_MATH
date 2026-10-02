@@ -1,0 +1,77 @@
+/**
+ * Child-facing Persian copy (one source). Rules: short, warm, no English, no
+ * system jargon, never "wrong / failed / weak". Parents may see slightly more
+ * detail, but never raw enums or internal names.
+ */
+export const S = {
+  lesson: {
+    exitTitle: 'خارج می‌شوی؟',
+    exitBody: 'نگران نباش، پیشرفتت می‌ماند و بعداً از همین‌جا ادامه می‌دهی.',
+    exitStay: 'می‌مانم',
+    exitLeave: 'خروج',
+    exitA11y: 'خروج از درس',
+    preparing: 'در حال آماده‌سازی…',
+    retry: 'دوباره امتحان کن',
+    startFailed: 'الان نتوانستم درس را باز کنم. یک بار دیگه امتحان کنیم؟ 🌈',
+    submitFailed: 'الان نتوانستم نتیجه را ثبت کنم؛ کمی بعد دوباره امتحان کنیم 🌈',
+    checkQueued: 'جوابت روی همین گوشی نگه داشته شد و بعداً ثبت می‌شود.',
+    letsGo: 'بزن بریم تمرین',
+    done: 'تمام شد',
+    next: 'ادامه بده',
+    easierWay: 'بریم یک راه ساده‌تر',
+    questionOf: (n: string, total: string) => `سؤال ${n} از ${total}`,
+    pick: 'یک گزینه را انتخاب کن',
+    saving: 'در حال ثبت…',
+  },
+  result: {
+    okTitle: 'آفرین! ✨',
+    okSub: 'یک قدم جلو رفتی.',
+    retryTitle: 'اشکالی نداره 💛',
+    retrySub: 'با هم یک بار دیگه امتحان می‌کنیم.',
+  },
+  complete: {
+    title: 'ایستگاه را تمام کردی! 🎉',
+    subPassed: 'ستارهٔ تازه مال توست! ⭐',
+    subNotPassed: 'خیلی خوب تمرین کردی؛ بعداً دوباره امتحان می‌کنیم.',
+    again: 'دوباره بازی کنیم',
+    backHome: 'برگرد به مسیر',
+  },
+  home: {
+    play: 'ادامه بده',
+    resume: 'ادامه از همین‌جا',
+    replay: 'دوباره بازی کنیم',
+    goalOpen: 'امروز یک تمرین کوتاه',
+    goalDone: 'امروز تمرین کردی ✓',
+    soon: 'به‌زودی',
+    hello: (name: string) => `سلام ${name}!`,
+    welcomeBack: (name: string) => `سلام دوباره ${name}!`,
+  },
+  skills: {
+    intro: 'اینجا مهارت‌هایی را که تمرین می‌کنی می‌بینی!',
+    learning: 'در حال یادگیری',
+    done: 'ایستگاه را تمام کردی',
+    note: 'هر مدال یعنی یک مهارت تازه.',
+  },
+  parent: {
+    row: 'بخش والدین',
+    title: 'بخش والدین',
+    gateIntro: 'این بخش مخصوص بزرگسالان است.',
+    summary: 'خلاصهٔ پیشرفت',
+    lastActive: 'آخرین فعالیت',
+    never: 'هنوز فعالیتی نبوده',
+    stationsPassed: 'ایستگاه‌های تمام‌شده',
+    sound: 'صدا',
+    soundSoon: 'به‌زودی',
+    deleteTitle: 'حذف اطلاعات کودک',
+    deleteBody: 'نام، پایه و تمام پیشرفت از روی این گوشی پاک می‌شود و اپ از نو شروع می‌کند. این کار برگشت ندارد.',
+    deleteConfirm: 'بله، حذف شود',
+    deleteCancel: 'انصراف',
+    deleteFailed: 'حذف انجام نشد. دوباره امتحان کنید.',
+    close: 'بازگشت',
+  },
+  assignments: {
+    title: 'تکلیف‌های من',
+    empty: 'فعلاً تکلیف فعالی نداری.',
+    loadFailed: 'الان نمی‌توانم تکلیف‌ها را بیاورم؛ کمی بعد دوباره امتحان کن.',
+  },
+} as const;

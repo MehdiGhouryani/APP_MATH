@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getSupabaseAuthUser, supabaseRestSelect } from './supabase-http';
 
 export interface TeacherAuthSession {
@@ -11,6 +12,30 @@ export interface TeacherAuthSession {
 }
 
 const TEACHER_COOKIE_NAME = 'math_teacher_session';
+const TEACHER_SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
+
+function sessionSecret(): string {
+  const secret = process.env.TEACHER_SESSION_SECRET;
+  if (process.env.NODE_ENV === 'production' && (!secret || secret.length < 32)) {
+    throw new Error('TEACHER_SESSION_SECRET_REQUIRED');
+  }
+  return secret || 'development-only-teacher-session-secret-change-me';
+}
+
+function signSession(payload: string): string {
+  return createHmac('sha256', sessionSecret()).update(payload).digest('base64url');
+}
+
+function encodeSession(session: TeacherAuthSession): string {
+  const payload = JSON.stringify({
+    accountId: session.accountId,
+    username: session.username,
+    displayName: session.displayName,
+    roles: session.roles,
+    exp: Math.floor(Date.now() / 1000) + TEACHER_SESSION_TTL_SECONDS,
+  });
+  return `${Buffer.from(payload).toString('base64url')}.${signSession(payload)}`;
+}
 
 // Approved development / seed accounts for robust local & testing execution
 const DEV_TEACHER_SEEDS: Record<string, { accountId: string; displayName: string; role: string; passwordHashPlaceholder: string }> = {
@@ -125,17 +150,6 @@ export async function authenticateTeacher(
   const devAccount = DEV_TEACHER_SEEDS[username] || DEV_TEACHER_SEEDS[username.toLowerCase()];
   
   if (!devAccount) {
-    // Check if matching dev credentials pattern
-    if (username.startsWith('teacher') || username === 'test_teacher') {
-      return {
-        accountId: `teacher-${username}`,
-        username,
-        displayName: `معلم ${username}`,
-        roles: ['TEACHER'],
-        accessToken: `dev-token-${username}`,
-        isTeacher: true,
-      };
-    }
     throw new Error('INVALID_CREDENTIALS: نام کاربری یا رمز عبور اشتباه است.');
   }
 
@@ -153,7 +167,6 @@ export async function authenticateTeacher(
     username,
     displayName: devAccount.displayName,
     roles: [devAccount.role],
-    accessToken: `dev-token-${devAccount.accountId}`,
     isTeacher: true,
   };
 }
@@ -163,21 +176,13 @@ export async function authenticateTeacher(
  */
 export async function setTeacherSessionCookie(session: TeacherAuthSession) {
   const cookieStore = await cookies();
-  const payload = JSON.stringify({
-    accountId: session.accountId,
-    username: session.username,
-    displayName: session.displayName,
-    roles: session.roles,
-    accessToken: session.accessToken,
-    timestamp: Date.now(),
-  });
 
-  cookieStore.set(TEACHER_COOKIE_NAME, Buffer.from(payload).toString('base64'), {
+  cookieStore.set(TEACHER_COOKIE_NAME, encodeSession(session), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: TEACHER_SESSION_TTL_SECONDS,
   });
 }
 
@@ -204,7 +209,7 @@ export async function getTeacherSessionFromRequest(request?: Request): Promise<T
     const authHeader = request.headers.get('authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7).trim();
-      if (token.startsWith('dev-token-')) {
+      if (process.env.NODE_ENV !== 'production' && token.startsWith('dev-token-')) {
         return {
           accountId: token.replace('dev-token-', ''),
           username: 'teacher',
@@ -225,8 +230,15 @@ export async function getTeacherSessionFromRequest(request?: Request): Promise<T
   }
 
   try {
-    const decoded = JSON.parse(Buffer.from(rawCookie, 'base64').toString('utf8'));
-    if (!decoded || !decoded.accountId || !Array.isArray(decoded.roles)) {
+    const [encodedPayload, signature] = rawCookie.split('.');
+    if (!encodedPayload || !signature) return null;
+    const payload = Buffer.from(encodedPayload, 'base64url').toString('utf8');
+    const expected = signSession(payload);
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+    const decoded = JSON.parse(payload) as { accountId?: string; roles?: string[]; exp?: number; username?: string; displayName?: string };
+    if (!decoded.accountId || !Array.isArray(decoded.roles) || !decoded.exp || decoded.exp <= Math.floor(Date.now() / 1000)) {
       return null;
     }
 
@@ -240,7 +252,6 @@ export async function getTeacherSessionFromRequest(request?: Request): Promise<T
       username: decoded.username || 'teacher',
       displayName: decoded.displayName || 'معلم',
       roles: decoded.roles,
-      accessToken: decoded.accessToken,
       isTeacher: true,
     };
   } catch {

@@ -49,6 +49,13 @@ test.describe('End-to-End Regression & Interaction Test Suite', () => {
   test('2. Web UI: RTL orientation, header grade selector, and tab navigation', async ({
     page,
   }) => {
+    // Simulate a returning learner with a saved profile so cold-start onboarding
+    // gating (SoT PASS-04, added 2026-09-28) doesn't intercept these Home-focused
+    // interaction tests; onboarding itself is exercised separately below via the
+    // explicit "ورود" button click.
+    await page.addInitScript(() => {
+      localStorage.setItem('math_app_child_profile', JSON.stringify({ childName: 'آرش', gradeId: 'G1' }));
+    });
     await page.goto('http://127.0.0.1:3000/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(600);
@@ -68,18 +75,15 @@ test.describe('End-to-End Regression & Interaction Test Suite', () => {
     const backpackHeading = page.locator('text=دفترچه دستاوردهای دانایی').or(page.locator('text=مهارت‌های ریاضی'));
     await expect(backpackHeading.first()).toBeVisible();
 
-    // Tab: لیگ‌ها (Leagues)
-    const leaguesTab = page.locator('button', { hasText: 'لیگ‌ها' }).first();
-    await leaguesTab.click();
-    await page.waitForTimeout(300);
-    const leaguesHeading = page.locator('text=لیگ دانایی ریاضی').or(page.locator('text=لیگ الماس'));
-    await expect(leaguesHeading.first()).toBeVisible();
+    // NOTE: League/Leaderboard tab intentionally removed from child navigation for V1
+    // per SoT v1.2 section 4 ("League/leaderboard کودک در V1 حذف می‌شود").
+    // This check block was removed on 2026-09-27 when the tab was deprecated.
 
     // Tab: پروفایل (Profile)
     const profileTab = page.locator('button', { hasText: 'پروفایل' }).first();
     await profileTab.click();
     await page.waitForTimeout(300);
-    await expect(page.getByText('سارا رضایی').first()).toBeVisible();
+    await expect(page.getByText('آرش').first()).toBeVisible();
 
     // Return to Path tab
     const pathTab = page.locator('button', { hasText: 'مسیر' }).first();

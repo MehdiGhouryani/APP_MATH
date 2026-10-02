@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { CharacterId } from '../characters/characters';
 import type { AnimationSemanticEvent } from '@math/contracts';
 import { AnimatedCharacter } from './AnimatedCharacter';
 import { makeAnimationEvent, useAnimationController } from '../animation';
@@ -17,9 +19,17 @@ const EVENTS: AnimationSemanticEvent[] = [
 
 export function SemanticAnimationDemo() {
   const { state, dispatch } = useAnimationController();
+  const [who, setWho] = useState<CharacterId>('aria');
   return (
     <View style={styles.container}>
-      <AnimatedCharacter state={state} />
+      <AnimatedCharacter state={state} characterId={who} />
+      <View style={styles.grid}>
+        {(['aria', 'qbo', 'dana', 'jiko'] as CharacterId[]).map((id) => (
+          <Pressable key={id} style={[styles.button, who === id && { opacity: 1, borderWidth: 2 }]} onPress={() => setWho(id)}>
+            <Text style={styles.buttonText}>{id}</Text>
+          </Pressable>
+        ))}
+      </View>
       <Text style={styles.title}>Animation Runtime Spike</Text>
       <Text style={styles.subtitle}>این دکمه‌ها فقط event آزمایشی هستند؛ Learning Engine را دور نمی‌زنند.</Text>
       <View style={styles.grid}>

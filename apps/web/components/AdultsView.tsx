@@ -1,3 +1,8 @@
+// DEPRECATED / UNREFERENCED (2026-09-27): no file imports AdultsView. It is an
+// early dev/demo panel (role switcher, hard-coded parent/teacher data, dev-only
+// package IDs such as 'dev-g1-st01-v2') superseded by the real /parent and
+// /teacher routes. Do not mount it in a child-reachable surface (SoT §20/§21:
+// adult controls must sit behind the Parent Gate). Candidate for deletion in PHASE-00 freeze.
 'use client';
 
 import React, { useState, useEffect } from 'react';
