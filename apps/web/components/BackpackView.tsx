@@ -25,11 +25,12 @@ const BADGE_STEPS: Record<string, string> = { b1: 'step-2', b2: 'step-4', b3: 's
 interface BackpackViewProps {
   /** Path steps the learner has actually completed (client projection; server remains authoritative). */
   completedNodeIds?: string[];
+  initialTab?: 'SKILLS' | 'BADGES' | 'TOOLS';
 }
 
-export function BackpackView({ completedNodeIds = [] }: BackpackViewProps) {
+export function BackpackView({ completedNodeIds = [], initialTab = 'SKILLS' }: BackpackViewProps) {
   const [filter, setFilter] = useState<'ALL' | 'MASTERED' | 'REVIEW'>('ALL');
-  const [activeTab, setActiveTab] = useState<'SKILLS' | 'BADGES' | 'TOOLS'>('SKILLS');
+  const [activeTab, setActiveTab] = useState<'SKILLS' | 'BADGES' | 'TOOLS'>(initialTab);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewAnswer, setReviewAnswer] = useState<number | null>(null);
   const [reviewEvaluated, setReviewEvaluated] = useState<'UNCHECKED' | 'CORRECT' | 'WRONG'>('UNCHECKED');

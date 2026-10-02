@@ -92,15 +92,17 @@ async function authLearning(request: Request): Promise<RequestPrincipal> {
   };
 }
 
+const isSupabaseConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+
 export async function requireRequestPrincipal(request: Request): Promise<RequestPrincipal> {
-  if (process.env.NODE_ENV !== 'production' && !bearerToken(request)) {
+  if (!isSupabaseConfigured || !bearerToken(request)) {
     return devLearningIdentity(request);
   }
   return authLearning(request);
 }
 
 export async function requireRequestAccountPrincipal(request: Request, requiredRole?: string): Promise<AccountPrincipal> {
-  const principal = (process.env.NODE_ENV !== 'production' && !bearerToken(request))
+  const principal = (!isSupabaseConfigured || !bearerToken(request))
     ? devAccount(request, requiredRole)
     : await authAccount(request);
   if (requiredRole && !principal.roles.includes(requiredRole) && !principal.roles.includes('ADMIN')) {

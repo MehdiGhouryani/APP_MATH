@@ -183,8 +183,12 @@ export default function ChildHomePage() {
           />
         )}
 
+        {activeTab === 'PRACTICE' && (
+          <BackpackView completedNodeIds={completedNodeIds} initialTab="SKILLS" />
+        )}
+
         {activeTab === 'BACKPACK' && (
-          <BackpackView completedNodeIds={completedNodeIds} />
+          <BackpackView completedNodeIds={completedNodeIds} initialTab="BADGES" />
         )}
 
         {activeTab === 'PROFILE' && (

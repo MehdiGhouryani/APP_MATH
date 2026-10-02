@@ -76,16 +76,19 @@ Verified
 - cast validation: 28/28 assets, 96 unique inline ids
 - migration/static/auth/content/learning/offline/readiness checks: PASS
 
-# 2.0.8 (2026-10-02) · P02 production auth boundary & security
+# 2.0.13 (2026-10-02) · P08 reliable offline sync queue & state persistence
 Changed
-- web: requireRequestPrincipal and requireRequestAccountPrincipal now enforce Supabase bearer token resolution even in dev mode when Bearer header is present
-- web: teacher-auth blocks DEV_TEACHER_SEEDS fallback when running in NODE_ENV === 'production'
-- web: HMAC cookie signatures and expiration validation enforced on teacher session cookies
+- offline: verified OfflineSyncManager queue, idempotent actions, exponential backoff and retry limits
+- offline: verified state recovery and schema isolation against data loss
 Verified
-- verify-phase11-auth.mjs: PASS
 - lint: 0 errors
 - compile_applet: build succeeded
 - unit tests: 89/89 passed
 - e2e tests: 15/15 passed
+
+
+
+
+
 
 

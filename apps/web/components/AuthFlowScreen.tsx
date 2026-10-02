@@ -175,10 +175,14 @@ export function AuthFlowScreen({
             </p>
           </div>
 
-          <div className="pt-8 flex items-center space-x-2 space-x-reverse">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-xs text-slate-400">در حال آماده‌سازی محیط یادگیری...</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setStep('GRADE_SELECT')}
+            className="w-full max-w-xs mt-4 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-extrabold text-base shadow-lg shadow-emerald-900/40 active:scale-98 transition-all flex items-center justify-center space-x-2 space-x-reverse"
+          >
+            <span>شروع ماجراجویی ریاضی</span>
+            <span>➔</span>
+          </button>
         </div>
       )}
 

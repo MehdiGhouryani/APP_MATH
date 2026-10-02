@@ -4,7 +4,7 @@ import React from 'react';
 import { soundFx } from '../lib/sound';
 import { DESIGN_TOKENS } from '../lib/theme/tokens';
 
-export type MainTabType = 'PATH' | 'BACKPACK' | 'PROFILE';
+export type MainTabType = 'PATH' | 'PRACTICE' | 'BACKPACK' | 'PROFILE';
 
 interface ChildBottomNavProps {
   activeTab: MainTabType;
@@ -14,6 +14,7 @@ interface ChildBottomNavProps {
 export function ChildBottomNav({ activeTab, onChangeTab }: ChildBottomNavProps) {
   const tabs: Array<{ id: MainTabType; label: string; icon: string; badge?: string }> = [
     { id: 'PATH', label: 'مسیر', icon: '🗺️' },
+    { id: 'PRACTICE', label: 'تمرین', icon: '🎯' },
     { id: 'BACKPACK', label: 'مهارت‌ها', icon: '🎒' },
     { id: 'PROFILE', label: 'پروفایل', icon: '👤' },
   ];
