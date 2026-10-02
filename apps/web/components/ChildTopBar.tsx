@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { GRADES, CHARACTERS, toPersianDigits, GradeMeta } from '../lib/persian';
 import { soundFx } from '../lib/sound';
@@ -328,9 +329,10 @@ export function ChildTopBar({
                   pointerEvents: 'auto',
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => {
+                <Link
+                  href="/teacher"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setShowSecondaryMenu(false);
                     setTeacherGateOpen(true);
                   }}
@@ -356,7 +358,7 @@ export function ChildTopBar({
                     <span>معلمان</span>
                   </span>
                   <span style={{ fontSize: 10, color: DESIGN_TOKENS.colors.neutral.slate }}>←</span>
-                </button>
+                </Link>
               </div>
             </>
           )}

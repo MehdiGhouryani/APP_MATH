@@ -383,6 +383,7 @@ export function DuolingoPath({
               {/* Stepping Stone Node */}
               <button
                 type="button"
+                data-node-type={node.type}
                 onClick={() => handleNodeClick(node)}
                 className={`path-stone-node ${
                   isCompleted

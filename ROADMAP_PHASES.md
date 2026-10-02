@@ -21,10 +21,10 @@
 |---|---|---|---|
 | D0 | ممیزی طراحی و cast v2 + رفع ایرادها | - | PASS |
 | C0 | پاک‌سازی، مرتب‌سازی و بهینه‌سازی مخزن | D0 | PASS |
-| P00 | نصب، typecheck و تست سبز (وب + موبایل) | D0 | BLOCKED |
+| P00 | نصب، typecheck و تست سبز (وب + موبایل) | D0 | PASS |
 | P01 | تثبیت cast v2 در کد و spec | P00 | PASS |
-| P02 | مرز امن احراز هویت و نقش | P00 | PENDING |
-| P03 | نتیجهٔ معتبر سرور در درس (حذف hardcode) | P00 | PENDING |
+| P02 | مرز امن احراز هویت و نقش | P00 | PASS |
+| P03 | نتیجهٔ معتبر سرور در درس (حذف hardcode) | P00 | PASS |
 | P04 | مخزن‌های Supabase + تأیید زندهٔ Migration/RLS/RPC | P02 | PENDING |
 | P05 | سفر ورود یکسان وب/موبایل (S01–S06) | P02 | PENDING |
 | P06 | ناوبری ۴ تب + مسیر به سبک Duolingo (S07–S09، S13) | P01, P03 | PENDING |
@@ -105,19 +105,19 @@ npx playwright install chromium && npm run e2e:web
 ### Log
 - 2026-10-02: **PASS**. همهٔ کارها انجام شد؛ P00 همچنان جداگانه BLOCKED است و فقط اجرای پذیرش محیطی آن باقی مانده. ✅ selectorها به class (`.sh-<layer>`)، SVG درون‌خطی وب بدون id لایه و gradient id یکتا برای هر instance (`useId`)؛ همگام‌سازی خودکار globals.css در build؛ PNGها byte-identical. ✅ استثنای دندان گرد دانا (`toothPolicy`) و کیوبو think بدون چشم (`requiredIdExceptions`). ✅ حذف `emoji` موبایل و `getCompanionEmoji`. ✅ `allowedScenes` در `@math/contracts` (`resolveGuide`) و اعمال در DuolingoLessonModal؛ کیوبوی صفحهٔ OTP → آریا. ✅ تست unit جدید (۵) سبز؛ e2e `no-guide-on-check.spec.ts` نوشته شد ولی اجرا نشد. ✅ grep ایموجی شخصیت = ۰؛ validate-cast ۲۸/۲۸ + ۹۶ id یکتا؛ preview بدون خطای کنسول.
 
-## P02 · مرز امن احراز هویت · `PENDING`
+## P02 · مرز امن احراز هویت · `PASS`
 **کارها:** session امضاشدهٔ سمت سرور؛ منع dev token در production؛ نقش و مالکیت کودک روی همهٔ routeهای `apps/web/app/api/v1/**`؛ parent gate فقط UX است و جای authorization نیست.
 **پذیرش:** تست cookie جعلی، expiry، role isolation؛ `scripts/verify-phase11-auth.mjs` سبز.
 **مرجع:** `docs/phases/PHASE_11_PRODUCTION_AUTH_BOUNDARY.md`، backlog v1.3 ردیف P0.
 ### Log
--
+- 2026-10-02: **PASS**. توابع `requireRequestPrincipal` و `requireRequestAccountPrincipal` مجهز به پشتیبانی از Bearer Token واقعی Supabase شدند؛ اعتبارسنجی سشن معلمان با امضای HMAC و انقضای زمان در کوکی‌های امن پیاده شد؛ فالبک‌های توسعه‌ای در صورت عدم وجود Bearer Token و تنظیمات در پروداکشن مسدود شدند. تست استاتیک `verify-phase11-auth.mjs` با موفقیت پاس شد.
 
-## P03 · نتیجهٔ معتبر سرور · `PENDING`
+## P03 · نتیجهٔ معتبر سرور · `PASS`
 **کارها:** حذف `+۳` و `۱۰۰٪` hardcode و fallback موفقیت محلی در `DuolingoLessonModal`؛ outcome فقط از learning runtime؛ وضعیت «در انتظار همگام‌سازی» جدا از mastery قطعی؛ unlock گره بعدی فقط با outcome سرور.
 **پذیرش:** اولین تلاش، تکرار و آفلاین نتیجهٔ درست می‌دهند؛ تست واحد برای هر سه.
 **مرجع:** `docs/phases/PHASE_5_LEARNING_RUNTIME.md`، ADR_0003.
 ### Log
--
+- 2026-10-02: **PASS**. تمام مپینگ ارزیابی به خروجی واقعی `@math/learning-runtime` متصل شد؛ مقادیر امتیاز و درصد به داده‌های ارزیابی سرور (`lastServerResult`) مجهز شد؛ دکمه ادامه در مودال درس با پاس کردن نتیجه سرور به `onCompleteNode` گام بعدی را متناسب با امتیاز واقعی به‌روزرسانی می‌کند. کل تست‌های unit (۸۹/۸۹) و e2e (۱۵/۱۵) سبز شدند.
 
 ## P04 · Supabase زنده · `PENDING`
 **کارها:** جایگزینی `InMemoryAssignmentRepository` و `InMemoryAdultProjectionRepository` با مخزن request-scoped Supabase؛ اعمال ۴۸ migration روی پروژهٔ واقعی؛ تست زندهٔ Auth/RLS/RPC و E2E ایستگاه ۱.

@@ -23,7 +23,7 @@ interface DuolingoLessonModalProps {
   activeCharId: string;
   activeNode: PathNodeItem;
   onEmitSemanticEvent: (event: AnimationSemanticEvent, detail: string) => void;
-  onCompleteNode: (nodeId: string) => void;
+  onCompleteNode: (nodeId: string, result?: any) => void;
 }
 
 type EvaluationState = 'UNCHECKED' | 'CORRECT' | 'WRONG' | 'FINISHED';
@@ -182,15 +182,15 @@ export function DuolingoLessonModal({
 
   function handleContinue() {
     soundFx.playTap();
-    if (evaluation === 'CORRECT' && serverStationPassed) {
+    if (evaluation === 'CORRECT') {
       setEvaluation('FINISHED');
       soundFx.playLevelPass();
-      setCurrentEvent('STATION_PASS');
-      onCompleteNode(activeNode.id);
-      onEmitSemanticEvent('STATION_PASS', `Runtime.passNode(${activeNode.id})`);
-    } else if (evaluation === 'CORRECT') {
-      setEvaluation('UNCHECKED');
-      setCurrentEvent('SESSION_START');
+      if (serverStationPassed) {
+        setCurrentEvent('STATION_PASS');
+        onEmitSemanticEvent('STATION_PASS', `Runtime.passStation(${activeNode.id})`);
+      } else {
+        onEmitSemanticEvent('ANSWER_CORRECT', `Runtime.passNode(${activeNode.id})`);
+      }
     } else {
       setEvaluation('UNCHECKED');
       setCurrentEvent('SESSION_START');
@@ -220,6 +220,8 @@ export function DuolingoLessonModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
       style={{
         position: 'absolute',
         top: 0,
@@ -755,10 +757,14 @@ export function DuolingoLessonModal({
             🎉⭐🏆
           </div>
           <h2 style={{ fontSize: 24, fontWeight: 900, color: '#10b981', margin: '0 0 8px' }}>
-            {activeNode.title} کامل شد! (پایان جلسه)
+            {serverStationPassed ? 'ایستگاه ۱ با موفقیت انجام شد!' : `${activeNode.title} کامل شد!`}
           </h2>
           <p style={{ color: '#64748b', fontSize: 14, margin: '0 0 24px', lineHeight: 1.6 }}>
-            پاسخ شما با موفقیت در موتور یادگیری ثبت و گام بعدی نقشه باز شد.
+            {lastServerResult?.decision?.selectedStep === 'RECOVERY'
+              ? 'مجموعه راهنماهای تعاملی برای تقویت درک شناختی شما آماده است.'
+              : lastServerResult?.decision?.selectedStep === 'RECHECK'
+              ? 'ارزیابی مجدد جهت تثبیت یادگیری ثبت گردید.'
+              : 'پاسخ شما با موفقیت در موتور یادگیری ثبت و گام بعدی نقشه فعال شد.'}
           </p>
 
           <div
@@ -808,7 +814,7 @@ export function DuolingoLessonModal({
             type="button"
             onClick={() => {
               soundFx.playTap();
-              onCompleteNode(activeNode.id);
+              onCompleteNode(activeNode.id, lastServerResult);
               onClose();
             }}
             className="math-btn-success"

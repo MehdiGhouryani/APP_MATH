@@ -14,13 +14,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@math/learning-runtime": ["../../packages/learning-runtime/dist"],
-      "@math/contracts": ["../../packages/contracts/src"],
-      "@math/content-delivery": ["../../packages/content-delivery/src"],
-      "@math/assignment-runtime": ["../../packages/assignment-runtime/dist"],
-      "@math/adult-projections": ["../../packages/adult-projections/dist"],
-      "@math/offline-sync": ["../../packages/offline-sync/dist"],
-      "@math/api-client": ["../../packages/api-client/src"]
+      "@math/learning-runtime": ["../../packages/learning-runtime/dist/index"],
+      "@math/contracts": ["../../packages/contracts/src/index"],
+      "@math/content-delivery": ["../../packages/content-delivery/src/index"],
+      "@math/assignment-runtime": ["../../packages/assignment-runtime/dist/index"],
+      "@math/adult-projections": ["../../packages/adult-projections/dist/index"],
+      "@math/offline-sync": ["../../packages/offline-sync/dist/index"],
+      "@math/api-client": ["../../packages/api-client/src/index"]
     }
   },
   "include": [

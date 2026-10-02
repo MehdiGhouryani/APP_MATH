@@ -146,7 +146,11 @@ export async function authenticateTeacher(
     return session;
   }
 
-  // 2. Dev / Testing mode authentication
+  // 2. Dev / Testing mode authentication (Blocked in production)
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_CONFIGURATION_REQUIRED: سرویس احراز هویت عملیاتی پیکربندی نشده است.');
+  }
+
   const devAccount = DEV_TEACHER_SEEDS[username] || DEV_TEACHER_SEEDS[username.toLowerCase()];
   
   if (!devAccount) {

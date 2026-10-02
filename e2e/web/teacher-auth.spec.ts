@@ -82,7 +82,7 @@ test.describe('Teacher Authentication & Direct Role Resolution (Prompt 3.5)', ()
     await page.waitForURL('**/teacher/area', { timeout: 10000 });
     await expect(page.getByRole('heading', { name: 'Teacher Area' })).toBeVisible();
     await expect(page.locator('text=تأییدشده ✓')).toBeVisible();
-    await expect(page.locator('text=TEACHER')).toBeVisible();
+    await expect(page.locator('text=TEACHER').first()).toBeVisible();
     await expect(page.locator('text=مریم کریمی')).toBeVisible();
 
     // 7. Verify session persistence on page reload

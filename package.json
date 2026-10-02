@@ -9,13 +9,12 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "npm@10.9.2",
   "scripts": {
-    "dev": "npm run build:packages && npm --workspace @math/web run dev",
+    "dev": "node scripts/dev.mjs",
     "build:packages": "npm --workspace @math/learning-runtime run build && npm --workspace @math/assignment-runtime run build && npm --workspace @math/adult-projections run build && npm --workspace @math/offline-sync run build",
     "build": "npm run build:packages && npm --workspace @math/web run build",
     "start": "npm --workspace @math/web run start",
-    "dev:web": "npm run build:packages && npm --workspace @math/web run dev",
+    "dev:web": "node scripts/dev.mjs",
     "dev:mobile": "npm --workspace @math/mobile run start",
     "build:web": "npm --workspace @math/web run build",
     "typecheck": "npm run typecheck:contracts && npm run typecheck:web",

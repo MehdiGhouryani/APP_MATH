@@ -57,7 +57,7 @@ test.describe('End-to-End Regression & Interaction Test Suite', () => {
       localStorage.setItem('math_app_child_profile', JSON.stringify({ childName: 'آرش', gradeId: 'G1' }));
     });
     await page.goto('http://127.0.0.1:3000/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(600);
 
     // Check RTL direction

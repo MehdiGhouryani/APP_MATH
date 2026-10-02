@@ -93,16 +93,14 @@ async function authLearning(request: Request): Promise<RequestPrincipal> {
 }
 
 export async function requireRequestPrincipal(request: Request): Promise<RequestPrincipal> {
-  // Development identity injection must never be reachable in production, even
-  // when a client supplies x-dev-* headers or Supabase configuration is absent.
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && !bearerToken(request)) {
     return devLearningIdentity(request);
   }
   return authLearning(request);
 }
 
 export async function requireRequestAccountPrincipal(request: Request, requiredRole?: string): Promise<AccountPrincipal> {
-  const principal = (process.env.NODE_ENV !== 'production')
+  const principal = (process.env.NODE_ENV !== 'production' && !bearerToken(request))
     ? devAccount(request, requiredRole)
     : await authAccount(request);
   if (requiredRole && !principal.roles.includes(requiredRole) && !principal.roles.includes('ADMIN')) {
