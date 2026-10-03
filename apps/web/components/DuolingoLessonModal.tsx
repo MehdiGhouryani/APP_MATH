@@ -8,6 +8,7 @@ import { WonderGrid } from './WonderGrid';
 import { SymmetryMirror } from './SymmetryMirror';
 import { ComparisonScale } from './ComparisonScale';
 import { InteractiveCompanion } from './InteractiveCompanion';
+import { CharacterArt } from './CharacterArt';
 import type { PathNodeItem } from './DuolingoPath';
 import type { AnimationSemanticEvent } from '@math/contracts';
 import {
@@ -701,8 +702,11 @@ export function DuolingoLessonModal({
                 🎁
               </button>
             ) : (
-              <div style={{ fontSize: 84 }} className="victory-pop">
-                💎✨🏆
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                <CharacterArt id="jiko" state="celebrate" size={88} label="جیکو - جشن پاداش دانایی" />
+                <div style={{ fontSize: 44 }} className="victory-pop">
+                  💎✨🏆
+                </div>
               </div>
             )}
           </div>
@@ -753,9 +757,16 @@ export function DuolingoLessonModal({
             textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: 64, marginBottom: 12 }} className="victory-pop">
-            🎉⭐🏆
-          </div>
+          {serverStationPassed ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <CharacterArt id="jiko" state="celebrate" size={84} label="جیکو - جشن فتح ایستگاه" />
+              <div style={{ fontSize: 36 }}>🎉🏆</div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 64, marginBottom: 12 }} className="victory-pop">
+              🎉⭐🏆
+            </div>
+          )}
           <h2 style={{ fontSize: 24, fontWeight: 900, color: '#10b981', margin: '0 0 8px' }}>
             {serverStationPassed ? 'ایستگاه ۱ با موفقیت انجام شد!' : `${activeNode.title} کامل شد!`}
           </h2>

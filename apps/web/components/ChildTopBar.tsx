@@ -185,8 +185,29 @@ export function ChildTopBar({
         )}
       </div>
 
-      {/* Educational Engagement Metrics: Stars, Safe Sync, Auth Gateway, Mascot, Secondary Menu */}
+      {/* Educational Engagement Metrics: Streak, Stars, Safe Sync, Auth Gateway, Mascot, Secondary Menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Gentle Streak Pill (استریک مهربان با محافظت رایگان) */}
+        <div
+          title="ریتم یادگیری و استریک مهربان همراه با محافظت رایگان"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontWeight: 800,
+            fontSize: 13,
+            color: '#c2410c',
+            backgroundColor: '#fff7ed',
+            border: '1px solid #ffedd5',
+            padding: '4px 8px',
+            borderRadius: '12px',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span style={{ fontSize: 14 }}>🔥</span>
+          <span>{toPersianDigits(weeklyActiveDays || 3)}</span>
+        </div>
+
         {/* Knowledge Stars (ستاره‌های دانایی حاصل از تسلط آموزشی) */}
         <div
           title="ستاره‌های دانایی حاصل از حل مسائل"

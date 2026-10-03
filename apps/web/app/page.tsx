@@ -198,6 +198,8 @@ export default function ChildHomePage() {
             gradeTitle={selectedGrade.title}
             streakDays={3}
             gemsCount={learningStars * 4}
+            xp={learningStars * 15}
+            completedStepsCount={completedNodeIds.length}
           />
         )}
       </main>
